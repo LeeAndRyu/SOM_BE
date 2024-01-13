@@ -38,13 +38,13 @@ public class MemberEntity {
   @Column(name = "password", nullable = false)
   private String password;
 
-  @Column(name = "nickname")
+  @Column(name = "nickname", nullable = false)
   private String nickname;
 
   @Column(name = "phone_number", length = 20)
   private String phoneNumber;
 
-  @Column(name = "birth_date")
+  @Column(name = "birth_date", nullable = false)
   private LocalDate birthDate;
 
   @Column(name = "profile_image")
