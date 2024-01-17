@@ -19,13 +19,13 @@ public class EmailAuthRedisRepository implements EmailAuthRepository{
 
 
   @Override
-  public void saveEmailAuthUuid(String uuid, Long id) {
+  public void saveEmailAuthUuid(String uuid, String email) {
     ValueOperations<String, String> emailAuths = redisTemplate.opsForValue();
-    emailAuths.set(uuid, String.valueOf(id), Duration.ofMinutes(TimeConstant.EMAIL_AUTH_MINUTE));
+    emailAuths.set(uuid, email, Duration.ofMinutes(TimeConstant.EMAIL_AUTH_MINUTE));
   }
 
   @Override
-  public Long getEmailAuthMemberId(String uuid) {
+  public String getEmailByUuid(String uuid) {
     ValueOperations<String, String> emailAuths = redisTemplate.opsForValue();
 
     if(Boolean.FALSE.equals(redisTemplate.hasKey(uuid))){
@@ -33,7 +33,7 @@ public class EmailAuthRedisRepository implements EmailAuthRepository{
       throw new MemberException(ErrorCode.EMAIL_AUTH_TIME_OUT);
     }
 
-    return Long.valueOf(emailAuths.get(uuid));
+    return emailAuths.get(uuid);
   }
 
 }

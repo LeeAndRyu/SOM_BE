@@ -14,7 +14,7 @@ import com.blog.som.domain.member.dto.MemberRegister.Response;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.domain.member.type.Role;
-import com.blog.som.global.components.mail.MailComponent;
+import com.blog.som.global.components.mail.MailSender;
 import com.blog.som.global.components.password.PasswordUtils;
 import com.blog.som.global.constant.ResponseConstant;
 import com.blog.som.global.exception.ErrorCode;
@@ -41,7 +41,7 @@ class MemberServiceTest {
   @Mock
   private EmailAuthRepository emailAuthRepository;
   @Mock
-  private MailComponent mailComponent;
+  private MailSender mailSender;
 
 
   @InjectMocks
@@ -126,9 +126,9 @@ class MemberServiceTest {
       member.setRole(Role.UNAUTH);
 
       //given
-      when(emailAuthRepository.getEmailAuthMemberId(testUUID))
-          .thenReturn(1L);
-      when(memberRepository.findById(1L))
+      when(emailAuthRepository.getEmailByUuid(testUUID))
+          .thenReturn(member.getEmail());
+      when(memberRepository.findByEmail(member.getEmail()))
           .thenReturn(Optional.of(member));
 
       //when
@@ -148,9 +148,9 @@ class MemberServiceTest {
       member.setRole(Role.USER);
 
       //given
-      when(emailAuthRepository.getEmailAuthMemberId(testUUID))
-          .thenReturn(1L);
-      when(memberRepository.findById(1L))
+      when(emailAuthRepository.getEmailByUuid(testUUID))
+          .thenReturn(member.getEmail());
+      when(memberRepository.findByEmail(member.getEmail()))
           .thenReturn(Optional.of(member));
 
       //when

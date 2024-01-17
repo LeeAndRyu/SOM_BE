@@ -1,5 +1,6 @@
 package com.blog.som.global.components.mail;
 
+import com.blog.som.global.redis.email.EmailAuthRepository;
 import javax.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,9 +13,10 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class MailComponent {
+public class MailSender {
 
   private final JavaMailSender javaMailSender;
+  private final EmailAuthRepository emailAuthRepository;
 
   @Async
   public void sendMailForRegister(SendMailDto sendMailDto) {
@@ -28,7 +30,10 @@ public class MailComponent {
         .append("<p>감사합니다!</p>")
         .toString();
 
-    sendMail(mail, subject, text);
+    //Redis 에 저장 (timeout = 10분)
+    emailAuthRepository.saveEmailAuthUuid(sendMailDto.getAuthKey(), sendMailDto.getEmail());
+
+    this.sendMail(mail, subject, text);
     log.info("메일 전송 완료 - {}", mail);
   }
 
