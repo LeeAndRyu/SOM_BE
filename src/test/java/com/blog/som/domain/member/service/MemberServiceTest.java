@@ -14,6 +14,7 @@ import com.blog.som.domain.member.dto.MemberRegister.Response;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.domain.member.type.Role;
+import com.blog.som.global.components.mail.MailComponent;
 import com.blog.som.global.components.password.PasswordUtils;
 import com.blog.som.global.constant.ResponseConstant;
 import com.blog.som.global.exception.ErrorCode;
@@ -39,6 +40,9 @@ class MemberServiceTest {
   private MemberRepository memberRepository;
   @Mock
   private EmailAuthRepository emailAuthRepository;
+  @Mock
+  private MailComponent mailComponent;
+
 
   @InjectMocks
   private MemberServiceImpl memberService;
@@ -103,8 +107,8 @@ class MemberServiceTest {
           .thenReturn(true);
       //when
       //then
-      MemberException memberException = assertThrows(MemberException.class,
-          () -> memberService.registerMember(request));
+      MemberException memberException =
+          assertThrows(MemberException.class, () -> memberService.registerMember(request));
       assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.MEMBER_ALREADY_EXISTS);
     }
   }
