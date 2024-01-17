@@ -6,15 +6,13 @@ import com.blog.som.domain.member.dto.MemberRegister.Response;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.domain.member.type.Role;
-import com.blog.som.global.components.password.PasswordUtils;
-import com.blog.som.global.constant.ResponseConstant;
-import com.blog.som.global.exception.ErrorCode;
-import com.blog.som.global.exception.custom.MemberException;
 import com.blog.som.global.components.mail.MailComponent;
 import com.blog.som.global.components.mail.SendMailDto;
+import com.blog.som.global.components.password.PasswordUtils;
+import com.blog.som.global.exception.ErrorCode;
+import com.blog.som.global.exception.custom.MemberException;
 import com.blog.som.global.redis.email.EmailAuthRepository;
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +30,7 @@ public class MemberServiceImpl implements MemberService {
   @Override
   public Response registerMember(Request request) {
 
-    if(memberRepository.existsByEmail(request.getEmail())){
+    if (memberRepository.existsByEmail(request.getEmail())) {
       throw new MemberException(ErrorCode.MEMBER_ALREADY_EXISTS);
     }
     //회원 저장
@@ -59,7 +57,7 @@ public class MemberServiceImpl implements MemberService {
         .orElseThrow(() -> new MemberException(ErrorCode.EMAIL_AUTH_WRONG_KEY));
 
     //Role!=UNAUTH -> 이미 인증 완료된 유저
-    if(!Role.UNAUTH.equals(member.getRole())){
+    if (!Role.UNAUTH.equals(member.getRole())) {
       log.info("[email auth fail - already completed] memberId={}", member.getMemberId());
       return new EmailAuthResult(false, member);
     }
@@ -71,6 +69,5 @@ public class MemberServiceImpl implements MemberService {
 
     return new EmailAuthResult(true, member);
   }
-
 
 }

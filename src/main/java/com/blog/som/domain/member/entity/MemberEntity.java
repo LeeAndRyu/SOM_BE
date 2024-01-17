@@ -3,6 +3,7 @@ package com.blog.som.domain.member.entity;
 import com.blog.som.domain.member.type.Role;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
@@ -62,4 +63,21 @@ public class MemberEntity {
   @Enumerated(EnumType.STRING)
   @Column(name = "role")
   private Role role;
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    MemberEntity member = (MemberEntity) o;
+    return Objects.equals(memberId, member.memberId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(memberId);
+  }
 }
