@@ -13,6 +13,7 @@ import com.blog.som.global.exception.custom.MemberException;
 import com.blog.som.global.components.mail.MailComponent;
 import com.blog.som.global.components.mail.SendMailDto;
 import com.blog.som.global.redis.email.EmailAuthRepository;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -65,6 +66,7 @@ public class MemberServiceImpl implements MemberService {
     //이메일 인증 성공
     log.info("[email auth complete] memberId={}", member.getMemberId());
     member.setRole(Role.USER);
+    member.setEmailAuthAt(LocalDateTime.now());
     memberRepository.save(member);
 
     return new EmailAuthResult(true, member);
