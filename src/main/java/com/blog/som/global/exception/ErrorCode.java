@@ -18,7 +18,7 @@ public enum ErrorCode {
 
 
   //Security
-  LOGIN_FAILED_USER_NOT_FOUND(HttpStatus.NOT_FOUND, "계정이 존재하지 않습니다."),
+  LOGIN_FAILED_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "계정이 존재하지 않습니다."),
   LOGIN_FAILED_PASSWORD_INCORRECT(HttpStatus.UNAUTHORIZED, "비밀번호가 틀립니다."),
   ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
   LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "로그인이 되지 않았습니다."),

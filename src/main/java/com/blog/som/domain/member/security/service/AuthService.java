@@ -28,12 +28,12 @@ public class AuthService implements UserDetailsService {
   private final MemberRepository memberRepository;
   private final MailSender mailSender;
 
-  public MemberDto loginMember(MemberLogin.Request input) {
-    MemberEntity member = memberRepository.findByEmail(input.getEmail())
-        .orElseThrow(() -> new MemberException(ErrorCode.LOGIN_FAILED_USER_NOT_FOUND));
+  public MemberDto loginMember(MemberLogin.Request loginInput) {
+    MemberEntity member = memberRepository.findByEmail(loginInput.getEmail())
+        .orElseThrow(() -> new MemberException(ErrorCode.LOGIN_FAILED_MEMBER_NOT_FOUND));
 
     //비밀번호 확인
-    if (!PasswordUtils.equalsPlainTextAndHashed(input.getPassword(), member.getPassword())) {
+    if (!PasswordUtils.equalsPlainTextAndHashed(loginInput.getPassword(), member.getPassword())) {
       throw new MemberException(ErrorCode.LOGIN_FAILED_PASSWORD_INCORRECT);
     }
 
@@ -50,7 +50,7 @@ public class AuthService implements UserDetailsService {
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     MemberEntity member = memberRepository.findByEmail(username)
-        .orElseThrow(() -> new UsernameNotFoundException("회원 정보가 존재하지 않습니다."));
+        .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.MEMBER_NOT_FOUND.getDescription()));
     log.info("인증 성공[ ID : {} ]", member.getEmail());
 
     return new LoginMember(member);
