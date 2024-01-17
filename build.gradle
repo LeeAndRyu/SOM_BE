@@ -28,6 +28,8 @@ dependencies {
     // redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+    //mail
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
 
     //swagger
     implementation 'io.springfox:springfox-boot-starter:3.0.0'

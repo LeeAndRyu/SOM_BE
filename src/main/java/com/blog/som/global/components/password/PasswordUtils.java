@@ -1,4 +1,4 @@
-package com.blog.som.global.components;
+package com.blog.som.global.components.password;
 
 import org.springframework.stereotype.Component;
 
@@ -8,7 +8,7 @@ public class PasswordUtils {
   private PasswordUtils(){}
 
   public static String encPassword(String plainText) {
-    if (plainText == null || plainText.length() < 1) {
+    if (plainText == null || plainText.isEmpty()) {
       return "";
     }
     //TODO : Password Encoding
