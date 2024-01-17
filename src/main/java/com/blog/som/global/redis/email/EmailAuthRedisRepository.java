@@ -5,10 +5,12 @@ import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.MemberException;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Repository;
 
+@Slf4j
 @RequiredArgsConstructor
 @Repository
 public class EmailAuthRedisRepository implements EmailAuthRepository{
@@ -27,14 +29,11 @@ public class EmailAuthRedisRepository implements EmailAuthRepository{
     ValueOperations<String, String> emailAuths = redisTemplate.opsForValue();
 
     if(Boolean.FALSE.equals(redisTemplate.hasKey(uuid))){
+      log.info("[email auth fail - email-auth key doesnt exist]");
       throw new MemberException(ErrorCode.EMAIL_AUTH_TIME_OUT);
     }
 
     return Long.valueOf(emailAuths.get(uuid));
   }
 
-  @Override
-  public void deleteEmailAuthUuid(String uuid){
-    redisTemplate.delete(uuid);
-  }
 }
