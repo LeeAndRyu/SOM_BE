@@ -7,6 +7,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.blog.som.EntityCreator;
 import com.blog.som.domain.member.dto.EmailAuthResult;
 import com.blog.som.domain.member.dto.MemberRegister;
 import com.blog.som.domain.member.dto.MemberRegister.Request;
@@ -14,7 +15,7 @@ import com.blog.som.domain.member.dto.MemberRegister.Response;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.domain.member.type.Role;
-import com.blog.som.global.components.mail.MailComponent;
+import com.blog.som.global.components.mail.MailSender;
 import com.blog.som.global.components.password.PasswordUtils;
 import com.blog.som.global.constant.ResponseConstant;
 import com.blog.som.global.exception.ErrorCode;
@@ -41,24 +42,12 @@ class MemberServiceTest {
   @Mock
   private EmailAuthRepository emailAuthRepository;
   @Mock
-  private MailComponent mailComponent;
+  private MailSender mailSender;
 
 
   @InjectMocks
   private MemberServiceImpl memberService;
 
-  private MemberEntity createMember(Long id) {
-    return MemberEntity.builder()
-        .memberId(id)
-        .email("test" + id + "@test.com")
-        .password("password" + id)
-        .nickname("nickname" + id)
-        .phoneNumber("010" + id + "00" + "5678")
-        .birthDate(LocalDate.now())
-        .registeredAt(LocalDateTime.now())
-        .role(Role.USER)
-        .build();
-  }
 
   @Nested
   @DisplayName("회원 가입")
@@ -78,7 +67,7 @@ class MemberServiceTest {
     @DisplayName("성공")
     void registerMember() {
       //given
-      MemberEntity member = createMember(1L);
+      MemberEntity member = EntityCreator.createMember(1L);
       Request request = this.createRequest(member);
 
       when(memberRepository.existsByEmail(request.getEmail()))
@@ -100,7 +89,7 @@ class MemberServiceTest {
     @DisplayName("MEMBER_ALREADY_EXISTS")
     void registerMember_MEMBER_ALREADY_EXISTS() {
       //given
-      MemberEntity member = createMember(1L);
+      MemberEntity member = EntityCreator.createMember(1L);
       Request request = this.createRequest(member);
 
       when(memberRepository.existsByEmail(request.getEmail()))
@@ -122,13 +111,13 @@ class MemberServiceTest {
     @Test
     @DisplayName("성공 - 이메일 인증 완료")
     void emailAuth() {
-      MemberEntity member = createMember(1L);
+      MemberEntity member = EntityCreator.createMember(1L);
       member.setRole(Role.UNAUTH);
 
       //given
-      when(emailAuthRepository.getEmailAuthMemberId(testUUID))
-          .thenReturn(1L);
-      when(memberRepository.findById(1L))
+      when(emailAuthRepository.getEmailByUuid(testUUID))
+          .thenReturn(member.getEmail());
+      when(memberRepository.findByEmail(member.getEmail()))
           .thenReturn(Optional.of(member));
 
       //when
@@ -144,13 +133,13 @@ class MemberServiceTest {
     @Test
     @DisplayName("실패 - 이미 인증 완료된 유저")
     void emailAuth_EMAIL_AUTH_ALREADY_COMPLETED() {
-      MemberEntity member = createMember(1L);
+      MemberEntity member = EntityCreator.createMember(1L);
       member.setRole(Role.USER);
 
       //given
-      when(emailAuthRepository.getEmailAuthMemberId(testUUID))
-          .thenReturn(1L);
-      when(memberRepository.findById(1L))
+      when(emailAuthRepository.getEmailByUuid(testUUID))
+          .thenReturn(member.getEmail());
+      when(memberRepository.findByEmail(member.getEmail()))
           .thenReturn(Optional.of(member));
 
       //when

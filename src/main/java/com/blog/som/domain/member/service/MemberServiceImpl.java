@@ -6,14 +6,13 @@ import com.blog.som.domain.member.dto.MemberRegister.Response;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.domain.member.type.Role;
-import com.blog.som.global.components.mail.MailComponent;
+import com.blog.som.global.components.mail.MailSender;
 import com.blog.som.global.components.mail.SendMailDto;
 import com.blog.som.global.components.password.PasswordUtils;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.MemberException;
 import com.blog.som.global.redis.email.EmailAuthRepository;
 import java.time.LocalDateTime;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,7 +23,7 @@ import org.springframework.stereotype.Service;
 public class MemberServiceImpl implements MemberService {
 
   private final MemberRepository memberRepository;
-  private final MailComponent mailComponent;
+  private final MailSender mailSender;
   private final EmailAuthRepository emailAuthRepository;
 
   @Override
@@ -38,12 +37,9 @@ public class MemberServiceImpl implements MemberService {
         Request.toEntity(request, PasswordUtils.encPassword(request.getPassword())));
 
     //메일 전송
-    String uuid = UUID.randomUUID().toString();
-    mailComponent.sendMailForRegister(
-        new SendMailDto(savedMember.getEmail(), savedMember.getNickname(), uuid));
+    mailSender.sendMailForRegister(
+        new SendMailDto(savedMember));
 
-    //Redis 에 저장 (timeout = 10분)
-    emailAuthRepository.saveEmailAuthUuid(uuid, savedMember.getMemberId());
 
     return Response.fromEntity(savedMember);
   }
@@ -51,9 +47,9 @@ public class MemberServiceImpl implements MemberService {
   @Override
   public EmailAuthResult emailAuth(String key) {
     //key -> memberId
-    Long memberId = emailAuthRepository.getEmailAuthMemberId(key);
+    String email = emailAuthRepository.getEmailByUuid(key);
 
-    MemberEntity member = memberRepository.findById(memberId)
+    MemberEntity member = memberRepository.findByEmail(email)
         .orElseThrow(() -> new MemberException(ErrorCode.EMAIL_AUTH_WRONG_KEY));
 
     //Role!=UNAUTH -> 이미 인증 완료된 유저
@@ -69,5 +65,7 @@ public class MemberServiceImpl implements MemberService {
 
     return new EmailAuthResult(true, member);
   }
+
+
 
 }
