@@ -10,13 +10,13 @@ public class ErrorResponse {
   private String errorMessage;
 
   public ErrorResponse(ErrorCode errorCode) {
-    this.statusCode = errorCode.getStatusCode().value();
+    this.statusCode = errorCode.getStatus().value();
     this.errorCode = errorCode;
     this.errorMessage = errorCode.getDescription();
   }
 
   public ErrorResponse(ErrorCode errorCode, String errorMessage) {
-    this.statusCode = errorCode.getStatusCode().value();
+    this.statusCode = errorCode.getStatus().value();
     this.errorCode = errorCode;
     this.errorMessage = errorMessage;
   }
