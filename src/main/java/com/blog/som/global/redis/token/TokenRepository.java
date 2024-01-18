@@ -7,4 +7,7 @@ public interface TokenRepository {
   void addBlacklistAccessToken(String accessToken, String email);
 
   boolean deleteRefreshToken(String email);
+
+  boolean checkRefreshToken(String email, String refreshToken);
+
 }

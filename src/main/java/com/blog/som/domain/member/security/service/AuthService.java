@@ -49,8 +49,11 @@ public class AuthService implements UserDetailsService {
     return MemberDto.fromEntity(member);
   }
 
-  public void saveRefreshToken(String email, String refreshToken){
+  public MemberDto saveRefreshToken(String email, String refreshToken){
+    MemberEntity member = memberRepository.findByEmail(email)
+        .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
     tokenRepository.saveRefreshToken(email, refreshToken);
+    return MemberDto.fromEntity(member);
   }
 
   public MemberLogoutResponse logoutMember(String email, String accessToken){
@@ -62,6 +65,9 @@ public class AuthService implements UserDetailsService {
     return new MemberLogoutResponse(email, result);
   }
 
+  public boolean checkRefreshToken(String email, String refreshToken){
+    return tokenRepository.checkRefreshToken(email, refreshToken);
+  }
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
