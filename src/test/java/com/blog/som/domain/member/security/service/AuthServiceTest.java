@@ -8,9 +8,12 @@ import com.blog.som.EntityCreator;
 import com.blog.som.domain.member.dto.MemberDto;
 import com.blog.som.domain.member.dto.MemberLogin;
 import com.blog.som.domain.member.dto.MemberLogin.Request;
+import com.blog.som.domain.member.dto.MemberLogin.Response;
 import com.blog.som.domain.member.dto.MemberLogoutResponse;
+import com.blog.som.domain.member.dto.TokenResponse;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
+import com.blog.som.domain.member.security.token.JwtTokenService;
 import com.blog.som.domain.member.type.Role;
 import com.blog.som.global.components.mail.MailSender;
 import com.blog.som.global.components.password.PasswordUtils;
@@ -41,6 +44,8 @@ class AuthServiceTest {
   private MailSender mailSender;
   @Mock
   private TokenRepository tokenRepository;
+  @Mock
+  private JwtTokenService jwtTokenService;
 
   @InjectMocks
   private AuthService authService;
@@ -58,6 +63,9 @@ class AuthServiceTest {
       String encPassword = PasswordUtils.encPassword(member.getPassword());
       member.setPassword(encPassword);
 
+      String accessToken = "test.accessToken";
+      String refreshToken = "test.refreshToken";
+
       Request loginInput = Request.builder()
           .email(member.getEmail())
           .password(plainPassword)
@@ -65,14 +73,18 @@ class AuthServiceTest {
       //given
       when(memberRepository.findByEmail(member.getEmail()))
           .thenReturn(Optional.of(member));
-
+      when(jwtTokenService.generateTokenResponse(member.getEmail(), Role.USER))
+          .thenReturn(new TokenResponse(accessToken, refreshToken));
       //when
-      MemberDto result = authService.loginMember(loginInput);
+      Response response = authService.loginMember(loginInput);
 
       //then
-      assertThat(member.getMemberId()).isEqualTo(result.getMemberId());
-      assertThat(member.getEmail()).isEqualTo(result.getEmail());
-      assertThat(result.getRole()).isEqualTo(Role.USER);
+      assertThat(response.getTokenResponse().getAccessToken()).isEqualTo(accessToken);
+      assertThat(response.getTokenResponse().getRefreshToken()).isEqualTo(refreshToken);
+
+      assertThat(member.getMemberId()).isEqualTo(response.getMember().getMemberId());
+      assertThat(member.getEmail()).isEqualTo(response.getMember().getEmail());
+      assertThat(response.getMember().getRole()).isEqualTo(Role.USER);
     }
 
     @Test
@@ -139,45 +151,6 @@ class AuthServiceTest {
     }
   }
 
-  @Nested
-  @DisplayName("RefreshToken 저장")
-  class SaveRefreshToken{
-
-    @Test
-    @DisplayName("성공")
-    void saveRefreshToken(){
-      MemberEntity member = EntityCreator.createMember(1L);
-      String refreshToken = "test.refreshToken";
-      //given
-      when(memberRepository.findByEmail(member.getEmail()))
-          .thenReturn(Optional.of(member));
-
-      //when
-      MemberDto result = authService.saveRefreshToken(member.getEmail(), refreshToken);
-
-      //then
-      verify(tokenRepository, times(1)).saveRefreshToken(member.getEmail(), refreshToken);
-      assertThat(result.getMemberId()).isEqualTo(member.getMemberId());
-      assertThat(result.getEmail()).isEqualTo(member.getEmail());
-
-    }
-
-    @Test
-    @DisplayName("실패 : MEMBER_NOT_FOUND")
-    void saveRefreshToken_MEMBER_NOT_FOUND(){
-      MemberEntity member = EntityCreator.createMember(1L);
-      String refreshToken = "test.refreshToken";
-      //given
-      when(memberRepository.findByEmail(member.getEmail()))
-          .thenReturn(Optional.empty());
-
-      //when
-      //then
-      MemberException memberException =
-          assertThrows(MemberException.class, () -> authService.saveRefreshToken(member.getEmail(), refreshToken));
-      assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
-    }
-  }
 
   @Test
   @DisplayName("로그아웃")
@@ -194,48 +167,7 @@ class AuthServiceTest {
     //then
     verify(tokenRepository,times(1)).addBlacklistAccessToken(accessToken, email);
     assertThat(response.getEmail()).isEqualTo(email);
-    assertThat(response.isLogoutResult()).isEqualTo(true);
-
-
+    assertThat(response.isLogoutResult()).isTrue();
   }
 
-
-  @Nested
-  @DisplayName("loadUserByUsername")
-  class LoadUserByUsername{
-    @Test
-    @DisplayName("성공")
-    void loadUserByUsername(){
-      MemberEntity member = EntityCreator.createMember(1L);
-      String username = member.getEmail();
-      //given
-      when(memberRepository.findByEmail(username))
-          .thenReturn(Optional.of(member));
-
-      //when
-      UserDetails userDetails = authService.loadUserByUsername(username);
-
-      //then
-      assertThat(userDetails.getUsername()).isEqualTo(username);
-      assertThat(userDetails.getPassword()).isEqualTo(member.getPassword());
-
-
-    }
-
-    @Test
-    @DisplayName("실패 : UsernameNotFoundException")
-    void loadUserByUsername_UsernameNotFoundException(){
-      MemberEntity member = EntityCreator.createMember(1L);
-      String username = member.getEmail();
-      //given
-      when(memberRepository.findByEmail(username))
-          .thenReturn(Optional.empty());
-
-      //when
-      //then
-      UsernameNotFoundException usernameNotFoundException =
-          assertThrows(UsernameNotFoundException.class, () -> authService.loadUserByUsername(username));
-      assertThat(usernameNotFoundException.getMessage()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND.getDescription());
-    }
-  }
 }

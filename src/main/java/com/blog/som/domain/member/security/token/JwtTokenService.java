@@ -6,7 +6,7 @@ import static com.blog.som.domain.member.security.token.TokenConstant.KEY_ROLES;
 import static com.blog.som.domain.member.security.token.TokenConstant.REFRESH_TOKEN_EXPIRE_TIME;
 
 import com.blog.som.domain.member.dto.TokenResponse;
-import com.blog.som.domain.member.security.service.AuthService;
+import com.blog.som.domain.member.security.service.CustomUserDetailsService;
 import com.blog.som.domain.member.type.Role;
 import com.blog.som.global.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
@@ -33,7 +33,7 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 public class JwtTokenService {
 
-  private final AuthService authService;
+  private final CustomUserDetailsService userDetailsService;
 
   @Value("${spring.jwt.secret}")
   private String secretKey;
@@ -84,7 +84,7 @@ public class JwtTokenService {
 
   public Authentication getAuthentication(String token) {
     String username = this.parseClaims(token).getSubject();
-    UserDetails userDetails = authService.loadUserByUsername(username);
+    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
     return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
   }
 

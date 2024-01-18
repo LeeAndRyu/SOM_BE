@@ -1,13 +1,13 @@
 package com.blog.som.domain.member.security.service;
 
 
-
 import com.blog.som.domain.member.dto.MemberDto;
 import com.blog.som.domain.member.dto.MemberLogin;
 import com.blog.som.domain.member.dto.MemberLogoutResponse;
+import com.blog.som.domain.member.dto.TokenResponse;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
-import com.blog.som.domain.member.security.userdetails.LoginMember;
+import com.blog.som.domain.member.security.token.JwtTokenService;
 import com.blog.som.domain.member.type.Role;
 import com.blog.som.global.components.mail.MailSender;
 import com.blog.som.global.components.mail.SendMailDto;
@@ -17,21 +17,19 @@ import com.blog.som.global.exception.custom.MemberException;
 import com.blog.som.global.redis.token.TokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class AuthService implements UserDetailsService {
+public class AuthService{
 
   private final MemberRepository memberRepository;
   private final MailSender mailSender;
   private final TokenRepository tokenRepository;
+  private final JwtTokenService jwtTokenService;
 
-  public MemberDto loginMember(MemberLogin.Request loginInput) {
+  public MemberLogin.Response loginMember(MemberLogin.Request loginInput) {
     MemberEntity member = memberRepository.findByEmail(loginInput.getEmail())
         .orElseThrow(() -> new MemberException(ErrorCode.LOGIN_FAILED_MEMBER_NOT_FOUND));
 
@@ -46,14 +44,11 @@ public class AuthService implements UserDetailsService {
       throw new MemberException(ErrorCode.EMAIL_AUTH_REQUIRED);
     }
 
-    return MemberDto.fromEntity(member);
-  }
+    TokenResponse tokenResponse = jwtTokenService.generateTokenResponse(member.getEmail(), member.getRole());
 
-  public MemberDto saveRefreshToken(String email, String refreshToken){
-    MemberEntity member = memberRepository.findByEmail(email)
-        .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
-    tokenRepository.saveRefreshToken(email, refreshToken);
-    return MemberDto.fromEntity(member);
+    tokenRepository.saveRefreshToken(member.getEmail(), tokenResponse.getRefreshToken());
+
+    return new MemberLogin.Response(tokenResponse, MemberDto.fromEntity(member));
   }
 
   public MemberLogoutResponse logoutMember(String email, String accessToken){
@@ -65,16 +60,19 @@ public class AuthService implements UserDetailsService {
     return new MemberLogoutResponse(email, result);
   }
 
-  public boolean checkRefreshToken(String email, String refreshToken){
-    return tokenRepository.checkRefreshToken(email, refreshToken);
-  }
+  public MemberLogin.Response reissueTokens(String email, Role role, String bearerRefreshToken){
+    String refreshToken = jwtTokenService.resolveTokenFromRequest(bearerRefreshToken);
 
-  @Override
-  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    MemberEntity member = memberRepository.findByEmail(username)
-        .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.MEMBER_NOT_FOUND.getDescription()));
-    log.info("인증 성공[ ID : {} ]", member.getEmail());
+    MemberEntity member = memberRepository.findByEmail(email)
+        .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
 
-    return new LoginMember(member);
+    //redis에서 refreshToken 확인
+    tokenRepository.checkRefreshToken(email, refreshToken);
+    // 토큰 새로 생성
+    TokenResponse tokenResponse = jwtTokenService.generateTokenResponse(email, role);
+    // 새로 생성된 refreshToken 저장
+    tokenRepository.saveRefreshToken(email, tokenResponse.getRefreshToken());
+
+    return new MemberLogin.Response(tokenResponse, MemberDto.fromEntity(member));
   }
 }

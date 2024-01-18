@@ -1,10 +1,8 @@
 package com.blog.som.domain.member.controller;
 
-import com.blog.som.domain.member.dto.MemberDto;
 import com.blog.som.domain.member.dto.MemberLogin;
 import com.blog.som.domain.member.dto.MemberLogin.Response;
 import com.blog.som.domain.member.dto.MemberLogoutResponse;
-import com.blog.som.domain.member.dto.TokenResponse;
 import com.blog.som.domain.member.security.service.AuthService;
 import com.blog.som.domain.member.security.token.JwtTokenService;
 import com.blog.som.domain.member.security.userdetails.LoginMember;
@@ -30,13 +28,9 @@ public class AuthController {
   @PostMapping("/login")
   public ResponseEntity<MemberLogin.Response> login(@RequestBody MemberLogin.Request request) {
 
-    MemberDto member = authService.loginMember(request);
+    Response response = authService.loginMember(request);
 
-    TokenResponse tokenResponse = jwtTokenService.generateTokenResponse(member.getEmail(), member.getRole());
-
-    authService.saveRefreshToken(member.getEmail(), tokenResponse.getRefreshToken());
-
-    return ResponseEntity.ok(new MemberLogin.Response(tokenResponse, member));
+    return ResponseEntity.ok(response);
   }
 
   @ApiOperation(value = "로그아웃", notes = "accessToken blacklist 처리")
@@ -57,13 +51,8 @@ public class AuthController {
       @AuthenticationPrincipal LoginMember loginMember,
       @RequestHeader("RefreshToken") String refreshToken
       ){
-
-    //refreshToken이 일치하는지 확인
-    authService.checkRefreshToken(loginMember.getEmail(), jwtTokenService.resolveTokenFromRequest(refreshToken));
-    TokenResponse tokenResponse = jwtTokenService.generateTokenResponse(loginMember.getEmail(), loginMember.getRole());
-    MemberDto memberDto = authService.saveRefreshToken(loginMember.getEmail(), tokenResponse.getRefreshToken());
-
-    return ResponseEntity.ok(new Response(tokenResponse, memberDto));
+    Response response = authService.reissueTokens(loginMember.getEmail(), loginMember.getRole(), refreshToken);
+    return ResponseEntity.ok(response);
   }
 
 }
