@@ -46,16 +46,9 @@ public class AuthService{
 
     TokenResponse tokenResponse = jwtTokenService.generateTokenResponse(member.getEmail(), member.getRole());
 
-    this.saveRefreshToken(member.getEmail(), tokenResponse.getRefreshToken());
+    tokenRepository.saveRefreshToken(member.getEmail(), tokenResponse.getRefreshToken());
 
     return new MemberLogin.Response(tokenResponse, MemberDto.fromEntity(member));
-  }
-
-  public MemberDto saveRefreshToken(String email, String refreshToken){
-    MemberEntity member = memberRepository.findByEmail(email)
-        .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
-    tokenRepository.saveRefreshToken(email, refreshToken);
-    return MemberDto.fromEntity(member);
   }
 
   public MemberLogoutResponse logoutMember(String email, String accessToken){
@@ -67,8 +60,19 @@ public class AuthService{
     return new MemberLogoutResponse(email, result);
   }
 
-  public boolean checkRefreshToken(String email, String refreshToken){
-    return tokenRepository.checkRefreshToken(email, refreshToken);
-  }
+  public MemberLogin.Response reissueTokens(String email, Role role, String bearerRefreshToken){
+    String refreshToken = jwtTokenService.resolveTokenFromRequest(bearerRefreshToken);
 
+    MemberEntity member = memberRepository.findByEmail(email)
+        .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
+
+    //redis에서 refreshToken 확인
+    tokenRepository.checkRefreshToken(email, refreshToken);
+    // 토큰 새로 생성
+    TokenResponse tokenResponse = jwtTokenService.generateTokenResponse(email, role);
+    // 새로 생성된 refreshToken 저장
+    tokenRepository.saveRefreshToken(email, tokenResponse.getRefreshToken());
+
+    return new MemberLogin.Response(tokenResponse, MemberDto.fromEntity(member));
+  }
 }

@@ -151,45 +151,6 @@ class AuthServiceTest {
     }
   }
 
-  @Nested
-  @DisplayName("RefreshToken 저장")
-  class SaveRefreshToken{
-
-    @Test
-    @DisplayName("성공")
-    void saveRefreshToken(){
-      MemberEntity member = EntityCreator.createMember(1L);
-      String refreshToken = "test.refreshToken";
-      //given
-      when(memberRepository.findByEmail(member.getEmail()))
-          .thenReturn(Optional.of(member));
-
-      //when
-      MemberDto result = authService.saveRefreshToken(member.getEmail(), refreshToken);
-
-      //then
-      verify(tokenRepository, times(1)).saveRefreshToken(member.getEmail(), refreshToken);
-      assertThat(result.getMemberId()).isEqualTo(member.getMemberId());
-      assertThat(result.getEmail()).isEqualTo(member.getEmail());
-
-    }
-
-    @Test
-    @DisplayName("실패 : MEMBER_NOT_FOUND")
-    void saveRefreshToken_MEMBER_NOT_FOUND(){
-      MemberEntity member = EntityCreator.createMember(1L);
-      String refreshToken = "test.refreshToken";
-      //given
-      when(memberRepository.findByEmail(member.getEmail()))
-          .thenReturn(Optional.empty());
-
-      //when
-      //then
-      MemberException memberException =
-          assertThrows(MemberException.class, () -> authService.saveRefreshToken(member.getEmail(), refreshToken));
-      assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
-    }
-  }
 
   @Test
   @DisplayName("로그아웃")
