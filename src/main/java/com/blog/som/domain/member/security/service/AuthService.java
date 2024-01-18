@@ -4,6 +4,7 @@ package com.blog.som.domain.member.security.service;
 
 import com.blog.som.domain.member.dto.MemberDto;
 import com.blog.som.domain.member.dto.MemberLogin;
+import com.blog.som.domain.member.dto.MemberLogoutResponse;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.domain.member.security.userdetails.LoginMember;
@@ -13,6 +14,7 @@ import com.blog.som.global.components.mail.SendMailDto;
 import com.blog.som.global.components.password.PasswordUtils;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.MemberException;
+import com.blog.som.global.redis.token.TokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,6 +29,7 @@ public class AuthService implements UserDetailsService {
 
   private final MemberRepository memberRepository;
   private final MailSender mailSender;
+  private final TokenRepository tokenRepository;
 
   public MemberDto loginMember(MemberLogin.Request loginInput) {
     MemberEntity member = memberRepository.findByEmail(loginInput.getEmail())
@@ -44,6 +47,15 @@ public class AuthService implements UserDetailsService {
     }
 
     return MemberDto.fromEntity(member);
+  }
+
+  public MemberLogoutResponse logoutMember(String email, String accessToken){
+    //accessToken blacklist 추가
+    tokenRepository.addBlacklistAccessToken(accessToken, email);
+    //refreshToken 삭제
+    boolean result = tokenRepository.deleteRefreshToken(email);
+
+    return new MemberLogoutResponse(email, result);
   }
 
 

@@ -12,5 +12,9 @@ public class TokenConstant {
 
   public static final long REFRESH_TOKEN_EXPIRE_TIME = (long) 1000 * 60 * 60 * 24 * 30;// 한 달
 
+  public static final String ACCESS_TOKEN_BLACKLIST_PREFIX = "AT-";
+
+  public static final String REFRESH_TOKEN_EMAIL_KEY_PREFIX = "RT-";
+
 
 }
