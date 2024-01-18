@@ -194,7 +194,7 @@ class AuthServiceTest {
     //then
     verify(tokenRepository,times(1)).addBlacklistAccessToken(accessToken, email);
     assertThat(response.getEmail()).isEqualTo(email);
-    assertThat(response.isLogoutResult()).isEqualTo(true);
+    assertThat(response.isLogoutResult()).isTrue();
 
 
   }
