@@ -8,6 +8,7 @@ import com.blog.som.EntityCreator;
 import com.blog.som.domain.member.dto.MemberDto;
 import com.blog.som.domain.member.dto.MemberLogin;
 import com.blog.som.domain.member.dto.MemberLogin.Request;
+import com.blog.som.domain.member.dto.MemberLogoutResponse;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.domain.member.type.Role;
@@ -15,6 +16,7 @@ import com.blog.som.global.components.mail.MailSender;
 import com.blog.som.global.components.password.PasswordUtils;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.MemberException;
+import com.blog.som.global.redis.token.TokenRepository;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
@@ -37,6 +39,8 @@ class AuthServiceTest {
   private MemberRepository memberRepository;
   @Mock
   private MailSender mailSender;
+  @Mock
+  private TokenRepository tokenRepository;
 
   @InjectMocks
   private AuthService authService;
@@ -133,6 +137,25 @@ class AuthServiceTest {
       MemberException memberException = assertThrows(MemberException.class, () -> authService.loginMember(loginInput));
       assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.EMAIL_AUTH_REQUIRED);
     }
+  }
+
+  @Test
+  @DisplayName("로그아웃")
+  void logoutMember(){
+    String email = "test@test.com";
+    String accessToken = "test.accessToken";
+    //given
+    when(tokenRepository.deleteRefreshToken(email))
+        .thenReturn(true);
+
+    //when
+    MemberLogoutResponse response = authService.logoutMember(email, accessToken);
+
+    //then
+    verify(tokenRepository,times(1)).addBlacklistAccessToken(accessToken, email);
+    assertThat(response.getEmail()).isEqualTo(email);
+    assertThat(response.isLogoutResult()).isEqualTo(true);
+
 
   }
 
