@@ -30,13 +30,9 @@ public class AuthController {
   @PostMapping("/login")
   public ResponseEntity<MemberLogin.Response> login(@RequestBody MemberLogin.Request request) {
 
-    MemberDto member = authService.loginMember(request);
+    Response response = authService.loginMember(request);
 
-    TokenResponse tokenResponse = jwtTokenService.generateTokenResponse(member.getEmail(), member.getRole());
-
-    authService.saveRefreshToken(member.getEmail(), tokenResponse.getRefreshToken());
-
-    return ResponseEntity.ok(new MemberLogin.Response(tokenResponse, member));
+    return ResponseEntity.ok(response);
   }
 
   @ApiOperation(value = "로그아웃", notes = "accessToken blacklist 처리")
