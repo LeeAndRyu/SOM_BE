@@ -80,7 +80,7 @@ public class SecurityConfig {
 
   @Bean
   public WebSecurityCustomizer webSecurityCustomizer() {
-    return web -> web.ignoring().antMatchers("/login", "/logout", "/exception/**");
+    return web -> web.ignoring().antMatchers("/login", "/logout", "/reissue", "/exception/**");
   }
 
   @Bean

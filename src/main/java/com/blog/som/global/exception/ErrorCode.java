@@ -29,6 +29,7 @@ public enum ErrorCode {
   JWT_TOKEN_WRONG_TYPE(HttpStatus.FORBIDDEN, "JWT 토큰 형식에 문제가 있습니다."),
   JWT_TOKEN_MALFORMED(HttpStatus.FORBIDDEN, "JWT 토큰이 변조되었습니다."),
   NO_JWT_TOKEN(HttpStatus.FORBIDDEN, "JWT 토큰이 존재하지 않습니다."),
+  REFRESH_TOKEN_NOT_COINCIDENCE(HttpStatus.FORBIDDEN, "RefreshToken이 일치하지 않습니다."),
 
 
   //global

@@ -65,7 +65,9 @@ public class AuthService implements UserDetailsService {
     return new MemberLogoutResponse(email, result);
   }
 
-
+  public boolean checkRefreshToken(String email, String refreshToken){
+    return tokenRepository.checkRefreshToken(email, refreshToken);
+  }
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

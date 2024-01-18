@@ -57,6 +57,9 @@ public class AuthController {
       @AuthenticationPrincipal LoginMember loginMember,
       @RequestHeader("RefreshToken") String refreshToken
       ){
+
+    //refreshToken이 일치하는지 확인
+    authService.checkRefreshToken(loginMember.getEmail(), jwtTokenService.resolveTokenFromRequest(refreshToken));
     TokenResponse tokenResponse = jwtTokenService.generateTokenResponse(loginMember.getEmail(), loginMember.getRole());
     MemberDto memberDto = authService.saveRefreshToken(loginMember.getEmail(), tokenResponse.getRefreshToken());
 
