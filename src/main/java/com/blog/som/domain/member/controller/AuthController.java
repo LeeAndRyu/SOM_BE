@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
-@Api(tags = "인증(Login, Logout, Token 등)")
+@Api(tags = "인증 관련 (login, logout)")
 @RequiredArgsConstructor
 @RestController
 public class AuthController {
