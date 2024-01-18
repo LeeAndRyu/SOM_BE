@@ -199,43 +199,4 @@ class AuthServiceTest {
 
   }
 
-
-  @Nested
-  @DisplayName("loadUserByUsername")
-  class LoadUserByUsername{
-    @Test
-    @DisplayName("성공")
-    void loadUserByUsername(){
-      MemberEntity member = EntityCreator.createMember(1L);
-      String username = member.getEmail();
-      //given
-      when(memberRepository.findByEmail(username))
-          .thenReturn(Optional.of(member));
-
-      //when
-      UserDetails userDetails = authService.loadUserByUsername(username);
-
-      //then
-      assertThat(userDetails.getUsername()).isEqualTo(username);
-      assertThat(userDetails.getPassword()).isEqualTo(member.getPassword());
-
-
-    }
-
-    @Test
-    @DisplayName("실패 : UsernameNotFoundException")
-    void loadUserByUsername_UsernameNotFoundException(){
-      MemberEntity member = EntityCreator.createMember(1L);
-      String username = member.getEmail();
-      //given
-      when(memberRepository.findByEmail(username))
-          .thenReturn(Optional.empty());
-
-      //when
-      //then
-      UsernameNotFoundException usernameNotFoundException =
-          assertThrows(UsernameNotFoundException.class, () -> authService.loadUserByUsername(username));
-      assertThat(usernameNotFoundException.getMessage()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND.getDescription());
-    }
-  }
 }

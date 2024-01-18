@@ -1,13 +1,11 @@
 package com.blog.som.domain.member.security.service;
 
 
-
 import com.blog.som.domain.member.dto.MemberDto;
 import com.blog.som.domain.member.dto.MemberLogin;
 import com.blog.som.domain.member.dto.MemberLogoutResponse;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
-import com.blog.som.domain.member.security.userdetails.LoginMember;
 import com.blog.som.domain.member.type.Role;
 import com.blog.som.global.components.mail.MailSender;
 import com.blog.som.global.components.mail.SendMailDto;
@@ -17,15 +15,12 @@ import com.blog.som.global.exception.custom.MemberException;
 import com.blog.som.global.redis.token.TokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class AuthService implements UserDetailsService {
+public class AuthService{
 
   private final MemberRepository memberRepository;
   private final MailSender mailSender;
@@ -69,12 +64,4 @@ public class AuthService implements UserDetailsService {
     return tokenRepository.checkRefreshToken(email, refreshToken);
   }
 
-  @Override
-  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    MemberEntity member = memberRepository.findByEmail(username)
-        .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.MEMBER_NOT_FOUND.getDescription()));
-    log.info("인증 성공[ ID : {} ]", member.getEmail());
-
-    return new LoginMember(member);
-  }
 }
