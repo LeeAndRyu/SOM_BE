@@ -13,7 +13,17 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class RedisTokenRepository implements TokenRepository {
 
-  private final RedisTemplate redisTemplate;
+  private final RedisTemplate<String, String> redisTemplate;
+
+  @Override
+  public void saveRefreshToken(String email, String refreshToken) {
+    ValueOperations<String, String> values = redisTemplate.opsForValue();
+    values.set(
+        TokenConstant.REFRESH_TOKEN_PREFIX + email,
+        refreshToken,
+        Duration.ofMillis(TokenConstant.REFRESH_TOKEN_EXPIRE_TIME)
+    );
+  }
 
   @Override
   public void addBlacklistAccessToken(String accessToken, String email) {
@@ -27,6 +37,6 @@ public class RedisTokenRepository implements TokenRepository {
 
   @Override
   public boolean deleteRefreshToken(String email) {
-    return redisTemplate.delete(TokenConstant.REFRESH_TOKEN_EMAIL_KEY_PREFIX + email);
+    return Boolean.TRUE.equals(redisTemplate.delete(TokenConstant.REFRESH_TOKEN_EMAIL_KEY_PREFIX + email));
   }
 }

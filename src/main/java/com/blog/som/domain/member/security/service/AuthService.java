@@ -49,6 +49,10 @@ public class AuthService implements UserDetailsService {
     return MemberDto.fromEntity(member);
   }
 
+  public void saveRefreshToken(String email, String refreshToken){
+    tokenRepository.saveRefreshToken(email, refreshToken);
+  }
+
   public MemberLogoutResponse logoutMember(String email, String accessToken){
     //accessToken blacklist 추가
     tokenRepository.addBlacklistAccessToken(accessToken, email);
