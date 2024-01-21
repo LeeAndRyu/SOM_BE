@@ -87,4 +87,13 @@ public class MemberEntity {
   public int hashCode() {
     return Objects.hash(memberId);
   }
+
+  @Override
+  public String toString() {
+    return "MemberEntity{" +
+        "memberId=" + memberId +
+        ", email='" + email + '\'' +
+        ", nickname='" + nickname + '\'' +
+        '}';
+  }
 }

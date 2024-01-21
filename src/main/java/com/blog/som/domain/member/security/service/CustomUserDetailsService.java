@@ -22,7 +22,7 @@ public class CustomUserDetailsService implements UserDetailsService {
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     MemberEntity member = memberRepository.findByEmail(username)
         .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.MEMBER_NOT_FOUND.getDescription()));
-    log.info("인증 성공[ ID : {} ]", member.getEmail());
+    log.info("인증 성공[ ID: {}, EMAIL: {} ]", member.getMemberId(), member.getEmail());
 
     return new LoginMember(member);
   }
