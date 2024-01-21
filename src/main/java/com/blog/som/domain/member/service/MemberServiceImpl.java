@@ -1,6 +1,8 @@
 package com.blog.som.domain.member.service;
 
 import com.blog.som.domain.member.dto.EmailAuthResult;
+import com.blog.som.domain.member.dto.MemberDto;
+import com.blog.som.domain.member.dto.MemberEditRequest;
 import com.blog.som.domain.member.dto.MemberRegister.Request;
 import com.blog.som.domain.member.dto.MemberRegister.Response;
 import com.blog.som.domain.member.entity.MemberEntity;
@@ -66,6 +68,15 @@ public class MemberServiceImpl implements MemberService {
     return new EmailAuthResult(true, member);
   }
 
+  @Override
+  public MemberDto editMemberInfo(Long memberId, MemberEditRequest request) {
+    MemberEntity member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
+    member.editMember(request);
 
+    MemberEntity saved = memberRepository.save(member);
+
+    return MemberDto.fromEntity(saved);
+  }
 
 }

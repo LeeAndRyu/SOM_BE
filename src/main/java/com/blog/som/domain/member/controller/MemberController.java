@@ -1,16 +1,19 @@
 package com.blog.som.domain.member.controller;
 
 import com.blog.som.domain.member.dto.EmailAuthResult;
+import com.blog.som.domain.member.dto.MemberDto;
+import com.blog.som.domain.member.dto.MemberEditRequest;
 import com.blog.som.domain.member.dto.MemberRegister;
 import com.blog.som.domain.member.dto.MemberRegister.Response;
+import com.blog.som.domain.member.security.userdetails.LoginMember;
 import com.blog.som.domain.member.service.MemberService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,26 +42,29 @@ public class MemberController {
   }
 
   @ApiOperation(value = "회원 정보 수정", notes = "(TODO)비밀번호 제외")
-  @PutMapping("/member/{memberId}")
-  public ResponseEntity<?> editMemberInfo(@PathVariable Long memberId){
-    return ResponseEntity.ok(null);
+  @PutMapping("/member")
+  public ResponseEntity<MemberDto> editMemberInfo(
+      @RequestBody MemberEditRequest request,
+      @AuthenticationPrincipal LoginMember loginMember){
+    MemberDto result = memberService.editMemberInfo(loginMember.getMemberId(), request);
+    return ResponseEntity.ok(result);
   }
 
   @ApiOperation(value = "회원 비밀번호 수정", notes = "(TODO)")
-  @PutMapping("/member/{memberId}/edit-password")
-  public ResponseEntity<?> editMemberPassword(@PathVariable Long memberId){
+  @PutMapping("/member/edit-password")
+  public ResponseEntity<?> editMemberPassword(){
     return ResponseEntity.ok(null);
   }
 
   @ApiOperation(value = "프로필 사진 변경(등록)", notes = "(TODO)기존의 것이 있으면 덮어쓰기")
-  @PutMapping("/member/{memberId}/profile-image")
-  public ResponseEntity<?> editProfileImage(@PathVariable Long memberId){
+  @PutMapping("/member/profile-image")
+  public ResponseEntity<?> editProfileImage(){
     return ResponseEntity.ok(null);
   }
 
   @ApiOperation(value = "프로필 사진 삭제", notes = "(TODO)프로필 사진을 null로 수정")
-  @DeleteMapping("/member/{memberId}/profile-image/remove")
-  public ResponseEntity<?> deleteProfileImage(@PathVariable Long memberId){
+  @DeleteMapping("/member/profile-image/remove")
+  public ResponseEntity<?> deleteProfileImage(){
     return ResponseEntity.ok(null);
   }
 

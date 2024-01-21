@@ -1,5 +1,6 @@
 package com.blog.som.domain.member.entity;
 
+import com.blog.som.domain.member.dto.MemberEditRequest;
 import com.blog.som.domain.member.type.Role;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -63,6 +64,12 @@ public class MemberEntity {
   @Enumerated(EnumType.STRING)
   @Column(name = "role")
   private Role role;
+
+  public void editMember(MemberEditRequest request){
+    this.nickname = request.getNickname();
+    this.birthDate = request.getBirthDate();
+    this.phoneNumber = request.getPhoneNumber();
+  }
 
   @Override
   public boolean equals(Object o) {
