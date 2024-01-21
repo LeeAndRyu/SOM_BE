@@ -120,4 +120,20 @@ public class MemberServiceImpl implements MemberService {
 
     return MemberDto.fromEntity(member);
   }
+
+  @Override
+  public MemberDto deleteProfileImage(Long memberId) {
+    MemberEntity member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
+
+    if(Objects.isNull(member.getProfileImage())){
+      return MemberDto.fromEntity(member);
+    }
+
+    s3ImageService.deleteImageFromS3(member.getProfileImage());
+    member.setProfileImage(null);
+    memberRepository.save(member);
+
+    return MemberDto.fromEntity(member);
+  }
 }

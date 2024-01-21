@@ -18,4 +18,6 @@ public interface MemberService {
   MemberPasswordEdit.Response editMemberPassword(Long memberId, MemberPasswordEdit.Request request);
 
   MemberDto updateProfileImage(Long memberId, MultipartFile profileImage);
+
+  MemberDto deleteProfileImage(Long memberId);
 }
