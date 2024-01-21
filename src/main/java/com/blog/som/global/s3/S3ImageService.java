@@ -28,7 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class S3Uploader {
+public class S3ImageService {
 
   private final AmazonS3 amazonS3;
 

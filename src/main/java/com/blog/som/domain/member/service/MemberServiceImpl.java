@@ -16,10 +16,13 @@ import com.blog.som.global.constant.ResponseConstant;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.MemberException;
 import com.blog.som.global.redis.email.EmailAuthRepository;
+import com.blog.som.global.s3.S3ImageService;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -29,6 +32,7 @@ public class MemberServiceImpl implements MemberService {
   private final MemberRepository memberRepository;
   private final MailSender mailSender;
   private final EmailAuthRepository emailAuthRepository;
+  private final S3ImageService s3ImageService;
 
   @Override
   public Response registerMember(Request request) {
@@ -98,4 +102,22 @@ public class MemberServiceImpl implements MemberService {
     return new MemberPasswordEdit.Response(member.getMemberId(), ResponseConstant.PASSWORD_EDIT_COMPLETE);
   }
 
+  @Override
+  public MemberDto updateProfileImage(Long memberId, MultipartFile profileImage) {
+    MemberEntity member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
+    if(profileImage.isEmpty()){
+      log.info("[updateProfileImage] - input image is Empty");
+      return MemberDto.fromEntity(member);
+    }
+
+    if(!Objects.isNull(member.getProfileImage())){
+      s3ImageService.deleteImageFromS3(member.getProfileImage());
+    }
+    String newImageAddress = s3ImageService.upload(profileImage);
+    member.setProfileImage(newImageAddress);
+    memberRepository.save(member);
+
+    return MemberDto.fromEntity(member);
+  }
 }

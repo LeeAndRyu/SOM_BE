@@ -1,7 +1,7 @@
 package com.blog.som;
 
 import com.blog.som.domain.member.security.userdetails.LoginMember;
-import com.blog.som.global.s3.S3Uploader;
+import com.blog.som.global.s3.S3ImageService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/test")
 public class TestController {
-  private final S3Uploader s3Uploader;
+  private final S3ImageService s3ImageService;
   
   @ApiOperation(value = "로그인 멤버 확인", notes = "토큰만 Header에 포함시켜서 로그인 멤버 확인")
   @GetMapping("/loginUser")
@@ -34,14 +34,14 @@ public class TestController {
   @PostMapping("/s3/upload")
   public ResponseEntity<?> s3Upload(@RequestPart(value = "image", required = false) MultipartFile image){
     log.info("image : {}", image);
-    String profileImage = s3Uploader.upload(image);
+    String profileImage = s3ImageService.upload(image);
     return ResponseEntity.ok(profileImage);
   }
 
   @GetMapping("/s3/delete")
   public ResponseEntity<?> s3delete(@RequestParam String addr){
       log.info("image address : {}", addr);
-      s3Uploader.deleteImageFromS3(addr);
+      s3ImageService.deleteImageFromS3(addr);
       return ResponseEntity.ok(null);
   }
 
