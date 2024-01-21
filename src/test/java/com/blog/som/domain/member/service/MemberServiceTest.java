@@ -9,6 +9,8 @@ import static org.mockito.Mockito.when;
 
 import com.blog.som.EntityCreator;
 import com.blog.som.domain.member.dto.EmailAuthResult;
+import com.blog.som.domain.member.dto.MemberDto;
+import com.blog.som.domain.member.dto.MemberEditRequest;
 import com.blog.som.domain.member.dto.MemberRegister;
 import com.blog.som.domain.member.dto.MemberRegister.Request;
 import com.blog.som.domain.member.dto.MemberRegister.Response;
@@ -152,6 +154,62 @@ class MemberServiceTest {
       assertThat(emailAuthResult.getMemberDto().getMemberId()).isEqualTo(1L);
     }
 
+  }
+
+  @Nested
+  @DisplayName("회원 정보 수정")
+  class EditMemberInfo{
+    @Test
+    @DisplayName("성공")
+    void editMemberInfo(){
+      MemberEntity member = EntityCreator.createMember(1L);
+
+      MemberEditRequest request = MemberEditRequest.builder()
+          .nickname("edit-nickname")
+          .birthDate(LocalDate.of(2020, 01, 01))
+          .phoneNumber("01011112222")
+          .build();
+
+      MemberEntity updatedMember = EntityCreator.createMember(1L);
+      updatedMember.setNickname(request.getNickname());
+      updatedMember.setBirthDate(request.getBirthDate());
+      updatedMember.setPhoneNumber(request.getPhoneNumber());
+
+      //given
+      when(memberRepository.findById(1L))
+          .thenReturn(Optional.of(member));
+      when(memberRepository.save(member))
+          .thenReturn(updatedMember);
+
+      //when
+      MemberDto result = memberService.editMemberInfo(1L, request);
+
+      //then
+      assertThat(result.getNickname()).isEqualTo(request.getNickname());
+      assertThat(result.getBirthDate()).isEqualTo(request.getBirthDate());
+      assertThat(result.getPhoneNumber()).isEqualTo(request.getPhoneNumber());
+    }
+
+    @Test
+    @DisplayName("실패 : MEMBER_NOT_FOUND")
+    void editMemberInfo_MEMBER_NOT_FOUND(){
+      MemberEditRequest request = MemberEditRequest.builder()
+          .nickname("edit-nickname")
+          .birthDate(LocalDate.of(2020, 01, 01))
+          .phoneNumber("01011112222")
+          .build();
+
+      //given
+      when(memberRepository.findById(1L))
+          .thenReturn(Optional.empty());
+
+      //when
+      //then
+      MemberException memberException =
+          assertThrows(MemberException.class, () -> memberService.editMemberInfo(1L, request));
+      assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
+
+    }
   }
 
 }
