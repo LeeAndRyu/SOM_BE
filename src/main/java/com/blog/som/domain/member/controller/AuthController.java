@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -46,7 +47,7 @@ public class AuthController {
   }
 
   @ApiOperation(value = "토큰 재발급", notes = "[RefreshToken] header에 Bearer {refreshToken}을 받으면 AT와 RT를 모두 재발급")
-  @PostMapping("/reissue")
+  @GetMapping("/reissue")
   public ResponseEntity<MemberLogin.Response> reissueToken(
       @AuthenticationPrincipal LoginMember loginMember,
       @RequestHeader("RefreshToken") String refreshToken
