@@ -2,6 +2,7 @@ package com.blog.som.global.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.util.IOUtils;
@@ -10,6 +11,10 @@ import com.blog.som.global.exception.custom.S3Exception;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -87,5 +92,24 @@ public class S3Uploader {
     }
 
     return amazonS3.getUrl(bucketName, s3FileName).toString();
+  }
+
+  public void deleteImageFromS3(String imageAddress){
+    String key = getKeyFromImageAddress(imageAddress);
+    try{
+      amazonS3.deleteObject(new DeleteObjectRequest(bucketName, key));
+    }catch (Exception e){
+      throw new S3Exception(ErrorCode.IO_EXCEPTION_ON_IMAGE_DELETE);
+    }
+  }
+
+  private String getKeyFromImageAddress(String imageAddress){
+    try{
+      URL url = new URL(imageAddress);
+      String decodingKey = URLDecoder.decode(url.getPath(), "UTF-8");
+      return decodingKey.substring(1); // 맨 앞의 '/' 제거
+    }catch (MalformedURLException | UnsupportedEncodingException e){
+      throw new S3Exception(ErrorCode.IO_EXCEPTION_ON_IMAGE_DELETE);
+    }
   }
 }
