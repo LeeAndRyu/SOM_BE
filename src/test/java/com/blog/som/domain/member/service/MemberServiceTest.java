@@ -24,6 +24,9 @@ import com.blog.som.global.constant.ResponseConstant;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.MemberException;
 import com.blog.som.global.redis.email.EmailAuthRepository;
+import com.blog.som.global.s3.S3ImageService;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +37,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
@@ -45,7 +50,8 @@ class MemberServiceTest {
   private EmailAuthRepository emailAuthRepository;
   @Mock
   private MailSender mailSender;
-
+  @Mock
+  private S3ImageService s3ImageService;
 
   @InjectMocks
   private MemberServiceImpl memberService;
@@ -326,7 +332,157 @@ class MemberServiceTest {
       assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.PASSWORD_CHECK_INCORRECT);
     }
 
-
   }
 
+  @Nested
+  @DisplayName("프로필 사진 업로드")
+  class UpdateProfileImage{
+
+    private MultipartFile createMockMultipartFile(int fileNumber){
+      String filename = "test-file" + fileNumber + ".jpg";
+      String content = "test-data" + fileNumber;
+
+      return new MockMultipartFile("file", filename, "image/jpg", content.getBytes());
+    }
+
+    private MultipartFile createEmptyMockMultipartFile(int fileNumber) throws IOException {
+      String filename = "test-file" + fileNumber + ".jpg";
+      String content = "test-data" + fileNumber;
+
+      return new MockMultipartFile("file", filename, "image/jpg", new ByteArrayInputStream(new byte[0]));
+    }
+
+    @Test
+    @DisplayName("성공 : 기존 profile image 존재")
+    void updateProfileImage(){
+      MultipartFile multipartFile = createMockMultipartFile(1);
+      MemberEntity member = EntityCreator.createMember(1L);
+      String beforeImage = member.getProfileImage();
+      String saveResult = "aws-" + multipartFile.getOriginalFilename();
+
+      //given
+      when(memberRepository.findById(1L))
+          .thenReturn(Optional.of(member));
+      when(s3ImageService.upload(multipartFile))
+          .thenReturn(saveResult);
+
+      //when
+      MemberDto result = memberService.updateProfileImage(1L, multipartFile);
+
+      //then
+      verify(s3ImageService, times(1)).deleteImageFromS3(beforeImage);
+      assertThat(result.getProfileImage()).isEqualTo(saveResult);
+    }
+
+    @Test
+    @DisplayName("성공 : 기존 profile image = null")
+    void updateProfileImage_profile_image_is_null(){
+      MultipartFile multipartFile = createMockMultipartFile(1);
+      MemberEntity member = EntityCreator.createMember(1L);
+      String beforeImage = member.getProfileImage();
+      member.setProfileImage(null);
+      String saveResult = "aws-" + multipartFile.getOriginalFilename();
+
+      //given
+      when(memberRepository.findById(1L))
+          .thenReturn(Optional.of(member));
+      when(s3ImageService.upload(multipartFile))
+          .thenReturn(saveResult);
+
+      //when
+      MemberDto result = memberService.updateProfileImage(1L, multipartFile);
+
+      //then
+      verify(s3ImageService, never()).deleteImageFromS3(beforeImage);
+      assertThat(result.getProfileImage()).isEqualTo(saveResult);
+    }
+
+
+    @Test
+    @DisplayName("성공 : input = 빈 파일")
+    void updateProfileImage_empty_file() throws IOException {
+      MultipartFile multipartFile = createEmptyMockMultipartFile(1);
+      MemberEntity member = EntityCreator.createMember(1L);
+
+      //given
+      when(memberRepository.findById(1L))
+          .thenReturn(Optional.of(member));
+
+      //when
+      MemberDto result = memberService.updateProfileImage(1L, multipartFile);
+
+      //then
+      assertThat(result.getProfileImage()).isEqualTo(member.getProfileImage());
+    }
+
+    @Test
+    @DisplayName("실패 : MEMBER_NOT_FOUND")
+    void updateProfileImage_MEMBER_NOT_FOUND(){
+      MultipartFile multipartFile = createMockMultipartFile(1);
+      MemberEntity member = EntityCreator.createMember(1L);
+
+      //given
+      when(memberRepository.findById(1L))
+          .thenReturn(Optional.empty());
+
+      //when
+      //then
+      MemberException memberException =
+          assertThrows(MemberException.class,
+          () -> memberService.updateProfileImage(member.getMemberId(), multipartFile));
+      assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
+    }
+  }
+  @Nested
+  @DisplayName("프로필 이미지 삭제")
+  class DeleteProfileImage{
+
+    @Test
+    @DisplayName("성공 : 이미지 삭제")
+    void deleteProfileImage(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      //given
+      when(memberRepository.findById(1L))
+          .thenReturn(Optional.of(member));
+      //when
+      MemberDto memberDto = memberService.deleteProfileImage(1L);
+
+      //then
+      assertThat(memberDto.getProfileImage()).isNull();
+    }
+
+    @Test
+    @DisplayName("성공 : profile-image = null")
+    void deleteProfileImage_profile_image_is_null(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      member.setProfileImage(null);
+      //given
+      when(memberRepository.findById(1L))
+          .thenReturn(Optional.of(member));
+      //when
+      MemberDto memberDto = memberService.deleteProfileImage(1L);
+
+      //then
+      verify(s3ImageService, never()).deleteImageFromS3(member.getProfileImage());
+      verify(memberRepository, never()).save(member);
+    }
+
+    @Test
+    @DisplayName("실패 : MEMBER_NOT_FOUND")
+    void deleteProfileImage_MEMBER_NOT_FOUND(){
+      MemberEntity member = EntityCreator.createMember(1L);
+
+      //given
+      when(memberRepository.findById(1L))
+          .thenReturn(Optional.empty());
+
+      //when
+      //then
+      MemberException memberException =
+          assertThrows(MemberException.class,
+              () -> memberService.deleteProfileImage(member.getMemberId()));
+      assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
+    }
+
+  }
 }

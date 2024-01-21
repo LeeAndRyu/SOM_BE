@@ -4,6 +4,7 @@ import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.ErrorResponse;
 import com.blog.som.global.exception.custom.MemberException;
 import com.blog.som.global.exception.custom.CustomSecurityException;
+import com.blog.som.global.exception.custom.S3Exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,6 +23,12 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(MemberException.class)
   public ResponseEntity<ErrorResponse> handleMemberException(MemberException e) {
+    ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode(), e.getErrorMessage());
+    return new ResponseEntity<>(errorResponse, e.getErrorCode().getStatus());
+  }
+
+  @ExceptionHandler(S3Exception.class)
+  public ResponseEntity<ErrorResponse> handleS3Exception(S3Exception e) {
     ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode(), e.getErrorMessage());
     return new ResponseEntity<>(errorResponse, e.getErrorCode().getStatus());
   }

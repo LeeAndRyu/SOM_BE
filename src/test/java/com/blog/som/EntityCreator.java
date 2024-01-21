@@ -15,6 +15,7 @@ public class EntityCreator {
         .nickname("nickname" + id)
         .phoneNumber("010" + id + "00" + "5678")
         .birthDate(LocalDate.now())
+        .profileImage("test-profile-image" + id + ".jpg")
         .registeredAt(LocalDateTime.now())
         .role(Role.USER)
         .build();

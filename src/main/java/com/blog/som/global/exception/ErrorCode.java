@@ -17,6 +17,13 @@ public enum ErrorCode {
   MEMBER_PASSWORD_INCORRECT(HttpStatus.BAD_REQUEST, "비밀번호가 틀립니다."),
   PASSWORD_CHECK_INCORRECT(HttpStatus.BAD_REQUEST, "비밀번호 확인이 일치하지 않습니다."),
 
+  //S3 image upload
+  EMPTY_FILE_EXCEPTION(HttpStatus.BAD_REQUEST, "빈 파일 입니다."),
+  NO_FILE_EXTENTION(HttpStatus.BAD_REQUEST, "파일 확장자가 존재하지 않습니다."),
+  INVALID_FILE_EXTENTION(HttpStatus.BAD_REQUEST, "유효하지 않은 파일 확장자 입니다."),
+  PUT_OBJECT_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "Amazon S3에 파일을 업로드 하는데 실패했습니다."),
+  IO_EXCEPTION_ON_IMAGE_UPLOAD(HttpStatus.INTERNAL_SERVER_ERROR, "image upload 도중 image.getInputStream() 또는 IOUtils.toByteArray(is)에서 에러가 발생했습니다."),
+  IO_EXCEPTION_ON_IMAGE_DELETE(HttpStatus.INTERNAL_SERVER_ERROR, "image 삭제 도중 IOException이 발생했습니다."),
 
 
   //Security
