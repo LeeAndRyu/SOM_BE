@@ -170,4 +170,65 @@ class AuthServiceTest {
     assertThat(response.isLogoutResult()).isTrue();
   }
 
+  @Nested
+  @DisplayName("토큰 재발급 (reissue)")
+  class ReissueTokens{
+    @Test
+    @DisplayName("성공")
+    void reissueTokens(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      String bearerRefreshToken = "Bearer test.refreshToken";
+      String refreshToken = "test.refreshToken";
+      String newAccessToken = "test.newAccessToken";
+      String newRefreshToken = "test.newRefreshToken";
+
+      TokenResponse tokenResponse = new TokenResponse(newAccessToken, newRefreshToken);
+
+      //given
+      when(jwtTokenService.resolveTokenFromRequest(bearerRefreshToken))
+          .thenReturn(refreshToken);
+      when(memberRepository.findByEmail(member.getEmail()))
+          .thenReturn(Optional.of(member));
+      when(jwtTokenService.generateTokenResponse(member.getEmail(), member.getRole()))
+          .thenReturn(tokenResponse);
+
+      //when
+      Response response = authService.reissueTokens(member.getEmail(), member.getRole(), bearerRefreshToken);
+
+      //then
+      verify(tokenRepository, times(1)).checkRefreshToken(member.getEmail(), refreshToken);
+      verify(tokenRepository, times(1)).saveRefreshToken(member.getEmail(), newRefreshToken);
+      assertThat(response.getMember().getMemberId()).isEqualTo(member.getMemberId());
+      assertThat(response.getMember().getEmail()).isEqualTo(member.getEmail());
+      assertThat(response.getTokenResponse().getAccessToken()).isEqualTo(newAccessToken);
+      assertThat(response.getTokenResponse().getRefreshToken()).isEqualTo(newRefreshToken);
+    }
+
+    @Test
+    @DisplayName("실패 : MEMBER_NOT_FOUND")
+    void reissueTokens_MEMBER_NOT_FOUND(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      String bearerRefreshToken = "Bearer test.refreshToken";
+      String refreshToken = "test.refreshToken";
+      String newAccessToken = "test.newAccessToken";
+      String newRefreshToken = "test.newRefreshToken";
+
+      TokenResponse tokenResponse = new TokenResponse(newAccessToken, newRefreshToken);
+
+      //given
+      when(jwtTokenService.resolveTokenFromRequest(bearerRefreshToken))
+          .thenReturn(refreshToken);
+      when(memberRepository.findByEmail(member.getEmail()))
+          .thenReturn(Optional.empty());
+
+      //when
+      //then
+      MemberException memberException =
+          assertThrows(MemberException.class,
+          () -> authService.reissueTokens(member.getEmail(), member.getRole(), bearerRefreshToken));
+      assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
+    }
+
+  }
+
 }
