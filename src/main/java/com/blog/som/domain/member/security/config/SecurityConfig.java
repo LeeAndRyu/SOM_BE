@@ -39,8 +39,9 @@ public class SecurityConfig {
       "/swagger-ui.html",
       "/swagger-ui/**",
       "/webjars/**",
-      "/member/register",
-      "/auth/email-auth"
+      "/register",
+      "/auth/email-auth",
+      "/test/**"
   };
 
   //멤버에게만 접근 허용

@@ -10,16 +10,18 @@ public enum ErrorCode {
   //Member 관련
   MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."),
   MEMBER_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 회원가입 된 이메일입니다."),
-  EMAIL_AUTH_TIME_OUT(HttpStatus.NOT_FOUND, "이메일 인증 키가 만료되었거나, 잘못된 요청 입니다."),
-  EMAIL_AUTH_WRONG_KEY(HttpStatus.NOT_FOUND, "이메일 인증 키에 문제가 있습니다."),
-  EMAIL_AUTH_ALREADY_COMPLETE(HttpStatus.NOT_FOUND, "이미 이메일 인증 완료 된 회원입니다."),
-  EMAIL_AUTH_REQUIRED(HttpStatus.NOT_FOUND, "이메일 인증이 완료되지 않았습니다. 다시 이메일이 발송되었습니다."),
+  EMAIL_AUTH_TIME_OUT(HttpStatus.BAD_REQUEST, "이메일 인증 키가 만료되었거나, 잘못된 요청 입니다."),
+  EMAIL_AUTH_WRONG_KEY(HttpStatus.BAD_REQUEST, "이메일 인증 키에 문제가 있습니다."),
+  EMAIL_AUTH_ALREADY_COMPLETE(HttpStatus.BAD_REQUEST, "이미 이메일 인증 완료 된 회원입니다."),
+  EMAIL_AUTH_REQUIRED(HttpStatus.UNAUTHORIZED, "이메일 인증이 완료되지 않았습니다. 다시 이메일이 발송되었습니다."),
+  MEMBER_PASSWORD_INCORRECT(HttpStatus.BAD_REQUEST, "비밀번호가 틀립니다."),
+  PASSWORD_CHECK_INCORRECT(HttpStatus.BAD_REQUEST, "비밀번호 확인이 일치하지 않습니다."),
 
 
 
   //Security
   LOGIN_FAILED_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "계정이 존재하지 않습니다."),
-  LOGIN_FAILED_PASSWORD_INCORRECT(HttpStatus.UNAUTHORIZED, "비밀번호가 틀립니다."),
+  LOGIN_FAILED_PASSWORD_INCORRECT(HttpStatus.UNAUTHORIZED, "로그인에 실패하였씁니다. 비밀번호가 틀립니다."),
   ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
   LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "로그인이 되지 않았습니다."),
 

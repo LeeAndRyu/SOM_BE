@@ -1,5 +1,6 @@
 package com.blog.som.domain.member.entity;
 
+import com.blog.som.domain.member.dto.MemberEditRequest;
 import com.blog.som.domain.member.type.Role;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -64,6 +65,12 @@ public class MemberEntity {
   @Column(name = "role")
   private Role role;
 
+  public void editMember(MemberEditRequest request){
+    this.nickname = request.getNickname();
+    this.birthDate = request.getBirthDate();
+    this.phoneNumber = request.getPhoneNumber();
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -79,5 +86,14 @@ public class MemberEntity {
   @Override
   public int hashCode() {
     return Objects.hash(memberId);
+  }
+
+  @Override
+  public String toString() {
+    return "MemberEntity{" +
+        "memberId=" + memberId +
+        ", email='" + email + '\'' +
+        ", nickname='" + nickname + '\'' +
+        '}';
   }
 }

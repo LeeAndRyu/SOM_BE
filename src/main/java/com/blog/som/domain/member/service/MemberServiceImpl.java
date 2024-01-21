@@ -1,6 +1,9 @@
 package com.blog.som.domain.member.service;
 
 import com.blog.som.domain.member.dto.EmailAuthResult;
+import com.blog.som.domain.member.dto.MemberDto;
+import com.blog.som.domain.member.dto.MemberEditRequest;
+import com.blog.som.domain.member.dto.MemberPasswordEdit;
 import com.blog.som.domain.member.dto.MemberRegister.Request;
 import com.blog.som.domain.member.dto.MemberRegister.Response;
 import com.blog.som.domain.member.entity.MemberEntity;
@@ -9,6 +12,7 @@ import com.blog.som.domain.member.type.Role;
 import com.blog.som.global.components.mail.MailSender;
 import com.blog.som.global.components.mail.SendMailDto;
 import com.blog.som.global.components.password.PasswordUtils;
+import com.blog.som.global.constant.ResponseConstant;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.MemberException;
 import com.blog.som.global.redis.email.EmailAuthRepository;
@@ -66,6 +70,32 @@ public class MemberServiceImpl implements MemberService {
     return new EmailAuthResult(true, member);
   }
 
+  @Override
+  public MemberDto editMemberInfo(Long memberId, MemberEditRequest request) {
+    MemberEntity member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
+    member.editMember(request);
 
+    MemberEntity saved = memberRepository.save(member);
+
+    return MemberDto.fromEntity(saved);
+  }
+
+  @Override
+  public MemberPasswordEdit.Response editMemberPassword(Long memberId, MemberPasswordEdit.Request request) {
+    MemberEntity member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
+    if(!PasswordUtils.equalsPlainTextAndHashed(request.getCurrentPassword(), member.getPassword())){
+      throw new MemberException(ErrorCode.MEMBER_PASSWORD_INCORRECT);
+    }
+    if(!request.getNewPassword().equals(request.getNewPasswordCheck())){
+      throw new MemberException(ErrorCode.PASSWORD_CHECK_INCORRECT);
+    }
+
+    member.setPassword(PasswordUtils.encPassword(request.getNewPassword()));
+    memberRepository.save(member);
+
+    return new MemberPasswordEdit.Response(member.getMemberId(), ResponseConstant.PASSWORD_EDIT_COMPLETE);
+  }
 
 }
