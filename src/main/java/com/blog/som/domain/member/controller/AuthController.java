@@ -4,10 +4,12 @@ import com.blog.som.domain.member.dto.MemberLogin;
 import com.blog.som.domain.member.dto.MemberLogin.Response;
 import com.blog.som.domain.member.dto.MemberLogoutResponse;
 import com.blog.som.domain.member.security.service.AuthService;
+import com.blog.som.domain.member.security.service.CookieService;
 import com.blog.som.domain.member.security.token.JwtTokenService;
 import com.blog.som.domain.member.security.userdetails.LoginMember;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,12 +26,16 @@ public class AuthController {
 
   private final AuthService authService;
   private final JwtTokenService jwtTokenService;
+  private final CookieService cookieService;
 
   @ApiOperation(value = "로그인, JWT token 발행", notes = "accessToken, refreshToken, member 정보 반환")
   @PostMapping("/login")
-  public ResponseEntity<MemberLogin.Response> login(@RequestBody MemberLogin.Request request) {
+  public ResponseEntity<MemberLogin.Response> login(@RequestBody MemberLogin.Request request,
+      HttpServletResponse httpServletResponse) {
 
     Response response = authService.loginMember(request);
+
+    cookieService.setCookieForLogin(httpServletResponse, response.getTokenResponse().getAccessToken());
 
     return ResponseEntity.ok(response);
   }
@@ -38,11 +44,13 @@ public class AuthController {
   @PostMapping("/logout")
   public ResponseEntity<MemberLogoutResponse> logout(
       @AuthenticationPrincipal LoginMember loginMember,
-      @RequestHeader("Authorization") String bearerToken) {
+      @RequestHeader("Authorization") String bearerToken,
+      HttpServletResponse httpServletResponse) {
 
     MemberLogoutResponse memberLogoutResponse =
         authService.logoutMember(loginMember.getEmail(), jwtTokenService.resolveTokenFromRequest(bearerToken));
 
+    cookieService.expireCookieForLogout(httpServletResponse);
     return ResponseEntity.ok(memberLogoutResponse);
   }
 
@@ -50,9 +58,12 @@ public class AuthController {
   @GetMapping("/reissue")
   public ResponseEntity<MemberLogin.Response> reissueToken(
       @AuthenticationPrincipal LoginMember loginMember,
-      @RequestHeader("RefreshToken") String refreshToken
+      @RequestHeader("RefreshToken") String refreshToken,
+      HttpServletResponse httpServletResponse
       ){
     Response response = authService.reissueTokens(loginMember.getEmail(), loginMember.getRole(), refreshToken);
+    cookieService.setCookieForLogin(httpServletResponse, response.getTokenResponse().getAccessToken());
+
     return ResponseEntity.ok(response);
   }
 
