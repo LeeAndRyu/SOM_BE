@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
-@Api(tags = "이미지 업로드, 반환 관련")
+@Api(tags = "[API] 이미지 업로드, 반환 관련")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api")
