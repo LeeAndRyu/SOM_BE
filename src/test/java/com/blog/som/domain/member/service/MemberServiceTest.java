@@ -11,6 +11,7 @@ import com.blog.som.EntityCreator;
 import com.blog.som.domain.member.dto.EmailAuthResult;
 import com.blog.som.domain.member.dto.MemberDto;
 import com.blog.som.domain.member.dto.MemberEditRequest;
+import com.blog.som.domain.member.dto.MemberPasswordEdit;
 import com.blog.som.domain.member.dto.MemberRegister;
 import com.blog.som.domain.member.dto.MemberRegister.Request;
 import com.blog.som.domain.member.dto.MemberRegister.Response;
@@ -24,7 +25,6 @@ import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.MemberException;
 import com.blog.som.global.redis.email.EmailAuthRepository;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
@@ -158,10 +158,11 @@ class MemberServiceTest {
 
   @Nested
   @DisplayName("회원 정보 수정")
-  class EditMemberInfo{
+  class EditMemberInfo {
+
     @Test
     @DisplayName("성공")
-    void editMemberInfo(){
+    void editMemberInfo() {
       MemberEntity member = EntityCreator.createMember(1L);
 
       MemberEditRequest request = MemberEditRequest.builder()
@@ -192,7 +193,7 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("실패 : MEMBER_NOT_FOUND")
-    void editMemberInfo_MEMBER_NOT_FOUND(){
+    void editMemberInfo_MEMBER_NOT_FOUND() {
       MemberEditRequest request = MemberEditRequest.builder()
           .nickname("edit-nickname")
           .birthDate(LocalDate.of(2020, 01, 01))
@@ -210,6 +211,122 @@ class MemberServiceTest {
       assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
 
     }
+  }
+
+  @Nested
+  @DisplayName("비밀번호 수정")
+  class EditMemberPassword {
+
+    @Test
+    @DisplayName("성공")
+    void editMemberPassword() {
+      MemberEntity member = EntityCreator.createMember(1L);
+      String plainPassword = "hello";
+      String encPassword = PasswordUtils.encPassword(plainPassword);
+      member.setPassword(encPassword);
+
+      String newPassword = "hi123123";
+
+      MemberPasswordEdit.Request request = MemberPasswordEdit.Request.builder()
+          .currentPassword(plainPassword)
+          .newPassword(newPassword)
+          .newPasswordCheck(newPassword)
+          .build();
+
+      //given
+      when(memberRepository.findById(1L))
+          .thenReturn(Optional.of(member));
+
+      //when
+      MemberPasswordEdit.Response response = memberService.editMemberPassword(1L, request);
+
+      //then
+      assertThat(response.getMemberId()).isEqualTo(1L);
+      assertThat(response.getMessage()).isEqualTo(ResponseConstant.PASSWORD_EDIT_COMPLETE);
+    }
+
+    @Test
+    @DisplayName("실패 : MEMBER_NOT_FOUND")
+    void editMemberPassword_MEMBER_NOT_FOUND() {
+      MemberEntity member = EntityCreator.createMember(1L);
+      String plainPassword = "hello";
+      String encPassword = PasswordUtils.encPassword(plainPassword);
+      member.setPassword(encPassword);
+
+      String newPassword = "hi123123";
+
+      MemberPasswordEdit.Request request = MemberPasswordEdit.Request.builder()
+          .currentPassword(plainPassword)
+          .newPassword(newPassword)
+          .newPasswordCheck(newPassword)
+          .build();
+
+      //given
+      when(memberRepository.findById(1L))
+          .thenReturn(Optional.empty());
+
+      //when
+      //then
+      MemberException memberException = assertThrows(MemberException.class,
+          () -> memberService.editMemberPassword(1L, request));
+      assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("실패 : MEMBER_PASSWORD_INCORRECT")
+    void editMemberPassword_MEMBER_PASSWORD_INCORRECT() {
+      MemberEntity member = EntityCreator.createMember(1L);
+      String plainPassword = "hello";
+      String encPassword = PasswordUtils.encPassword(plainPassword);
+      member.setPassword(encPassword);
+
+      String newPassword = "hi123123";
+
+      MemberPasswordEdit.Request request = MemberPasswordEdit.Request.builder()
+          .currentPassword(plainPassword + "!!!")
+          .newPassword(newPassword)
+          .newPasswordCheck(newPassword)
+          .build();
+
+      //given
+      when(memberRepository.findById(1L))
+          .thenReturn(Optional.of(member));
+
+      //when
+      //then
+      MemberException memberException = assertThrows(MemberException.class,
+          () -> memberService.editMemberPassword(1L, request));
+      assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.MEMBER_PASSWORD_INCORRECT);
+    }
+
+    @Test
+    @DisplayName("실패 : PASSWORD_CHECK_INCORRECT")
+    void editMemberPassword_PASSWORD_CHECK_INCORRECT() {
+      MemberEntity member = EntityCreator.createMember(1L);
+      String plainPassword = "hello";
+      String encPassword = PasswordUtils.encPassword(plainPassword);
+      member.setPassword(encPassword);
+
+      String newPassword = "hi123123";
+
+      MemberPasswordEdit.Request request = MemberPasswordEdit.Request.builder()
+          .currentPassword(plainPassword )
+          .newPassword(newPassword)
+          .newPasswordCheck(newPassword+"!!!")
+          .build();
+
+      //given
+      when(memberRepository.findById(1L))
+          .thenReturn(Optional.of(member));
+
+      //when
+      //then
+      MemberException memberException = assertThrows(MemberException.class,
+          () -> memberService.editMemberPassword(1L, request));
+      assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.PASSWORD_CHECK_INCORRECT);
+    }
+
+
   }
 
 }
