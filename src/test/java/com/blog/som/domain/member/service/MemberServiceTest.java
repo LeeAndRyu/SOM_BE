@@ -2,23 +2,23 @@ package com.blog.som.domain.member.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.amazonaws.services.s3.model.Owner;
 import com.blog.som.EntityCreator;
-import com.blog.som.domain.member.dto.EmailAuthResult;
 import com.blog.som.domain.member.dto.MemberDto;
 import com.blog.som.domain.member.dto.MemberEditRequest;
 import com.blog.som.domain.member.dto.MemberPasswordEdit;
-import com.blog.som.domain.member.dto.MemberRegister;
+import com.blog.som.domain.member.dto.MemberRegister.EmailDuplicateResponse;
 import com.blog.som.domain.member.dto.MemberRegister.Request;
-import com.blog.som.domain.member.dto.MemberRegister.Response;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
-import com.blog.som.domain.member.type.Role;
 import com.blog.som.global.components.mail.MailSender;
+import com.blog.som.global.components.mail.SendMailDto;
 import com.blog.som.global.components.password.PasswordUtils;
 import com.blog.som.global.constant.ResponseConstant;
 import com.blog.som.global.exception.ErrorCode;
@@ -58,109 +58,106 @@ class MemberServiceTest {
 
 
   @Nested
-  @DisplayName("회원 가입")
-  class RegisterMember {
-
-    private MemberRegister.Request createRequest(MemberEntity member) {
-      return MemberRegister.Request.builder()
-          .email(member.getEmail())
-          .password(member.getPassword())
-          .nickname(member.getNickname())
-          .phoneNumber(member.getPhoneNumber())
-          .birthDate(member.getBirthDate())
-          .build();
-    }
+  @DisplayName("회원 가입 시작 - 이메일 중복체크")
+  class EmailDuplicateCheckAndStartRegister {
 
     @Test
     @DisplayName("성공")
-    void registerMember() {
+    void emailDuplicateCheckAndStartRegister() {
+      String email = "test@test.com";
       //given
-      MemberEntity member = EntityCreator.createMember(1L);
-      Request request = this.createRequest(member);
-
-      when(memberRepository.existsByEmail(request.getEmail()))
+      when(memberRepository.existsByEmail(email))
           .thenReturn(false);
-      when(memberRepository.save(Request.toEntity(request, PasswordUtils.encPassword(request.getPassword()))))
-          .thenReturn(member);
 
       //when
-      Response response = memberService.registerMember(request);
+      EmailDuplicateResponse response = memberService.emailDuplicateCheckAndStartRegister(email);
 
       //then
-      assertThat(response.getMemberId()).isEqualTo(member.getMemberId());
-      assertThat(response.getEmail()).isEqualTo(member.getEmail());
-      assertThat(response.getNickname()).isEqualTo(member.getNickname());
-      assertThat(response.getMessage()).isEqualTo(ResponseConstant.MEMBER_REGISTER_COMPLETE);
+      verify(mailSender, times(1)).sendMailForRegister(any(SendMailDto.class));
+      assertThat(response.isDuplicateYn()).isFalse();
+      assertThat(response.getEmail()).isEqualTo(email);
     }
 
     @Test
-    @DisplayName("MEMBER_ALREADY_EXISTS")
-    void registerMember_MEMBER_ALREADY_EXISTS() {
+    @DisplayName("실패 : 이메일 중복")
+    void emailDuplicateCheckAndStartRegister_email_duplicate() {
+      String email = "test@test.com";
       //given
-      MemberEntity member = EntityCreator.createMember(1L);
-      Request request = this.createRequest(member);
-
-      when(memberRepository.existsByEmail(request.getEmail()))
+      when(memberRepository.existsByEmail(email))
           .thenReturn(true);
+
       //when
+      EmailDuplicateResponse response = memberService.emailDuplicateCheckAndStartRegister(email);
+
       //then
-      MemberException memberException =
-          assertThrows(MemberException.class, () -> memberService.registerMember(request));
-      assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.MEMBER_ALREADY_EXISTS);
+      verify(mailSender, never()).sendMailForRegister(any(SendMailDto.class));
+
+      assertThat(response.isDuplicateYn()).isTrue();
+      assertThat(response.getEmail()).isEqualTo(email);
     }
   }
 
   @Nested
-  @DisplayName("이메일 인증")
-  class EmailAuth {
-
-    private static final String testUUID = "test-random-uuid-123123";
+  @DisplayName("회원가입")
+  class RegisterMember {
 
     @Test
-    @DisplayName("성공 - 이메일 인증 완료")
-    void emailAuth() {
+    @DisplayName("성공")
+    void registerMember() {
       MemberEntity member = EntityCreator.createMember(1L);
-      member.setRole(Role.UNAUTH);
+      String code = "test.uuid";
+      String email = member.getEmail();
+      Request request = Request.builder()
+          .password(member.getPassword())
+          .nickname(member.getNickname())
+          .accountName(member.getAccountName())
+          .introduction(member.getIntroduction())
+          .build();
 
       //given
-      when(emailAuthRepository.getEmailByUuid(testUUID))
-          .thenReturn(member.getEmail());
-      when(memberRepository.findByEmail(member.getEmail()))
-          .thenReturn(Optional.of(member));
-
+      when(emailAuthRepository.getEmailByUuid(code))
+          .thenReturn(email);
+      when(memberRepository.existsByEmail(email))
+          .thenReturn(false);
+      when(memberRepository.save(Request.toEntity(email, request)))
+          .thenReturn(member);
       //when
-      EmailAuthResult emailAuthResult = memberService.emailAuth(testUUID);
+      MemberDto result = memberService.registerMember(request, code);
 
       //then
-      verify(memberRepository, times(1)).save(member);
-      assertThat(emailAuthResult.isResult()).isTrue();
-      assertThat(emailAuthResult.getMessage()).isEqualTo(ResponseConstant.EMAIL_AUTH_COMPLETE);
-      assertThat(emailAuthResult.getMemberDto().getMemberId()).isEqualTo(1L);
+      assertThat(result.getEmail()).isEqualTo(email);
+      assertThat(result.getBlogName()).isEqualTo(request.getAccountName() + ".som");
     }
 
     @Test
-    @DisplayName("실패 - 이미 인증 완료된 유저")
-    void emailAuth_EMAIL_AUTH_ALREADY_COMPLETED() {
+    @DisplayName("실패 : EMAIL_AUTH_ALREADY_COMPLETE")
+    void registerMember_EMAIL_AUTH_ALREADY_COMPLETE() {
       MemberEntity member = EntityCreator.createMember(1L);
-      member.setRole(Role.USER);
+      String code = "test.uuid";
+      String email = member.getEmail();
+      Request request = Request.builder()
+          .password(member.getPassword())
+          .nickname(member.getNickname())
+          .accountName(member.getAccountName())
+          .introduction(member.getIntroduction())
+          .build();
 
       //given
-      when(emailAuthRepository.getEmailByUuid(testUUID))
-          .thenReturn(member.getEmail());
-      when(memberRepository.findByEmail(member.getEmail()))
-          .thenReturn(Optional.of(member));
+      when(emailAuthRepository.getEmailByUuid(code))
+          .thenReturn(email);
+      when(memberRepository.existsByEmail(email))
+          .thenReturn(true);
+
 
       //when
-      EmailAuthResult emailAuthResult = memberService.emailAuth(testUUID);
-
       //then
-      verify(memberRepository, never()).save(member);
-      assertThat(emailAuthResult.isResult()).isFalse();
-      assertThat(emailAuthResult.getMessage()).isEqualTo(ResponseConstant.EMAIL_AUTH_ALREADY_COMPLETED);
-      assertThat(emailAuthResult.getMemberDto().getMemberId()).isEqualTo(1L);
+      MemberException memberException =
+          assertThrows(MemberException.class, () -> memberService.registerMember(request, code));
+      assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.EMAIL_AUTH_ALREADY_COMPLETE);
     }
 
   }
+
 
   @Nested
   @DisplayName("회원 정보 수정")
@@ -179,8 +176,6 @@ class MemberServiceTest {
 
       MemberEntity updatedMember = EntityCreator.createMember(1L);
       updatedMember.setNickname(request.getNickname());
-      updatedMember.setBirthDate(request.getBirthDate());
-      updatedMember.setPhoneNumber(request.getPhoneNumber());
 
       //given
       when(memberRepository.findById(1L))
@@ -193,8 +188,7 @@ class MemberServiceTest {
 
       //then
       assertThat(result.getNickname()).isEqualTo(request.getNickname());
-      assertThat(result.getBirthDate()).isEqualTo(request.getBirthDate());
-      assertThat(result.getPhoneNumber()).isEqualTo(request.getPhoneNumber());
+
     }
 
     @Test
@@ -316,9 +310,9 @@ class MemberServiceTest {
       String newPassword = "hi123123";
 
       MemberPasswordEdit.Request request = MemberPasswordEdit.Request.builder()
-          .currentPassword(plainPassword )
+          .currentPassword(plainPassword)
           .newPassword(newPassword)
-          .newPasswordCheck(newPassword+"!!!")
+          .newPasswordCheck(newPassword + "!!!")
           .build();
 
       //given
@@ -336,9 +330,9 @@ class MemberServiceTest {
 
   @Nested
   @DisplayName("프로필 사진 업로드")
-  class UpdateProfileImage{
+  class UpdateProfileImage {
 
-    private MultipartFile createMockMultipartFile(int fileNumber){
+    private MultipartFile createMockMultipartFile(int fileNumber) {
       String filename = "test-file" + fileNumber + ".jpg";
       String content = "test-data" + fileNumber;
 
@@ -354,7 +348,7 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("성공 : 기존 profile image 존재")
-    void updateProfileImage(){
+    void updateProfileImage() {
       MultipartFile multipartFile = createMockMultipartFile(1);
       MemberEntity member = EntityCreator.createMember(1L);
       String beforeImage = member.getProfileImage();
@@ -376,7 +370,7 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("성공 : 기존 profile image = null")
-    void updateProfileImage_profile_image_is_null(){
+    void updateProfileImage_profile_image_is_null() {
       MultipartFile multipartFile = createMockMultipartFile(1);
       MemberEntity member = EntityCreator.createMember(1L);
       String beforeImage = member.getProfileImage();
@@ -417,7 +411,7 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("실패 : MEMBER_NOT_FOUND")
-    void updateProfileImage_MEMBER_NOT_FOUND(){
+    void updateProfileImage_MEMBER_NOT_FOUND() {
       MultipartFile multipartFile = createMockMultipartFile(1);
       MemberEntity member = EntityCreator.createMember(1L);
 
@@ -429,17 +423,18 @@ class MemberServiceTest {
       //then
       MemberException memberException =
           assertThrows(MemberException.class,
-          () -> memberService.updateProfileImage(member.getMemberId(), multipartFile));
+              () -> memberService.updateProfileImage(member.getMemberId(), multipartFile));
       assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
     }
   }
+
   @Nested
   @DisplayName("프로필 이미지 삭제")
-  class DeleteProfileImage{
+  class DeleteProfileImage {
 
     @Test
     @DisplayName("성공 : 이미지 삭제")
-    void deleteProfileImage(){
+    void deleteProfileImage() {
       MemberEntity member = EntityCreator.createMember(1L);
       //given
       when(memberRepository.findById(1L))
@@ -453,7 +448,7 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("성공 : profile-image = null")
-    void deleteProfileImage_profile_image_is_null(){
+    void deleteProfileImage_profile_image_is_null() {
       MemberEntity member = EntityCreator.createMember(1L);
       member.setProfileImage(null);
       //given
@@ -469,7 +464,7 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("실패 : MEMBER_NOT_FOUND")
-    void deleteProfileImage_MEMBER_NOT_FOUND(){
+    void deleteProfileImage_MEMBER_NOT_FOUND() {
       MemberEntity member = EntityCreator.createMember(1L);
 
       //given

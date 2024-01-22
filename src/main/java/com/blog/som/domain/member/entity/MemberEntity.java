@@ -2,7 +2,6 @@ package com.blog.som.domain.member.entity;
 
 import com.blog.som.domain.member.dto.MemberEditRequest;
 import com.blog.som.domain.member.type.Role;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import javax.persistence.Column;
@@ -13,7 +12,6 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,7 +31,7 @@ public class MemberEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "member_id")
+  @Column(name = "member_id", nullable = false)
   private Long memberId;
 
   @Column(name = "email", unique = true, nullable = false)
@@ -45,11 +43,14 @@ public class MemberEntity {
   @Column(name = "nickname", nullable = false)
   private String nickname;
 
-  @Column(name = "phone_number", length = 20)
-  private String phoneNumber;
+  @Column(name = "account_name", nullable = false)
+  private String accountName;
 
-  @Column(name = "birth_date", nullable = false)
-  private LocalDate birthDate;
+  @Column(name = "blog_name", nullable = false)
+  private String blogName;
+
+  @Column(name = "introduction")
+  private String introduction;
 
   @Column(name = "profile_image")
   private String profileImage;
@@ -58,17 +59,12 @@ public class MemberEntity {
   @CreatedDate
   private LocalDateTime registeredAt;
 
-  @Column(name = "email_auth_at")
-  private LocalDateTime emailAuthAt;
-
   @Enumerated(EnumType.STRING)
   @Column(name = "role")
   private Role role;
 
-  public void editMember(MemberEditRequest request){
-    this.nickname = request.getNickname();
-    this.birthDate = request.getBirthDate();
-    this.phoneNumber = request.getPhoneNumber();
+  public void editMember(MemberEditRequest request) {
+
   }
 
   @Override
@@ -96,4 +92,5 @@ public class MemberEntity {
         ", nickname='" + nickname + '\'' +
         '}';
   }
+
 }

@@ -9,8 +9,6 @@ import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.domain.member.security.token.JwtTokenService;
 import com.blog.som.domain.member.type.Role;
-import com.blog.som.global.components.mail.MailSender;
-import com.blog.som.global.components.mail.SendMailDto;
 import com.blog.som.global.components.password.PasswordUtils;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.MemberException;
@@ -22,10 +20,9 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class AuthService{
+public class AuthService {
 
   private final MemberRepository memberRepository;
-  private final MailSender mailSender;
   private final TokenRepository tokenRepository;
   private final JwtTokenService jwtTokenService;
 
@@ -38,12 +35,6 @@ public class AuthService{
       throw new MemberException(ErrorCode.LOGIN_FAILED_PASSWORD_INCORRECT);
     }
 
-    //UNAUTH 상태일 시 예외 발생
-    if (Role.UNAUTH.equals(member.getRole())) {
-      mailSender.sendMailForRegister(new SendMailDto(member));
-      throw new MemberException(ErrorCode.EMAIL_AUTH_REQUIRED);
-    }
-
     TokenResponse tokenResponse = jwtTokenService.generateTokenResponse(member.getEmail(), member.getRole());
 
     tokenRepository.saveRefreshToken(member.getEmail(), tokenResponse.getRefreshToken());
@@ -51,7 +42,7 @@ public class AuthService{
     return new MemberLogin.Response(tokenResponse, MemberDto.fromEntity(member));
   }
 
-  public MemberLogoutResponse logoutMember(String email, String accessToken){
+  public MemberLogoutResponse logoutMember(String email, String accessToken) {
     //accessToken blacklist 추가
     tokenRepository.addBlacklistAccessToken(accessToken, email);
     //refreshToken 삭제
@@ -60,7 +51,7 @@ public class AuthService{
     return new MemberLogoutResponse(email, result);
   }
 
-  public MemberLogin.Response reissueTokens(String email, Role role, String bearerRefreshToken){
+  public MemberLogin.Response reissueTokens(String email, Role role, String bearerRefreshToken) {
     String refreshToken = jwtTokenService.resolveTokenFromRequest(bearerRefreshToken);
 
     MemberEntity member = memberRepository.findByEmail(email)

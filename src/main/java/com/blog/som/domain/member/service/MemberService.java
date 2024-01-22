@@ -9,9 +9,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface MemberService {
 
-  MemberRegister.Response registerMember(MemberRegister.Request request);
+  MemberRegister.EmailDuplicateResponse emailDuplicateCheckAndStartRegister(String email);
 
-  EmailAuthResult emailAuth(String key);
+  MemberDto registerMember(MemberRegister.Request request, String code);
 
   MemberDto editMemberInfo(Long memberId, MemberEditRequest request);
 
