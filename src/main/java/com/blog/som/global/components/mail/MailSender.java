@@ -21,17 +21,18 @@ public class MailSender {
   @Async
   public void sendMailForRegister(SendMailDto sendMailDto) {
     String mail = sendMailDto.getEmail();
-    String subject = "[" + sendMailDto.getNickname() + "]님 SOM : StoryOfMe 가입을 환영합니다. ";
+    String subject = "[SOM : StoryOfMe] 회원가입";
     String text = new StringBuilder()
         .append("<h3>SOM 가입을 환영합니다. </h3>")
         .append("<p>아래 링크를 클릭하셔서 가입을 완료 하세요. </p>")
-        .append("<div><a target='_blank' href='http://localhost:8080/auth/email-auth?key=" + sendMailDto.getAuthKey()
-            + "'>이메일 인증하기</a></div>")
+        .append("<div>")
+        .append("<a target='_blank' href='http://localhost:8080/register?code=" + sendMailDto.getCode() + "&email=" + sendMailDto.getEmail()+"'>이메일 인증하기</a>")
+        .append("</div>")
         .append("<p>감사합니다!</p>")
         .toString();
 
     //Redis 에 저장 (timeout = 10분)
-    emailAuthRepository.saveEmailAuthUuid(sendMailDto.getAuthKey(), sendMailDto.getEmail());
+    emailAuthRepository.saveEmailAuthUuid(sendMailDto.getCode(), sendMailDto.getEmail());
 
     this.sendMail(mail, subject, text);
     log.info("메일 전송 완료 - {}", mail);

@@ -3,17 +3,26 @@ package com.blog.som.domain.member.dto;
 
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.type.Role;
-import com.blog.som.global.constant.ResponseConstant;
-import java.time.LocalDate;
+import com.blog.som.global.components.password.PasswordUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 public class MemberRegister {
 
-  private MemberRegister(){}
+  private MemberRegister() {
+  }
+
+  @Getter
+  @Setter
+  @AllArgsConstructor
+  @Builder
+  public static class EmailDuplicateResponse {
+
+    private boolean duplicateYn;
+    private String email;
+  }
 
   @Getter
   @Setter
@@ -21,45 +30,21 @@ public class MemberRegister {
   @Builder
   public static class Request {
 
-    private String email;
     private String password;
     private String nickname;
-    private String phoneNumber;
-    private LocalDate birthDate;
+    private String accountName;
+    private String introduction;
 
-    public static MemberEntity toEntity(Request request, String encodedPassword) {
+    public static MemberEntity toEntity(String email, Request request) {
       return MemberEntity.builder()
-          .email(request.getEmail())
-          .password(encodedPassword)
+          .email(email)
+          .password(PasswordUtils.encPassword(request.getPassword()))
           .nickname(request.getNickname())
-          .phoneNumber(request.getPhoneNumber().replaceAll("-", ""))
-          .birthDate(request.getBirthDate())
-          .role(Role.UNAUTH)
+          .accountName(request.getAccountName())
+          .blogName(request.accountName + ".som")
+          .introduction(request.getIntroduction())
+          .role(Role.USER)
           .build();
     }
   }
-
-  @Getter
-  @Setter
-  @AllArgsConstructor
-  @NoArgsConstructor
-  @Builder
-  public static class Response {
-
-    private Long memberId;
-    private String email;
-    private String nickname;
-    private String message;
-
-    public static Response fromEntity(MemberEntity member) {
-      return Response.builder()
-          .memberId(member.getMemberId())
-          .email(member.getEmail())
-          .nickname(member.getNickname())
-          .message(ResponseConstant.MEMBER_REGISTER_COMPLETE)
-          .build();
-    }
-
-  }
-
 }

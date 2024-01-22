@@ -126,29 +126,6 @@ class AuthServiceTest {
       MemberException memberException = assertThrows(MemberException.class, () -> authService.loginMember(loginInput));
       assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.LOGIN_FAILED_PASSWORD_INCORRECT);
     }
-
-    @Test
-    @DisplayName("실패 : EMAIL_AUTH_REQUIRED")
-    void loginMember_EMAIL_AUTH_REQUIRED() {
-      MemberEntity member = EntityCreator.createMember(1L);
-      String plainPassword = member.getPassword();
-      String encPassword = PasswordUtils.encPassword(member.getPassword());
-      member.setPassword(encPassword);
-      member.setRole(Role.UNAUTH);
-
-      Request loginInput = Request.builder()
-          .email(member.getEmail())
-          .password(plainPassword)
-          .build();
-      //given
-      when(memberRepository.findByEmail(member.getEmail()))
-          .thenReturn(Optional.of(member));
-
-      //when
-      //then
-      MemberException memberException = assertThrows(MemberException.class, () -> authService.loginMember(loginInput));
-      assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.EMAIL_AUTH_REQUIRED);
-    }
   }
 
 
