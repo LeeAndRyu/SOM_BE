@@ -156,6 +156,35 @@ class MemberServiceTest {
       assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.EMAIL_AUTH_ALREADY_COMPLETE);
     }
 
+    @Test
+    @DisplayName("실패 : ACCOUNT_NAME_ALREADY_EXISTS")
+    void registerMember_ACCOUNT_NAME_ALREADY_EXISTS() {
+      MemberEntity member = EntityCreator.createMember(1L);
+      String code = "test.uuid";
+      String email = member.getEmail();
+      Request request = Request.builder()
+          .password(member.getPassword())
+          .nickname(member.getNickname())
+          .accountName(member.getAccountName())
+          .introduction(member.getIntroduction())
+          .build();
+
+      //given
+      when(emailAuthRepository.getEmailByUuid(code))
+          .thenReturn(email);
+      when(memberRepository.existsByEmail(email))
+          .thenReturn(false);
+      when(memberRepository.existsByAccountName(request.getAccountName()))
+          .thenReturn(true);
+
+
+      //when
+      //then
+      MemberException memberException =
+          assertThrows(MemberException.class, () -> memberService.registerMember(request, code));
+      assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.ACCOUNT_NAME_ALREADY_EXISTS);
+    }
+
   }
 
 
