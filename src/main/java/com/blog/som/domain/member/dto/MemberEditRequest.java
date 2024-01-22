@@ -15,8 +15,8 @@ import lombok.Setter;
 public class MemberEditRequest {
   private String nickname;
 
-  private String phoneNumber;
+  private String introduction;
 
-  private LocalDate birthDate;
+  private String blogName;
 
 }

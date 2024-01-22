@@ -64,7 +64,9 @@ public class MemberEntity {
   private Role role;
 
   public void editMember(MemberEditRequest request) {
-
+    this.nickname = request.getNickname();
+    this.introduction = request.getIntroduction();
+    this.blogName = request.getBlogName();
   }
 
   @Override

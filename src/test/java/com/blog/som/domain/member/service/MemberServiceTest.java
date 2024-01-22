@@ -170,12 +170,14 @@ class MemberServiceTest {
 
       MemberEditRequest request = MemberEditRequest.builder()
           .nickname("edit-nickname")
-          .birthDate(LocalDate.of(2020, 01, 01))
-          .phoneNumber("01011112222")
+          .introduction("edit-introduction")
+          .blogName("edit-blogName")
           .build();
 
       MemberEntity updatedMember = EntityCreator.createMember(1L);
       updatedMember.setNickname(request.getNickname());
+      updatedMember.setIntroduction(request.getIntroduction());
+      updatedMember.setBlogName(request.getBlogName());
 
       //given
       when(memberRepository.findById(1L))
@@ -188,7 +190,8 @@ class MemberServiceTest {
 
       //then
       assertThat(result.getNickname()).isEqualTo(request.getNickname());
-
+      assertThat(result.getIntroduction()).isEqualTo(request.getIntroduction());
+      assertThat(result.getBlogName()).isEqualTo(request.getBlogName());
     }
 
     @Test
@@ -196,8 +199,8 @@ class MemberServiceTest {
     void editMemberInfo_MEMBER_NOT_FOUND() {
       MemberEditRequest request = MemberEditRequest.builder()
           .nickname("edit-nickname")
-          .birthDate(LocalDate.of(2020, 01, 01))
-          .phoneNumber("01011112222")
+          .introduction("edit-introduction")
+          .blogName("edit-blogName")
           .build();
 
       //given
