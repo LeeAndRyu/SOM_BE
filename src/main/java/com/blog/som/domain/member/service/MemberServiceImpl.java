@@ -50,6 +50,10 @@ public class MemberServiceImpl implements MemberService {
       throw new MemberException(ErrorCode.EMAIL_AUTH_ALREADY_COMPLETE);
     }
 
+    if(memberRepository.existsByAccountName(request.getAccountName())){
+      throw new MemberException(ErrorCode.ACCOUNT_NAME_ALREADY_EXISTS);
+    }
+
     //회원 저장
     MemberEntity savedMember = memberRepository.save(
         Request.toEntity(email, request));
