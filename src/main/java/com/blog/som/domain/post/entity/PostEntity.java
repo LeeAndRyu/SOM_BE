@@ -2,6 +2,7 @@ package com.blog.som.domain.post.entity;
 
 import com.blog.som.domain.member.entity.MemberEntity;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
@@ -61,4 +62,21 @@ public class PostEntity {
 
   @Column(name = "last_modified_at")
   private LocalDateTime lastModifiedAt;
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    PostEntity that = (PostEntity) o;
+    return Objects.equals(postId, that.postId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(postId);
+  }
 }
