@@ -1,9 +1,11 @@
 package com.blog.som.domain.tag.entity;
 
 import com.blog.som.domain.member.entity.MemberEntity;
+import com.blog.som.domain.post.entity.PostEntity;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -27,15 +29,19 @@ public class TagEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "tag_id")
+  @Column(name = "tag_id", nullable = false)
   private Long tagId;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "member_id", nullable = false)
+  private MemberEntity member;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "post_id", nullable = false)
+  private PostEntity post;
 
   @Column(name = "tag_name")
   private String tagName;
-
-  @ManyToOne
-  @JoinColumn(name = "member")
-  private MemberEntity member;
 
   @Column(name = "count")
   private int count;

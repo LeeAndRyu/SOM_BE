@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -29,11 +30,11 @@ public class PostEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "post_id")
+  @Column(name = "post_id", nullable = false)
   private Long postId;
 
-  @ManyToOne
-  @JoinColumn(name = "member")
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "member_id", nullable = false)
   private MemberEntity member;
 
   @Column(name = "title")
@@ -48,11 +49,11 @@ public class PostEntity {
   @Column(name = "introduction")
   private String introduction;
 
-  @Column(name = "like")
-  private Long like;
+  @Column(name = "likes")
+  private int likes;
 
-  @Column(name = "view")
-  private Long view;
+  @Column(name = "views")
+  private int views;
 
   @CreatedDate
   @Column(name = "registered_at", nullable = false)
