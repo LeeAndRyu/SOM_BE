@@ -1,7 +1,6 @@
 package com.blog.som.domain.tag.entity;
 
 import com.blog.som.domain.member.entity.MemberEntity;
-import com.blog.som.domain.post.entity.PostEntity;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
@@ -36,14 +35,19 @@ public class TagEntity {
   @JoinColumn(name = "member_id", nullable = false)
   private MemberEntity member;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "post_id", nullable = false)
-  private PostEntity post;
-
   @Column(name = "tag_name")
   private String tagName;
 
   @Column(name = "count")
   private int count;
 
+  public void addCount(){
+    this.count += 1;
+  }
+
+  public TagEntity(String tagName, MemberEntity member) {
+    this.member = member;
+    this.tagName = tagName;
+    this.count = 1;
+  }
 }
