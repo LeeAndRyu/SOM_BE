@@ -17,6 +17,7 @@ public enum ErrorCode{
 
   //Post 관련
   POST_NOT_FOUND(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
+  POST_EDIT_NO_AUTHORITY(HttpStatus.FORBIDDEN, "게시글 수정 권한이 없습니다."),
 
   //S3 image upload
   EMPTY_FILE_EXCEPTION(HttpStatus.BAD_REQUEST, "빈 파일 입니다."),

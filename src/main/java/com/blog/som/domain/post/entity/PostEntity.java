@@ -1,6 +1,7 @@
 package com.blog.som.domain.post.entity;
 
 import com.blog.som.domain.member.entity.MemberEntity;
+import com.blog.som.domain.post.dto.PostEditRequest;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import javax.persistence.Column;
@@ -65,6 +66,13 @@ public class PostEntity {
 
   public void addView(){
     this.views += 1;
+  }
+
+  public void editPost(PostEditRequest request){
+    this.title = request.getTitle();
+    this.content = request.getContent();
+    this.thumbnail = request.getThumbnail();
+    this.introduction = request.getIntroduction();
   }
 
   @Override
