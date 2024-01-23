@@ -45,6 +45,10 @@ public class TagEntity {
     this.count += 1;
   }
 
+  public void minusCount(){
+    this.count -= 1;
+  }
+
   public TagEntity(String tagName, MemberEntity member) {
     this.member = member;
     this.tagName = tagName;

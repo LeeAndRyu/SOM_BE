@@ -13,7 +13,7 @@ import com.blog.som.global.components.password.PasswordUtils;
 import com.blog.som.global.constant.ResponseConstant;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.MemberException;
-import com.blog.som.global.redis.email.EmailAuthRepository;
+import com.blog.som.global.redis.email.CacheRepository;
 import com.blog.som.global.s3.S3ImageService;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ public class MemberServiceImpl implements MemberService {
 
   private final MemberRepository memberRepository;
   private final MailSender mailSender;
-  private final EmailAuthRepository emailAuthRepository;
+  private final CacheRepository cacheRepository;
   private final S3ImageService s3ImageService;
 
   @Override
@@ -44,7 +44,7 @@ public class MemberServiceImpl implements MemberService {
   @Override
   public MemberDto registerMember(Request request, String code) {
 
-    String email = emailAuthRepository.getEmailByUuid(code);
+    String email = cacheRepository.getEmailByUuid(code);
 
     if (memberRepository.existsByEmail(email)) {
       throw new MemberException(ErrorCode.EMAIL_AUTH_ALREADY_COMPLETE);
