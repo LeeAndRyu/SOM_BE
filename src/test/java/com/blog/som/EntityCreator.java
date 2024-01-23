@@ -45,7 +45,11 @@ public class EntityCreator {
     return tagEntity;
   }
 
-  public static PostTagEntity createPostTag(Long id) {
-    return PostTagEntity.builder().build();
+  public static PostTagEntity createPostTag(Long id, PostEntity post, TagEntity tag) {
+    return PostTagEntity.builder()
+        .postTagId(id)
+        .post(post)
+        .tag(tag)
+        .build();
   }
 }

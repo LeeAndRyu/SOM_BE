@@ -11,11 +11,14 @@ import com.blog.som.domain.post.dto.PostDto;
 import com.blog.som.domain.post.dto.PostWriteRequest;
 import com.blog.som.domain.post.entity.PostEntity;
 import com.blog.som.domain.post.repository.PostRepository;
+import com.blog.som.domain.tag.entity.PostTagEntity;
 import com.blog.som.domain.tag.entity.TagEntity;
 import com.blog.som.domain.tag.repository.PostTagRepository;
 import com.blog.som.domain.tag.repository.TagRepository;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.MemberException;
+import com.blog.som.global.exception.custom.PostException;
+import com.blog.som.global.redis.email.CacheRepository;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,16 +46,18 @@ class PostServiceTest {
   private TagRepository tagRepository;
   @Mock
   private PostTagRepository postTagRepository;
+  @Mock
+  private CacheRepository cacheRepository;
 
   @InjectMocks
   private PostServiceImpl postService;
 
+  static String TAG_1 = "tag1";
+  static String TAG_2 = "tag2";
+
   @Nested
   @DisplayName("게시글 작성")
   class WritePost{
-
-    static String TAG_1 = "tag1";
-    static String TAG_2 = "tag2";
 
     private PostWriteRequest createRequest(int id, List<String> tagList){
       return PostWriteRequest.builder()
@@ -112,6 +117,88 @@ class PostServiceTest {
       MemberException memberException =
           assertThrows(MemberException.class, () -> postService.writePost(request, 1L));
       assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
+    }
+  }
+
+  @Nested
+  @DisplayName("게시글 조회")
+  class GetPost{
+
+    @Test
+    @DisplayName("성공 : 조회수 증가")
+    void getPost(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      PostEntity post = EntityCreator.createPost(10L, member);
+      TagEntity tag1 = EntityCreator.createTag(100L, TAG_1, member);
+      TagEntity tag2 = EntityCreator.createTag(101L, TAG_2, member);
+      PostTagEntity postTag1 = EntityCreator.createPostTag(1000L, post, tag1);
+      PostTagEntity postTag2 = EntityCreator.createPostTag(1001L, post, tag2);
+
+      String userAgent = "CHROME/123";
+
+      //given
+      when(postRepository.findById(10L))
+          .thenReturn(Optional.of(post));
+      when(postTagRepository.findAllByPost(post))
+          .thenReturn(new ArrayList<>(Arrays.asList(postTag1, postTag2)));
+      when(cacheRepository.canAddView(userAgent))
+          .thenReturn(true);
+
+      //when
+      PostDto postDto = postService.getPost(10L, userAgent);
+
+      //then
+      verify(postRepository, times(1)).save(post);
+      assertThat(postDto.getPostId()).isEqualTo(post.getPostId());
+      assertThat(postDto.getTitle()).isEqualTo(post.getTitle());
+    }
+
+    @Test
+    @DisplayName("성공 : 조회수 증가 X")
+    void getPost_never_add_vew(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      PostEntity post = EntityCreator.createPost(10L, member);
+      TagEntity tag1 = EntityCreator.createTag(100L, TAG_1, member);
+      TagEntity tag2 = EntityCreator.createTag(101L, TAG_2, member);
+      PostTagEntity postTag1 = EntityCreator.createPostTag(1000L, post, tag1);
+      PostTagEntity postTag2 = EntityCreator.createPostTag(1001L, post, tag2);
+
+      String userAgent = "CHROME/123";
+
+      //given
+      when(postRepository.findById(10L))
+          .thenReturn(Optional.of(post));
+      when(postTagRepository.findAllByPost(post))
+          .thenReturn(new ArrayList<>(Arrays.asList(postTag1, postTag2)));
+      when(cacheRepository.canAddView(userAgent))
+          .thenReturn(false);
+
+      //when
+      PostDto postDto = postService.getPost(10L, userAgent);
+
+      //then
+      verify(postRepository, never()).save(post);
+      assertThat(postDto.getPostId()).isEqualTo(post.getPostId());
+      assertThat(postDto.getTitle()).isEqualTo(post.getTitle());
+    }
+
+    @Test
+    @DisplayName("실패 : POST_NOT_FOUND")
+    void getPost_POST_NOT_FOUND(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      PostEntity post = EntityCreator.createPost(10L, member);
+      String userAgent = "CHROME/123";
+
+      //given
+      when(postRepository.findById(10L))
+          .thenReturn(Optional.empty());
+
+      //when
+      //then
+      PostException postException =
+          assertThrows(PostException.class, () -> postService.getPost(10L, userAgent));
+      assertThat(postException.getErrorCode()).isEqualTo(ErrorCode.POST_NOT_FOUND);
+
     }
 
   }
