@@ -57,14 +57,13 @@ public class AuthController {
   }
 
   @ApiOperation(value = "토큰 재발급", notes = "[RefreshToken] header에 Bearer {refreshToken}을 받으면 AT와 RT를 모두 재발급")
-  @PreAuthorize("hasAnyRole('ROLE_USER')")
   @GetMapping("/reissue")
   public ResponseEntity<MemberLogin.Response> reissueToken(
-      @AuthenticationPrincipal LoginMember loginMember,
       @RequestHeader("RefreshToken") String refreshToken,
       HttpServletResponse httpServletResponse
       ){
-    Response response = authService.reissueTokens(loginMember.getEmail(), loginMember.getRole(), refreshToken);
+    Response response = authService
+        .reissueTokens(refreshToken);
     cookieService.setCookieForLogin(httpServletResponse, response.getTokenResponse().getAccessToken());
 
     return ResponseEntity.ok(response);
