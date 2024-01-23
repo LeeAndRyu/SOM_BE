@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiOperation;
 import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,6 +42,7 @@ public class AuthController {
   }
 
   @ApiOperation(value = "로그아웃", notes = "accessToken blacklist 처리")
+  @PreAuthorize("hasAnyRole('ROLE_USER')")
   @PostMapping("/logout")
   public ResponseEntity<MemberLogoutResponse> logout(
       @AuthenticationPrincipal LoginMember loginMember,
@@ -55,6 +57,7 @@ public class AuthController {
   }
 
   @ApiOperation(value = "토큰 재발급", notes = "[RefreshToken] header에 Bearer {refreshToken}을 받으면 AT와 RT를 모두 재발급")
+  @PreAuthorize("hasAnyRole('ROLE_USER')")
   @GetMapping("/reissue")
   public ResponseEntity<MemberLogin.Response> reissueToken(
       @AuthenticationPrincipal LoginMember loginMember,

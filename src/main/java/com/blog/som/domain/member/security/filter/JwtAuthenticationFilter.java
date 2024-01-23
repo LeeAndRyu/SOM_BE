@@ -1,6 +1,7 @@
 package com.blog.som.domain.member.security.filter;
 
 import com.blog.som.domain.member.security.token.JwtTokenService;
+import com.blog.som.global.redis.token.TokenRepository;
 import java.io.IOException;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -25,13 +26,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   public static final String TOKEN_HEADER = "Authorization";
 
   private final JwtTokenService jwtTokenService;
+  private final TokenRepository tokenRepository;
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
     String token = jwtTokenService.resolveTokenFromRequest(request.getHeader(TOKEN_HEADER));
 
-    if (StringUtils.hasText(token) && jwtTokenService.validateToken(token)) {
+    if (StringUtils.hasText(token) && jwtTokenService.validateToken(token)
+    && !tokenRepository.isAccessTokenBlacklist(token)) {
       //토큰 유효성 검증 성공
       Authentication auth = jwtTokenService.getAuthentication(token);
       SecurityContextHolder.getContext().setAuthentication(auth);

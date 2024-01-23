@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +32,7 @@ public class PostController {
   private final PostService postService;
 
   @ApiOperation("게시글 작성")
+  @PreAuthorize("hasAnyRole('ROLE_USER')")
   @PostMapping("/post")
   public ResponseEntity<PostDto> writePost(@RequestBody PostWriteRequest request,
       @AuthenticationPrincipal LoginMember loginMember) {
@@ -51,6 +53,7 @@ public class PostController {
   }
 
   @ApiOperation("게시글 수정")
+  @PreAuthorize("hasAnyRole('ROLE_USER')")
   @PutMapping("/post/{postId}")
   public ResponseEntity<PostDto> editPost(@PathVariable Long postId,
       @RequestBody PostEditRequest postEditRequest,
@@ -62,6 +65,7 @@ public class PostController {
   }
 
   @ApiOperation("게시글 삭제")
+  @PreAuthorize("hasAnyRole('ROLE_USER')")
   @DeleteMapping("/post/{postId}")
   public ResponseEntity<PostDeleteResponse> deletePost(@PathVariable Long postId,
       @AuthenticationPrincipal LoginMember loginMember){
