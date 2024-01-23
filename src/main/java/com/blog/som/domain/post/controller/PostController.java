@@ -10,6 +10,8 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,6 +29,15 @@ public class PostController {
       @AuthenticationPrincipal LoginMember loginMember) {
 
     PostDto postDto = postService.writePost(request, loginMember.getMemberId());
+
+    return ResponseEntity.ok(postDto);
+  }
+
+  @ApiOperation("게시글 조회")
+  @GetMapping("/post/{postId}")
+  public ResponseEntity<PostDto> getPost(@PathVariable Long postId){
+
+    PostDto postDto = postService.getPost(postId);
 
     return ResponseEntity.ok(postDto);
   }

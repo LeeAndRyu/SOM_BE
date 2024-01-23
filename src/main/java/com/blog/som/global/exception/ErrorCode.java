@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-public enum ErrorCode {
+public enum ErrorCode{
   //Member 관련
   MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."),
   EMAIL_AUTH_TIME_OUT(HttpStatus.BAD_REQUEST, "이메일 인증 키가 만료되었거나, 잘못된 요청 입니다."),
@@ -14,6 +14,9 @@ public enum ErrorCode {
   MEMBER_PASSWORD_INCORRECT(HttpStatus.BAD_REQUEST, "비밀번호가 틀립니다."),
   PASSWORD_CHECK_INCORRECT(HttpStatus.BAD_REQUEST, "비밀번호 확인이 일치하지 않습니다."),
   ACCOUNT_NAME_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 존재하는 계정 명 입니다."),
+
+  //Post 관련
+  POST_NOT_FOUND(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
 
   //S3 image upload
   EMPTY_FILE_EXCEPTION(HttpStatus.BAD_REQUEST, "빈 파일 입니다."),

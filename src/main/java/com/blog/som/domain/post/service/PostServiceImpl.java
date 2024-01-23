@@ -12,6 +12,7 @@ import com.blog.som.domain.tag.repository.PostTagRepository;
 import com.blog.som.domain.tag.repository.TagRepository;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.MemberException;
+import com.blog.som.global.exception.custom.PostException;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,7 @@ public class PostServiceImpl implements PostService {
       TagEntity tagEntity;
 
       //tagName이 이미 존재할 때 : 기존 tagEntity의 count + 1
-      if(optionalTag.isPresent()){
+      if (optionalTag.isPresent()) {
         tagEntity = optionalTag.get();
         tagEntity.addCount();
       } //tagName이 존재하지 않을 때 : 새로운 tagEntity 저장
@@ -56,6 +57,19 @@ public class PostServiceImpl implements PostService {
       tagRepository.save(tagEntity);
       postTagRepository.save(new PostTagEntity(post, tagEntity));
     }
+
+    return PostDto.fromEntity(post, tagList);
+  }
+
+  @Override
+  public PostDto getPost(Long postId) {
+    PostEntity post = postRepository.findById(postId)
+        .orElseThrow(() -> new PostException(ErrorCode.POST_NOT_FOUND));
+
+    List<String> tagList = postTagRepository.findAllByPost(post)
+        .stream()
+        .map(pt -> pt.getTag().getTagName())
+        .toList();
 
     return PostDto.fromEntity(post, tagList);
   }

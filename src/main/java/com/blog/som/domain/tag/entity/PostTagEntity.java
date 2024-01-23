@@ -32,7 +32,7 @@ public class PostTagEntity {
   @JoinColumn(name = "post_id", nullable = false)
   private PostEntity post;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "tag_id", nullable = false)
   private TagEntity tag;
 
