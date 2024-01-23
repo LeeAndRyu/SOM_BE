@@ -7,15 +7,19 @@ import com.blog.som.domain.post.dto.PostWriteRequest;
 import com.blog.som.domain.post.service.PostService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @Api(tags = "게시글(post)")
 @RequiredArgsConstructor
 @RestController
@@ -35,9 +39,10 @@ public class PostController {
 
   @ApiOperation("게시글 조회")
   @GetMapping("/post/{postId}")
-  public ResponseEntity<PostDto> getPost(@PathVariable Long postId){
+  public ResponseEntity<PostDto> getPost(@PathVariable Long postId,
+      @RequestHeader(value = "Custom-Access-User", defaultValue = "") String accessUserAgent){
 
-    PostDto postDto = postService.getPost(postId);
+    PostDto postDto = postService.getPost(postId, accessUserAgent);
 
     return ResponseEntity.ok(postDto);
   }

@@ -8,6 +8,6 @@ public interface PostService {
 
   PostDto writePost(PostWriteRequest request, Long memberId);
 
-  PostDto getPost(Long postId);
+  PostDto getPost(Long postId, String accessUserAgent);
 
 }

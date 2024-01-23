@@ -8,7 +8,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.amazonaws.services.s3.model.Owner;
 import com.blog.som.EntityCreator;
 import com.blog.som.domain.member.dto.MemberDto;
 import com.blog.som.domain.member.dto.MemberEditRequest;
@@ -23,11 +22,10 @@ import com.blog.som.global.components.password.PasswordUtils;
 import com.blog.som.global.constant.ResponseConstant;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.MemberException;
-import com.blog.som.global.redis.email.EmailAuthRepository;
+import com.blog.som.global.redis.email.CacheRepository;
 import com.blog.som.global.s3.S3ImageService;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
@@ -47,7 +45,7 @@ class MemberServiceTest {
   @Mock
   private MemberRepository memberRepository;
   @Mock
-  private EmailAuthRepository emailAuthRepository;
+  private CacheRepository cacheRepository;
   @Mock
   private MailSender mailSender;
   @Mock
@@ -115,7 +113,7 @@ class MemberServiceTest {
           .build();
 
       //given
-      when(emailAuthRepository.getEmailByUuid(code))
+      when(cacheRepository.getEmailByUuid(code))
           .thenReturn(email);
       when(memberRepository.existsByEmail(email))
           .thenReturn(false);
@@ -143,7 +141,7 @@ class MemberServiceTest {
           .build();
 
       //given
-      when(emailAuthRepository.getEmailByUuid(code))
+      when(cacheRepository.getEmailByUuid(code))
           .thenReturn(email);
       when(memberRepository.existsByEmail(email))
           .thenReturn(true);
@@ -170,7 +168,7 @@ class MemberServiceTest {
           .build();
 
       //given
-      when(emailAuthRepository.getEmailByUuid(code))
+      when(cacheRepository.getEmailByUuid(code))
           .thenReturn(email);
       when(memberRepository.existsByEmail(email))
           .thenReturn(false);

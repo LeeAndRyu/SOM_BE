@@ -63,6 +63,10 @@ public class PostEntity {
   @Column(name = "last_modified_at")
   private LocalDateTime lastModifiedAt;
 
+  public void addView(){
+    this.views += 1;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {

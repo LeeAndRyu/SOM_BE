@@ -1,6 +1,6 @@
 package com.blog.som.global.components.mail;
 
-import com.blog.som.global.redis.email.EmailAuthRepository;
+import com.blog.som.global.redis.email.CacheRepository;
 import javax.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 public class MailSender {
 
   private final JavaMailSender javaMailSender;
-  private final EmailAuthRepository emailAuthRepository;
+  private final CacheRepository cacheRepository;
 
   @Async
   public void sendMailForRegister(SendMailDto sendMailDto) {
@@ -32,7 +32,7 @@ public class MailSender {
         .toString();
 
     //Redis 에 저장 (timeout = 10분)
-    emailAuthRepository.saveEmailAuthUuid(sendMailDto.getCode(), sendMailDto.getEmail());
+    cacheRepository.saveEmailAuthUuid(sendMailDto.getCode(), sendMailDto.getEmail());
 
     this.sendMail(mail, subject, text);
     log.info("메일 전송 완료 - {}", mail);

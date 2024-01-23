@@ -13,12 +13,14 @@ import com.blog.som.domain.tag.repository.TagRepository;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.MemberException;
 import com.blog.som.global.exception.custom.PostException;
+import com.blog.som.global.redis.email.CacheRepository;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -30,6 +32,7 @@ public class PostServiceImpl implements PostService {
   private final MemberRepository memberRepository;
   private final TagRepository tagRepository;
   private final PostTagRepository postTagRepository;
+  private final CacheRepository cacheRepository;
 
   @Override
   public PostDto writePost(PostWriteRequest request, Long memberId) {
@@ -62,7 +65,7 @@ public class PostServiceImpl implements PostService {
   }
 
   @Override
-  public PostDto getPost(Long postId) {
+  public PostDto getPost(Long postId, String accessUserAgent) {
     PostEntity post = postRepository.findById(postId)
         .orElseThrow(() -> new PostException(ErrorCode.POST_NOT_FOUND));
 
@@ -70,6 +73,11 @@ public class PostServiceImpl implements PostService {
         .stream()
         .map(pt -> pt.getTag().getTagName())
         .toList();
+
+    if(StringUtils.hasText(accessUserAgent) && cacheRepository.canAddView(accessUserAgent)){
+      post.addView();
+      postRepository.save(post);
+    }
 
     return PostDto.fromEntity(post, tagList);
   }
