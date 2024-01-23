@@ -2,6 +2,7 @@ package com.blog.som.domain.post.service;
 
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
+import com.blog.som.domain.post.dto.PostDeleteResponse;
 import com.blog.som.domain.post.dto.PostDto;
 import com.blog.som.domain.post.dto.PostEditRequest;
 import com.blog.som.domain.post.dto.PostWriteRequest;
@@ -129,7 +130,33 @@ public class PostServiceImpl implements PostService {
       tagRepository.save(tagEntity);
       postTagRepository.save(new PostTagEntity(post, tagEntity));
     }
+  }
 
+  @Override
+  public PostDeleteResponse deletePost(Long postId, Long loginMemberId) {
+    PostEntity post = postRepository.findById(postId)
+        .orElseThrow(() -> new PostException(ErrorCode.POST_NOT_FOUND));
+    MemberEntity member = post.getMember();
+
+    if(!Objects.equals(member.getMemberId(), loginMemberId)){
+      throw new PostException(ErrorCode.POST_DELETE_NO_AUTHORITY);
+    }
+
+    for(PostTagEntity postTag : postTagRepository.findAllByPost(post)){
+      TagEntity tag = postTag.getTag();
+
+      postTagRepository.delete(postTag);
+
+      if(tag.getCount() <= 1){
+        tagRepository.delete(tag);
+      }else{
+        tag.minusCount();
+        tagRepository.save(tag);
+      }
+    }
+    postRepository.delete(post);
+
+    return new PostDeleteResponse(post.getPostId(), post.getTitle());
   }
 
 }

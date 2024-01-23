@@ -2,6 +2,7 @@ package com.blog.som.domain.post.controller;
 
 
 import com.blog.som.domain.member.security.userdetails.LoginMember;
+import com.blog.som.domain.post.dto.PostDeleteResponse;
 import com.blog.som.domain.post.dto.PostDto;
 import com.blog.som.domain.post.dto.PostEditRequest;
 import com.blog.som.domain.post.dto.PostWriteRequest;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -58,5 +60,17 @@ public class PostController {
 
     return ResponseEntity.ok(postDto);
   }
+
+  @ApiOperation("게시글 삭제")
+  @DeleteMapping("/post/{postId}")
+  public ResponseEntity<PostDeleteResponse> deletePost(@PathVariable Long postId,
+      @AuthenticationPrincipal LoginMember loginMember){
+
+    PostDeleteResponse response = postService.deletePost(postId, loginMember.getMemberId());
+
+    return ResponseEntity.ok(response);
+  }
+
+
 
 }
