@@ -106,7 +106,7 @@ public class PostServiceImpl implements PostService {
       }
 
     }
-
+    log.info("[PostService.editPost()] remain List tags : {} ", editRequestTags);
     this.handleNewTags(editRequestTags, member, post);
 
     return PostDto.fromEntity(post, requestList);

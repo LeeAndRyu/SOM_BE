@@ -8,6 +8,7 @@ import com.blog.som.EntityCreator;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.domain.post.dto.PostDto;
+import com.blog.som.domain.post.dto.PostEditRequest;
 import com.blog.som.domain.post.dto.PostWriteRequest;
 import com.blog.som.domain.post.entity.PostEntity;
 import com.blog.som.domain.post.repository.PostRepository;
@@ -54,6 +55,7 @@ class PostServiceTest {
 
   static String TAG_1 = "tag1";
   static String TAG_2 = "tag2";
+  static String TAG_3 = "tag3";
 
   @Nested
   @DisplayName("게시글 작성")
@@ -198,6 +200,211 @@ class PostServiceTest {
       PostException postException =
           assertThrows(PostException.class, () -> postService.getPost(10L, userAgent));
       assertThat(postException.getErrorCode()).isEqualTo(ErrorCode.POST_NOT_FOUND);
+
+    }
+
+  }
+
+  @Nested
+  @DisplayName("editPost")
+  class EditPost{
+
+    private PostEditRequest createRequest(List<String> tags){
+      return PostEditRequest.builder()
+          .title("edit-test-title")
+          .content("edit-test-content")
+          .thumbnail("test-thumbnail.jpg")
+          .introduction("edit-test-introduction")
+          .tags(tags)
+          .build();
+    }
+
+
+    /**
+     *  - 기존:TAG_1,TAG_2
+     *  - 변경:TAG_1,TAG_2
+     *  - 기존 태그와 변경된 태그가 일치할 때
+     */
+    @Test
+    @DisplayName("성공 : 태그 그대로")
+    void editPost(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      PostEntity post = EntityCreator.createPost(10L, member);
+
+      TagEntity tag1 = EntityCreator.createTag(101L, TAG_1, member);
+      TagEntity tag2 = EntityCreator.createTag(102L, TAG_2, member);
+      PostTagEntity postTag1 = EntityCreator.createPostTag(1001L, post, tag1);
+      PostTagEntity postTag2 = EntityCreator.createPostTag(1002L, post, tag2);
+      //기존 태그
+      List<PostTagEntity> postTagEntityList = new ArrayList<>(Arrays.asList(postTag1, postTag2));
+      //변경된 태그
+      List<String> list = new ArrayList<>(Arrays.asList(TAG_1, TAG_2));
+      PostEditRequest request = createRequest(list);
+
+      //given
+      when(postRepository.findById(10L))
+          .thenReturn(Optional.of(post));
+      when(postTagRepository.findAllByPost(post))
+          .thenReturn(postTagEntityList);
+
+
+      //when
+      PostDto postDto = postService.editPost(request, 10L, 1L);
+
+      //then
+      verify(postRepository, times(1)).save(post);
+      verify(postTagRepository, never()).delete(any(PostTagEntity.class));
+      verify(tagRepository, never()).findByTagNameAndMember(TAG_1, member);
+      verify(tagRepository, never()).findByTagNameAndMember(TAG_2, member);
+
+
+      assertThat(postDto.getTags()).containsAll(list);
+      assertThat(postDto.getTitle()).isEqualTo(request.getTitle());
+      assertThat(postDto.getContent()).isEqualTo(request.getContent());
+      assertThat(postDto.getThumbnail()).isEqualTo(request.getThumbnail());
+      assertThat(postDto.getIntroduction()).isEqualTo(request.getIntroduction());
+    }
+
+
+    /**
+     *  - 기존:TAG_1,TAG_2
+     *  - 변경:TAG_1,TAG_3
+     *  - TAG2 count=1
+     *  - 기존에 회원은 TAG_3 갖고있지 않음
+     */
+    @Test
+    @DisplayName("성공 : 태그 하나 변경")
+    void editPost_change_one_tag(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      PostEntity post = EntityCreator.createPost(10L, member);
+
+      TagEntity tag1 = EntityCreator.createTag(101L, TAG_1, member);
+      TagEntity tag2 = EntityCreator.createTag(102L, TAG_2, member);//count=1
+      TagEntity tag3 = EntityCreator.createTag(103L, TAG_3, member);
+      PostTagEntity postTag1 = EntityCreator.createPostTag(1001L, post, tag1);
+      PostTagEntity postTag2 = EntityCreator.createPostTag(1002L, post, tag2);
+      PostTagEntity postTag3 = EntityCreator.createPostTag(1003L, post, tag3);
+
+      //기존 태그
+      List<PostTagEntity> postTagEntityList = new ArrayList<>(Arrays.asList(postTag1, postTag2));
+      //변경된 태그
+      List<String> list = new ArrayList<>(Arrays.asList(TAG_1, TAG_3));
+      PostEditRequest request = createRequest(list);
+
+      //given
+      when(postRepository.findById(10L))
+          .thenReturn(Optional.of(post));
+      when(postTagRepository.findAllByPost(post))
+          .thenReturn(postTagEntityList);
+      when(tagRepository.findByTagNameAndMember(TAG_3, member)) //기존에 TAG3 없음
+          .thenReturn(Optional.empty());
+
+
+      //when
+      PostDto postDto = postService.editPost(request, 10L, 1L);
+
+      //then
+      verify(postRepository, times(1)).save(post);
+      verify(postTagRepository, times(1)).delete(postTag2);
+      verify(tagRepository, times(1)).delete(tag2);
+      //handleNewTags
+      verify(tagRepository, times(1)).save(any(TagEntity.class));
+      verify(postTagRepository, times(1)).save(any(PostTagEntity.class));
+
+      assertThat(postDto.getTags()).containsAll(list);
+      assertThat(postDto.getTitle()).isEqualTo(request.getTitle());
+      assertThat(postDto.getContent()).isEqualTo(request.getContent());
+      assertThat(postDto.getThumbnail()).isEqualTo(request.getThumbnail());
+      assertThat(postDto.getIntroduction()).isEqualTo(request.getIntroduction());
+    }
+
+    /**
+     *  - 기존:TAG_1,TAG_2
+     *  - 변경:TAG_1,TAG_3
+     *  - TAG2 count=3
+     *  - 기존에 회원은 TAG_3 갖고있지 않음
+     */
+    @Test
+    @DisplayName("성공 : 태그 하나 변경, 변경된 태그 count > 1")
+    void editPost_change_one_tag_(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      PostEntity post = EntityCreator.createPost(10L, member);
+
+      TagEntity tag1 = EntityCreator.createTag(101L, TAG_1, member);
+      TagEntity tag2 = EntityCreator.createTag(102L, TAG_2, member);//count=3
+      tag2.setCount(3);
+      TagEntity tag3 = EntityCreator.createTag(103L, TAG_3, member);
+      PostTagEntity postTag1 = EntityCreator.createPostTag(1001L, post, tag1);
+      PostTagEntity postTag2 = EntityCreator.createPostTag(1002L, post, tag2);
+      PostTagEntity postTag3 = EntityCreator.createPostTag(1003L, post, tag3);
+
+      //기존 태그
+      List<PostTagEntity> postTagEntityList = new ArrayList<>(Arrays.asList(postTag1, postTag2));
+      //변경된 태그
+      List<String> list = new ArrayList<>(Arrays.asList(TAG_1, TAG_3));
+      PostEditRequest request = createRequest(list);
+
+      //given
+      when(postRepository.findById(10L))
+          .thenReturn(Optional.of(post));
+      when(postTagRepository.findAllByPost(post))
+          .thenReturn(postTagEntityList);
+      when(tagRepository.findByTagNameAndMember(TAG_3, member)) //기존에 TAG3 없음
+          .thenReturn(Optional.empty());
+
+
+      //when
+      PostDto postDto = postService.editPost(request, 10L, 1L);
+
+      //then
+      verify(postRepository, times(1)).save(post);
+      verify(postTagRepository, times(1)).delete(postTag2);
+      verify(tagRepository, never()).delete(tag2);
+      verify(tagRepository, times(2)).save(any(TagEntity.class));
+      verify(postTagRepository, times(1)).save(any(PostTagEntity.class));
+
+      assertThat(postDto.getTags()).containsAll(list);
+      assertThat(postDto.getTitle()).isEqualTo(request.getTitle());
+      assertThat(postDto.getContent()).isEqualTo(request.getContent());
+      assertThat(postDto.getThumbnail()).isEqualTo(request.getThumbnail());
+      assertThat(postDto.getIntroduction()).isEqualTo(request.getIntroduction());
+    }
+
+    @Test
+    @DisplayName("실패 : POST_NOT_FOUND")
+    void editPost_POST_NOT_FOUND(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      PostEntity post = EntityCreator.createPost(10L, member);
+      List<String> list = new ArrayList<>(Arrays.asList(TAG_1, TAG_3));
+      PostEditRequest request = createRequest(list);
+      //given
+      when(postRepository.findById(11L))
+          .thenReturn(Optional.empty());
+
+      //when
+      //then
+      PostException postException =
+          assertThrows(PostException.class, () -> postService.editPost(request, 11L, 1L));
+      assertThat(postException.getErrorCode()).isEqualTo(ErrorCode.POST_NOT_FOUND);
+
+    }
+
+    @Test
+    @DisplayName("실패 : POST_EDIT_NO_AUTHORITY")
+    void editPost_POST_EDIT_NO_AUTHORITY(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      PostEntity post = EntityCreator.createPost(10L, member);
+      List<String> list = new ArrayList<>(Arrays.asList(TAG_1, TAG_3));
+      PostEditRequest request = createRequest(list);
+      //given
+      when(postRepository.findById(10L))
+          .thenReturn(Optional.of(post));
+
+      //when
+      //then
+      PostException postException =
+          assertThrows(PostException.class, () -> postService.editPost(request, 10L, 2L));
+      assertThat(postException.getErrorCode()).isEqualTo(ErrorCode.POST_EDIT_NO_AUTHORITY);
 
     }
 
