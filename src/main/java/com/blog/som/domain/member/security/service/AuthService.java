@@ -51,8 +51,9 @@ public class AuthService {
     return new MemberLogoutResponse(email, result);
   }
 
-  public MemberLogin.Response reissueTokens(String email, Role role, String bearerRefreshToken) {
+  public MemberLogin.Response reissueTokens(String bearerRefreshToken) {
     String refreshToken = jwtTokenService.resolveTokenFromRequest(bearerRefreshToken);
+    String email = jwtTokenService.getUsernameByToken(refreshToken);
 
     MemberEntity member = memberRepository.findByEmail(email)
         .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
@@ -60,7 +61,7 @@ public class AuthService {
     //redis에서 refreshToken 확인
     tokenRepository.checkRefreshToken(email, refreshToken);
     // 토큰 새로 생성
-    TokenResponse tokenResponse = jwtTokenService.generateTokenResponse(email, role);
+    TokenResponse tokenResponse = jwtTokenService.generateTokenResponse(email, member.getRole());
     // 새로 생성된 refreshToken 저장
     tokenRepository.saveRefreshToken(email, tokenResponse.getRefreshToken());
 

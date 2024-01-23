@@ -39,6 +39,11 @@ public class RedisTokenRepository implements TokenRepository {
   }
 
   @Override
+  public boolean isAccessTokenBlacklist(String accessToken) {
+    return Boolean.TRUE.equals(redisTemplate.hasKey(TokenConstant.ACCESS_TOKEN_BLACKLIST_PREFIX + accessToken));
+  }
+
+  @Override
   public boolean deleteRefreshToken(String email) {
     return Boolean.TRUE.equals(redisTemplate.delete(TokenConstant.REFRESH_TOKEN_EMAIL_KEY_PREFIX + email));
   }

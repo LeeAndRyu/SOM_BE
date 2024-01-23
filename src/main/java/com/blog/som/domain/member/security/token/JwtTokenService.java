@@ -88,6 +88,10 @@ public class JwtTokenService {
     return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
   }
 
+  public String getUsernameByToken(String token){
+    return this.parseClaims(token).getSubject();
+  }
+
   /**
    * 토큰이 유효한지 확인
    */

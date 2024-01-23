@@ -164,13 +164,16 @@ class AuthServiceTest {
       //given
       when(jwtTokenService.resolveTokenFromRequest(bearerRefreshToken))
           .thenReturn(refreshToken);
+      when(jwtTokenService.getUsernameByToken(refreshToken))
+          .thenReturn(member.getEmail());
       when(memberRepository.findByEmail(member.getEmail()))
           .thenReturn(Optional.of(member));
       when(jwtTokenService.generateTokenResponse(member.getEmail(), member.getRole()))
           .thenReturn(tokenResponse);
 
+
       //when
-      Response response = authService.reissueTokens(member.getEmail(), member.getRole(), bearerRefreshToken);
+      Response response = authService.reissueTokens(bearerRefreshToken);
 
       //then
       verify(tokenRepository, times(1)).checkRefreshToken(member.getEmail(), refreshToken);
@@ -195,6 +198,8 @@ class AuthServiceTest {
       //given
       when(jwtTokenService.resolveTokenFromRequest(bearerRefreshToken))
           .thenReturn(refreshToken);
+      when(jwtTokenService.getUsernameByToken(refreshToken))
+          .thenReturn(member.getEmail());
       when(memberRepository.findByEmail(member.getEmail()))
           .thenReturn(Optional.empty());
 
@@ -202,7 +207,7 @@ class AuthServiceTest {
       //then
       MemberException memberException =
           assertThrows(MemberException.class,
-          () -> authService.reissueTokens(member.getEmail(), member.getRole(), bearerRefreshToken));
+          () -> authService.reissueTokens(bearerRefreshToken));
       assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
     }
 
