@@ -1,5 +1,6 @@
 package com.blog.som;
 
+import com.blog.som.domain.follow.entity.FollowEntity;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.type.Role;
 import com.blog.som.domain.post.entity.PostEntity;
@@ -19,6 +20,8 @@ public class EntityCreator {
         .blogName("testAccountName" + id + ".som")
         .introduction("hello" + id)
         .profileImage("test-profile-image" + id + ".jpg")
+        .followerCount(0)
+        .followingCount(0)
         .registeredAt(LocalDateTime.now())
         .role(Role.USER)
         .build();
@@ -50,6 +53,15 @@ public class EntityCreator {
         .postTagId(id)
         .post(post)
         .tag(tag)
+        .build();
+  }
+
+  public static FollowEntity createFollowEntity(Long id, MemberEntity fromMember, MemberEntity toMember){
+    return FollowEntity.builder()
+        .followId(id)
+        .fromMember(fromMember)
+        .toMember(toMember)
+        .followAt(LocalDateTime.now())
         .build();
   }
 }

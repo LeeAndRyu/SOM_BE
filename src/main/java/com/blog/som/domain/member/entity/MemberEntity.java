@@ -55,6 +55,12 @@ public class MemberEntity {
   @Column(name = "profile_image")
   private String profileImage;
 
+  @Column(name = "following")
+  private int followingCount;
+
+  @Column(name = "follower")
+  private int followerCount;
+
   @Column(name = "registered_at", nullable = false)
   @CreatedDate
   private LocalDateTime registeredAt;
@@ -67,6 +73,26 @@ public class MemberEntity {
     this.nickname = request.getNickname();
     this.introduction = request.getIntroduction();
     this.blogName = request.getBlogName();
+  }
+
+  public void addFollowerCount(){
+    this.followerCount += 1;
+  }
+
+  public void addFollowingCount(){
+    this.followingCount += 1;
+  }
+
+  public void minusFollowerCount(){
+    if(this.followerCount > 0){
+      this.followerCount -= 1;
+    }
+  }
+
+  public void minusFollowingCount(){
+    if(this.followingCount > 0){
+      this.followingCount -= 1;
+    }
   }
 
   @Override
