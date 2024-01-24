@@ -47,7 +47,7 @@ public class MemberServiceImpl implements MemberService {
     String email = cacheRepository.getEmailByUuid(code);
 
     if (memberRepository.existsByEmail(email)) {
-      throw new MemberException(ErrorCode.EMAIL_AUTH_ALREADY_COMPLETE);
+      throw new MemberException(ErrorCode.EMAIL_ALREADY_EXISTS);
     }
 
     if(memberRepository.existsByAccountName(request.getAccountName())){

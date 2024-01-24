@@ -10,7 +10,7 @@ public enum ErrorCode{
   //Member 관련
   MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."),
   EMAIL_AUTH_TIME_OUT(HttpStatus.BAD_REQUEST, "이메일 인증 키가 만료되었거나, 잘못된 요청 입니다."),
-  EMAIL_AUTH_ALREADY_COMPLETE(HttpStatus.BAD_REQUEST, "이미 이메일 인증 완료 된 회원입니다."),
+  EMAIL_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 존재하는 이메일입니다."),
   MEMBER_PASSWORD_INCORRECT(HttpStatus.BAD_REQUEST, "비밀번호가 틀립니다."),
   PASSWORD_CHECK_INCORRECT(HttpStatus.BAD_REQUEST, "비밀번호 확인이 일치하지 않습니다."),
   ACCOUNT_NAME_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 존재하는 계정 명 입니다."),

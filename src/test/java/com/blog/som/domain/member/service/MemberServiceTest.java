@@ -151,7 +151,7 @@ class MemberServiceTest {
       //then
       MemberException memberException =
           assertThrows(MemberException.class, () -> memberService.registerMember(request, code));
-      assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.EMAIL_AUTH_ALREADY_COMPLETE);
+      assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.EMAIL_ALREADY_EXISTS);
     }
 
     @Test
