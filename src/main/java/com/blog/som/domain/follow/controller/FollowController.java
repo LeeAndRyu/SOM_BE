@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
-@Api(tags = "게시글(post)")
+@Api(tags = "팔로우(follow)")
 @RequiredArgsConstructor
 @RestController
 public class FollowController {
