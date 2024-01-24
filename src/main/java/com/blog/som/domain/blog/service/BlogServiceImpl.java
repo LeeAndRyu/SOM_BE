@@ -38,7 +38,7 @@ public class BlogServiceImpl implements BlogService {
     MemberEntity member = memberRepository.findByAccountName(accountName)
         .orElseThrow(() -> new BlogException(ErrorCode.BLOG_NOT_FOUND));
 
-    return BlogMemberDto.fromEntity(member, 0, 0);
+    return BlogMemberDto.fromEntity(member);
   }
 
   @Override

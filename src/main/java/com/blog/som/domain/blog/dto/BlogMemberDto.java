@@ -19,16 +19,16 @@ public class BlogMemberDto {
   private String introduction;
 
   private int followerCount;
-  private int followCount;
+  private int followingCount;
 
-  public static BlogMemberDto fromEntity(MemberEntity member, int followCount, int followerCount){
+  public static BlogMemberDto fromEntity(MemberEntity member){
     return BlogMemberDto.builder()
         .blogName(member.getBlogName())
         .profileImage(member.getProfileImage())
         .nickname(member.getNickname())
         .introduction(member.getIntroduction())
-        .followerCount(followerCount)
-        .followCount(followCount)
+        .followerCount(member.getFollowerCount())
+        .followingCount(member.getFollowingCount())
         .build();
   }
 }
