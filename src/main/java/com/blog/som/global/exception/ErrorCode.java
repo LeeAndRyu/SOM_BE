@@ -27,6 +27,7 @@ public enum ErrorCode{
 
   //Follow 관련
   ALREADY_FOLLOWED(HttpStatus.CONFLICT, "이미 팔로우 된 블로그입니다."),
+  FOLLOW_NOT_FOUND(HttpStatus.BAD_REQUEST, "팔로우 되어 있지 않은 상태 입니다."),
 
 
   //S3 image upload

@@ -78,8 +78,21 @@ public class MemberEntity {
   public void addFollowerCount(){
     this.followerCount += 1;
   }
+
   public void addFollowingCount(){
     this.followingCount += 1;
+  }
+
+  public void minusFollowerCount(){
+    if(this.followerCount > 0){
+      this.followerCount -= 1;
+    }
+  }
+
+  public void minusFollowingCount(){
+    if(this.followingCount > 0){
+      this.followingCount -= 1;
+    }
   }
 
   @Override

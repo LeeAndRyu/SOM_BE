@@ -1,5 +1,6 @@
 package com.blog.som.domain.follow.service;
 
+import com.blog.som.domain.follow.dto.FollowCancelResponse;
 import com.blog.som.domain.follow.dto.FollowDto;
 import com.blog.som.domain.follow.entity.FollowEntity;
 import com.blog.som.domain.follow.repository.FollowRepository;
@@ -42,5 +43,26 @@ public class FollowServiceImpl implements FollowService{
     memberRepository.save(toMember);
 
     return FollowDto.fromEntity(saved);
+  }
+
+  @Override
+  public FollowCancelResponse cancelFollow(Long fromMemberId, String blogAccountName) {
+    MemberEntity fromMember = memberRepository.findById(fromMemberId)
+        .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
+    MemberEntity toMember = memberRepository.findByAccountName(blogAccountName)
+        .orElseThrow(() -> new BlogException(ErrorCode.BLOG_NOT_FOUND));
+
+    FollowEntity followEntity = followRepository.findByFromMemberAndToMember(fromMember, toMember)
+        .orElseThrow(() -> new FollowException(ErrorCode.FOLLOW_NOT_FOUND));
+
+    followRepository.delete(followEntity);
+
+    fromMember.minusFollowingCount();
+    toMember.minusFollowerCount();
+
+    memberRepository.save(fromMember);
+    memberRepository.save(toMember);
+
+    return FollowCancelResponse.fromEntity(followEntity);
   }
 }

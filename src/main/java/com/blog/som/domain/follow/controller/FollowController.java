@@ -1,5 +1,6 @@
 package com.blog.som.domain.follow.controller;
 
+import com.blog.som.domain.follow.dto.FollowCancelResponse;
 import com.blog.som.domain.follow.dto.FollowDto;
 import com.blog.som.domain.follow.service.FollowService;
 import com.blog.som.domain.member.security.userdetails.LoginMember;
@@ -31,6 +32,17 @@ public class FollowController {
     FollowDto follow = followService.doFollow(loginMember.getMemberId(), accountName);
 
     return ResponseEntity.ok(follow);
+  }
+
+  @ApiOperation("팔로우 취소")
+  @PreAuthorize("hasAnyRole('ROLE_USER')")
+  @GetMapping("/follow/{accountName}")
+  public ResponseEntity<FollowCancelResponse> cancelFollow(@PathVariable String accountName,
+      @AuthenticationPrincipal LoginMember loginMember){
+
+    FollowCancelResponse response = followService.cancelFollow(loginMember.getMemberId(), accountName);
+
+    return ResponseEntity.ok(response);
   }
 
 
