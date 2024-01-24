@@ -20,6 +20,12 @@ public enum ErrorCode{
   POST_EDIT_NO_AUTHORITY(HttpStatus.FORBIDDEN, "게시글 수정 권한이 없습니다."),
   POST_DELETE_NO_AUTHORITY(HttpStatus.FORBIDDEN, "게시글 삭제 권한이 없습니다."),
 
+  //Blog 관련
+  BLOG_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 블로그가 존재하지 않습니다."),
+  BLOG_POSTS_INVALID_QUERY(HttpStatus.BAD_REQUEST, "BLOG_POSTS_잘못된 쿼리 입니다."),
+  TAG_NOT_FOUND(HttpStatus.BAD_REQUEST, "tag를 찾을 수 없습니다."),
+
+
   //S3 image upload
   EMPTY_FILE_EXCEPTION(HttpStatus.BAD_REQUEST, "빈 파일 입니다."),
   NO_FILE_EXTENTION(HttpStatus.BAD_REQUEST, "파일 확장자가 존재하지 않습니다."),

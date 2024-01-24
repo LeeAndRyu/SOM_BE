@@ -1,6 +1,8 @@
 package com.blog.som.domain.tag.entity;
 
+import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.post.entity.PostEntity;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -37,9 +39,17 @@ public class PostTagEntity {
   @JoinColumn(name = "tag_id", nullable = false)
   private TagEntity tag;
 
-  public PostTagEntity(PostEntity post, TagEntity tag) {
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "member_id", nullable = false)
+  private MemberEntity member;
+
+  private LocalDateTime postCreatedTime;
+
+  public PostTagEntity(PostEntity post, TagEntity tag, MemberEntity member) {
     this.post = post;
     this.tag = tag;
+    this.member = member;
+    this.postCreatedTime = post.getRegisteredAt();
   }
 
   @Override

@@ -62,12 +62,12 @@ public class SecurityConfig {
 
     http
         .authorizeRequests()
-        .antMatchers(PERMIT_ALL_URL)
-        .permitAll()
         .antMatchers("/admin/**")
         .hasAuthority("ROLE_ADMIN")
         .antMatchers(PERMIT_ONLY_MEMBER)
-        .hasAuthority("ROLE_USER");
+        .hasAuthority("ROLE_USER")
+        .antMatchers("/**")
+        .permitAll();
 
     http
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

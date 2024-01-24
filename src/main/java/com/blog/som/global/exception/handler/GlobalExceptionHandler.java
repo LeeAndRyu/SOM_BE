@@ -2,6 +2,7 @@ package com.blog.som.global.exception.handler;
 
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.ErrorResponse;
+import com.blog.som.global.exception.custom.BlogException;
 import com.blog.som.global.exception.custom.MemberException;
 import com.blog.som.global.exception.custom.CustomSecurityException;
 import com.blog.som.global.exception.custom.PostException;
@@ -33,6 +34,13 @@ public class GlobalExceptionHandler {
     ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode(), e.getErrorMessage());
     return new ResponseEntity<>(errorResponse, e.getErrorCode().getStatus());
   }
+
+  @ExceptionHandler(BlogException.class)
+  public ResponseEntity<ErrorResponse> handleBlogException(BlogException e) {
+    ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode(), e.getErrorMessage());
+    return new ResponseEntity<>(errorResponse, e.getErrorCode().getStatus());
+  }
+
 
   @ExceptionHandler(S3Exception.class)
   public ResponseEntity<ErrorResponse> handleS3Exception(S3Exception e) {
