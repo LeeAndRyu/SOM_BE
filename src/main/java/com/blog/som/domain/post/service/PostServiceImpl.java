@@ -128,7 +128,7 @@ public class PostServiceImpl implements PostService {
       }
 
       tagRepository.save(tagEntity);
-      postTagRepository.save(new PostTagEntity(post, tagEntity));
+      postTagRepository.save(new PostTagEntity(post, tagEntity, member));
     }
   }
 
