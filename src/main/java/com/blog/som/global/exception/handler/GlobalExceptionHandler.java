@@ -1,8 +1,8 @@
 package com.blog.som.global.exception.handler;
 
-import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.ErrorResponse;
 import com.blog.som.global.exception.custom.BlogException;
+import com.blog.som.global.exception.custom.FollowException;
 import com.blog.som.global.exception.custom.MemberException;
 import com.blog.som.global.exception.custom.CustomSecurityException;
 import com.blog.som.global.exception.custom.PostException;
@@ -16,12 +16,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<ErrorResponse> handleException(Exception e) {
-    ErrorResponse errorResponse = new ErrorResponse(ErrorCode.INTERNAL_SERVER_ERROR,
-        e.getMessage());
-    return new ResponseEntity<>(errorResponse, errorResponse.getErrorCode().getStatus());
-  }
+//  @ExceptionHandler(Exception.class)
+//  public ResponseEntity<ErrorResponse> handleException(Exception e) {
+//    ErrorResponse errorResponse = new ErrorResponse(ErrorCode.INTERNAL_SERVER_ERROR,
+//        e.getMessage());
+//    return new ResponseEntity<>(errorResponse, errorResponse.getErrorCode().getStatus());
+//  }
 
   @ExceptionHandler(MemberException.class)
   public ResponseEntity<ErrorResponse> handleMemberException(MemberException e) {
@@ -37,6 +37,12 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(BlogException.class)
   public ResponseEntity<ErrorResponse> handleBlogException(BlogException e) {
+    ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode(), e.getErrorMessage());
+    return new ResponseEntity<>(errorResponse, e.getErrorCode().getStatus());
+  }
+
+  @ExceptionHandler(FollowException.class)
+  public ResponseEntity<ErrorResponse> handleFollowException(FollowException e) {
     ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode(), e.getErrorMessage());
     return new ResponseEntity<>(errorResponse, e.getErrorCode().getStatus());
   }

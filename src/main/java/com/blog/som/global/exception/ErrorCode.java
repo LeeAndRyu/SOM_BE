@@ -25,6 +25,9 @@ public enum ErrorCode{
   BLOG_POSTS_INVALID_QUERY(HttpStatus.BAD_REQUEST, "BLOG_POSTS_잘못된 쿼리 입니다."),
   TAG_NOT_FOUND(HttpStatus.BAD_REQUEST, "tag를 찾을 수 없습니다."),
 
+  //Follow 관련
+  ALREADY_FOLLOWED(HttpStatus.CONFLICT, "이미 팔로우 된 블로그입니다."),
+
 
   //S3 image upload
   EMPTY_FILE_EXCEPTION(HttpStatus.BAD_REQUEST, "빈 파일 입니다."),

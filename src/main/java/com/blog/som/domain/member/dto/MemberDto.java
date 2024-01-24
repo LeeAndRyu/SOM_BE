@@ -30,6 +30,10 @@ public class MemberDto {
 
   private String profileImage;
 
+  private int followingCount;
+
+  private int followerCount;
+
   private LocalDateTime registeredAt;
 
   private Role role;
@@ -43,6 +47,8 @@ public class MemberDto {
         .blogName(member.getBlogName())
         .introduction(member.getIntroduction())
         .profileImage(member.getProfileImage())
+        .followingCount(member.getFollowingCount())
+        .followerCount(member.getFollowerCount())
         .registeredAt(member.getRegisteredAt())
         .role(member.getRole())
         .build();
