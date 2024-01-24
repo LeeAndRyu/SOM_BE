@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,7 +37,7 @@ public class FollowController {
 
   @ApiOperation("팔로우 취소")
   @PreAuthorize("hasAnyRole('ROLE_USER')")
-  @GetMapping("/follow/{accountName}")
+  @DeleteMapping("/follow/{accountName}")
   public ResponseEntity<FollowCancelResponse> cancelFollow(@PathVariable String accountName,
       @AuthenticationPrincipal LoginMember loginMember){
 
