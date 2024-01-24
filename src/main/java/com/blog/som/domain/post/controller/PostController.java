@@ -45,7 +45,7 @@ public class PostController {
   @ApiOperation("게시글 조회")
   @GetMapping("/post/{postId}")
   public ResponseEntity<PostDto> getPost(@PathVariable Long postId,
-      @RequestHeader(value = "Custom-Access-User", defaultValue = "") String accessUserAgent){
+      @RequestHeader(value = "Custom-Access-User", required = false, defaultValue = "") String accessUserAgent){
 
     PostDto postDto = postService.getPost(postId, accessUserAgent);
 
