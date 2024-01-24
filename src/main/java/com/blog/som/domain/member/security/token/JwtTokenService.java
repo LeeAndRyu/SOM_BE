@@ -7,6 +7,7 @@ import static com.blog.som.domain.member.security.token.TokenConstant.REFRESH_TO
 
 import com.blog.som.domain.member.dto.TokenResponse;
 import com.blog.som.domain.member.security.service.CustomUserDetailsService;
+import com.blog.som.domain.member.security.userdetails.LoginMember;
 import com.blog.som.domain.member.type.Role;
 import com.blog.som.global.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
@@ -79,12 +80,21 @@ public class JwtTokenService {
       return false;
     }
     //token의 만료 시간이 현재시간 보다 이후 일 때 true 반환
-    return this.parseClaims(token).getExpiration().after(new Date());
+    Claims claims = this.parseClaims(token);
+    if(claims.getSubject().isBlank()){
+      return false;
+    }
+    return claims.getExpiration().after(new Date());
   }
 
   public Authentication getAuthentication(String token) {
     String username = this.parseClaims(token).getSubject();
     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+    return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+  }
+
+  public Authentication getAnonymousAuthentication(){
+    UserDetails userDetails = new LoginMember(Role.UNAUTH);
     return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
   }
 
@@ -99,7 +109,7 @@ public class JwtTokenService {
     try {
       return Jwts.parser().setSigningKey(this.secretKey).parseClaimsJws(token).getBody();
     } catch (ExpiredJwtException e) {
-      throw new JwtException(ErrorCode.TOKEN_TIME_OUT.getDescription());
+      return Jwts.claims().setSubject("");
     } catch (SignatureException e) {
       throw new JwtException(ErrorCode.JWT_TOKEN_WRONG_TYPE.getDescription());
     } catch (MalformedJwtException e) {

@@ -6,7 +6,6 @@ import com.blog.som.domain.member.type.Role;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -34,6 +33,13 @@ public class LoginMember implements UserDetails {
     this.email = member.getEmail();
     this.password = member.getPassword();
     this.role = member.getRole();
+  }
+
+  public LoginMember(Role role){
+    this.memberId = 0L;
+    this.email = "expired token";
+    this.password = "expired token";
+    this.role = Role.UNAUTH;
   }
 
   @Override

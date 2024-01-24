@@ -34,8 +34,8 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
       String message = e.getMessage();
       if (message.equals(ErrorCode.JWT_TOKEN_WRONG_TYPE.getDescription())) {
         setResponse(response, ErrorCode.JWT_TOKEN_WRONG_TYPE);
-      } else if (message.equals(ErrorCode.TOKEN_TIME_OUT.getDescription())) {
-        setResponse(response, ErrorCode.TOKEN_TIME_OUT);
+      } else if (message.equals(ErrorCode.JWT_TOKEN_MALFORMED.getDescription())) {
+        setResponse(response, ErrorCode.JWT_TOKEN_MALFORMED);
       }
     }
   }
