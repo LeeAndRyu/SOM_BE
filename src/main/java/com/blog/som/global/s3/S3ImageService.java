@@ -99,7 +99,7 @@ public class S3ImageService {
     try{
       amazonS3.deleteObject(new DeleteObjectRequest(bucketName, key));
     }catch (Exception e){
-      throw new S3Exception(ErrorCode.IO_EXCEPTION_ON_IMAGE_DELETE);
+      throw new S3Exception(ErrorCode.ADDRESS_URL_ERROR_ON_IMAGE_DELETE);
     }
   }
 
@@ -109,7 +109,7 @@ public class S3ImageService {
       String decodingKey = URLDecoder.decode(url.getPath(), "UTF-8");
       return decodingKey.substring(1); // 맨 앞의 '/' 제거
     }catch (MalformedURLException | UnsupportedEncodingException e){
-      throw new S3Exception(ErrorCode.IO_EXCEPTION_ON_IMAGE_DELETE);
+      throw new S3Exception(ErrorCode.ADDRESS_URL_ERROR_ON_IMAGE_DELETE);
     }
   }
 }
