@@ -26,7 +26,7 @@ public enum ErrorCode{
   INVALID_FILE_EXTENTION(HttpStatus.BAD_REQUEST, "유효하지 않은 파일 확장자 입니다."),
   PUT_OBJECT_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "Amazon S3에 파일을 업로드 하는데 실패했습니다."),
   IO_EXCEPTION_ON_IMAGE_UPLOAD(HttpStatus.INTERNAL_SERVER_ERROR, "image upload 도중 image.getInputStream() 또는 IOUtils.toByteArray(is)에서 에러가 발생했습니다."),
-  IO_EXCEPTION_ON_IMAGE_DELETE(HttpStatus.INTERNAL_SERVER_ERROR, "image 삭제 도중 IOException이 발생했습니다."),
+  ADDRESS_URL_ERROR_ON_IMAGE_DELETE(HttpStatus.BAD_REQUEST, "image url에 문제가 있습니다."),
 
 
   //Security
