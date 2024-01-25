@@ -20,7 +20,7 @@ public class MemberRegister {
   @Builder
   public static class EmailDuplicateResponse {
 
-    private boolean duplicateYn;
+    private boolean reuslt;
     private String email;
   }
 
