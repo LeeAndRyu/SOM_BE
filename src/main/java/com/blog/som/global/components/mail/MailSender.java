@@ -26,7 +26,7 @@ public class MailSender {
         .append("<h3>SOM 가입을 환영합니다. </h3>")
         .append("<p>아래 링크를 클릭하셔서 가입을 완료 하세요. </p>")
         .append("<div>")
-        .append("<a target='_blank' href='http://localhost:8080/register?code=" + sendMailDto.getCode() + "&email=" + sendMailDto.getEmail()+"'>이메일 인증하기</a>")
+        .append("<a target='_blank' href='http://localhost:3000/auth?code=" + sendMailDto.getCode() + "&email=" + sendMailDto.getEmail()+"'>이메일 인증하기</a>")
         .append("</div>")
         .append("<p>감사합니다!</p>")
         .toString();
