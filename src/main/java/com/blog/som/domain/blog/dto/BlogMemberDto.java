@@ -21,6 +21,8 @@ public class BlogMemberDto {
   private int followerCount;
   private int followingCount;
 
+  private String loginMemberFollowStatus;
+
   public static BlogMemberDto fromEntity(MemberEntity member){
     return BlogMemberDto.builder()
         .blogName(member.getBlogName())

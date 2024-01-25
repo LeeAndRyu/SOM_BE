@@ -12,6 +12,11 @@ public interface BlogService {
   BlogMemberDto getBlogMember(String accountName);
 
   /**
+   * 로그인 유저의 팔로우 여부
+   */
+  String getFollowStatus(Long memberId, String accountName);
+
+  /**
    * 정렬 방식에 따른 postList 조회
    * - sort=latest(default) : 최신 순
    * - sort=hot : 조회수 순

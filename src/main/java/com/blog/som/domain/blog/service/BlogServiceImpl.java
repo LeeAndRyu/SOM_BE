@@ -1,8 +1,10 @@
 package com.blog.som.domain.blog.service;
 
+import com.blog.som.domain.blog.constant.FollowConstant;
 import com.blog.som.domain.blog.dto.BlogMemberDto;
 import com.blog.som.domain.blog.dto.BlogPostDto;
 import com.blog.som.domain.blog.dto.BlogPostList;
+import com.blog.som.domain.follow.service.FollowService;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.domain.post.entity.PostEntity;
@@ -32,13 +34,25 @@ public class BlogServiceImpl implements BlogService {
   private final PostRepository postRepository;
   private final TagRepository tagRepository;
   private final PostTagRepository postTagRepository;
+  private final FollowService followService;
 
   @Override
   public BlogMemberDto getBlogMember(String accountName) {
     MemberEntity member = memberRepository.findByAccountName(accountName)
         .orElseThrow(() -> new BlogException(ErrorCode.BLOG_NOT_FOUND));
 
+
+
     return BlogMemberDto.fromEntity(member);
+  }
+
+  @Override
+  public String getFollowStatus(Long memberId, String accountName) {
+    boolean result = followService.isFollowing(memberId, accountName);
+    if(result){
+      return FollowConstant.FOLLOWED;
+    }
+    return FollowConstant.UNFOLLOWED;
   }
 
   @Override

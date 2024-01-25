@@ -65,4 +65,14 @@ public class FollowServiceImpl implements FollowService{
 
     return FollowCancelResponse.fromEntity(followEntity);
   }
+
+  @Override
+  public boolean isFollowing(Long fromMemberId, String blogAccountName) {
+    MemberEntity fromMember = memberRepository.findById(fromMemberId)
+        .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
+    MemberEntity toMember = memberRepository.findByAccountName(blogAccountName)
+        .orElseThrow(() -> new BlogException(ErrorCode.BLOG_NOT_FOUND));
+
+    return followRepository.existsByFromMemberAndToMember(fromMember, toMember);
+  }
 }
