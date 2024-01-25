@@ -14,4 +14,9 @@ public interface FollowService {
    * follow 취소
    */
   FollowCancelResponse cancelFollow(Long fromMemberId, String blogAccountName);
+
+  /**
+   * 팔로우 여부
+   */
+  boolean isFollowing(Long fromMemberId, String blogAccountName);
 }
