@@ -5,6 +5,7 @@ import com.blog.som.domain.member.dto.MemberEditRequest;
 import com.blog.som.domain.member.dto.MemberPasswordEdit;
 import com.blog.som.domain.member.dto.MemberRegister.EmailDuplicateResponse;
 import com.blog.som.domain.member.dto.MemberRegister.Request;
+import com.blog.som.domain.member.dto.RegisterEmailInput;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.global.components.mail.MailSender;
@@ -32,13 +33,15 @@ public class MemberServiceImpl implements MemberService {
   private final S3ImageService s3ImageService;
 
   @Override
-  public EmailDuplicateResponse emailDuplicateCheckAndStartRegister(String email) {
+  public EmailDuplicateResponse emailDuplicateCheckAndStartRegister(RegisterEmailInput input) {
+    String email = input.getEmail();
+
     if (memberRepository.existsByEmail(email)) {
-      return new EmailDuplicateResponse(true, email);
+      throw new MemberException(ErrorCode.EMAIL_ALREADY_EXISTS);
     }
 
     mailSender.sendMailForRegister(new SendMailDto(email));
-    return new EmailDuplicateResponse(false, email);
+    return new EmailDuplicateResponse(true, email);
   }
 
   @Override

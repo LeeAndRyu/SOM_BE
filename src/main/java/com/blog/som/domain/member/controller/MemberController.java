@@ -5,6 +5,7 @@ import com.blog.som.domain.member.dto.MemberEditRequest;
 import com.blog.som.domain.member.dto.MemberPasswordEdit;
 import com.blog.som.domain.member.dto.MemberRegister;
 import com.blog.som.domain.member.dto.MemberRegister.EmailDuplicateResponse;
+import com.blog.som.domain.member.dto.RegisterEmailInput;
 import com.blog.som.domain.member.security.userdetails.LoginMember;
 import com.blog.som.domain.member.service.MemberService;
 import io.swagger.annotations.Api;
@@ -33,7 +34,7 @@ public class MemberController {
 
   @ApiOperation(value = "회원가입 시작", notes = "이메일 입력, 중복체크 , 중복 아닐 시 이메일 발송")
   @PostMapping("/register/check-email")
-  public ResponseEntity<EmailDuplicateResponse> startRegister(@RequestBody String email) {
+  public ResponseEntity<EmailDuplicateResponse> startRegister(@RequestBody RegisterEmailInput email) {
     EmailDuplicateResponse emailDuplicateResponse = memberService.emailDuplicateCheckAndStartRegister(email);
     return ResponseEntity.ok(emailDuplicateResponse);
   }
