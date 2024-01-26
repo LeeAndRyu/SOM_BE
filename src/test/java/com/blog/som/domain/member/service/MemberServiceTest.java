@@ -14,6 +14,7 @@ import com.blog.som.domain.member.dto.MemberEditRequest;
 import com.blog.som.domain.member.dto.MemberPasswordEdit;
 import com.blog.som.domain.member.dto.MemberRegister.EmailDuplicateResponse;
 import com.blog.som.domain.member.dto.MemberRegister.Request;
+import com.blog.som.domain.member.dto.RegisterEmailInput;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.global.components.mail.MailSender;
@@ -63,16 +64,17 @@ class MemberServiceTest {
     @DisplayName("성공")
     void emailDuplicateCheckAndStartRegister() {
       String email = "test@test.com";
+      RegisterEmailInput input = new RegisterEmailInput(email);
       //given
       when(memberRepository.existsByEmail(email))
           .thenReturn(false);
 
       //when
-      EmailDuplicateResponse response = memberService.emailDuplicateCheckAndStartRegister(email);
+      EmailDuplicateResponse response = memberService.emailDuplicateCheckAndStartRegister(input);
 
       //then
       verify(mailSender, times(1)).sendMailForRegister(any(SendMailDto.class));
-      assertThat(response.isDuplicateYn()).isFalse();
+      assertThat(response.isReuslt()).isTrue();
       assertThat(response.getEmail()).isEqualTo(email);
     }
 
@@ -80,18 +82,18 @@ class MemberServiceTest {
     @DisplayName("실패 : 이메일 중복")
     void emailDuplicateCheckAndStartRegister_email_duplicate() {
       String email = "test@test.com";
+      RegisterEmailInput input = new RegisterEmailInput(email);
+
       //given
       when(memberRepository.existsByEmail(email))
           .thenReturn(true);
 
       //when
-      EmailDuplicateResponse response = memberService.emailDuplicateCheckAndStartRegister(email);
-
       //then
-      verify(mailSender, never()).sendMailForRegister(any(SendMailDto.class));
+      MemberException memberException =
+          assertThrows(MemberException.class, () -> memberService.emailDuplicateCheckAndStartRegister(input));
+      assertThat(memberException.getErrorCode()).isEqualTo(ErrorCode.EMAIL_ALREADY_EXISTS);
 
-      assertThat(response.isDuplicateYn()).isTrue();
-      assertThat(response.getEmail()).isEqualTo(email);
     }
   }
 
