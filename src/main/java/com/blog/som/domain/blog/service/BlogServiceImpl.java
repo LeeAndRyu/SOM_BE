@@ -41,8 +41,6 @@ public class BlogServiceImpl implements BlogService {
     MemberEntity member = memberRepository.findByAccountName(accountName)
         .orElseThrow(() -> new BlogException(ErrorCode.BLOG_NOT_FOUND));
 
-
-
     return BlogMemberDto.fromEntity(member);
   }
 
@@ -109,7 +107,7 @@ public class BlogServiceImpl implements BlogService {
             Sort.by("registeredAt").descending());
 
     Page<PostEntity> posts =
-        postRepository.findByTitleContainingOrIntroductionContaining(query, query, pageRequest);
+        postRepository.findByMemberAndTitleContainingOrIntroductionContaining(member, query, query, pageRequest);
 
     List<BlogPostDto> blogPostList = posts.getContent().stream().map(this::getBlogPostDtoFromPostEntity).toList();
 

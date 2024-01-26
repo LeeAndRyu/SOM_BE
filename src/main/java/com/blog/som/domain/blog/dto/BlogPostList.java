@@ -3,7 +3,6 @@ package com.blog.som.domain.blog.dto;
 import com.blog.som.global.dto.PageDto;
 import java.util.List;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
