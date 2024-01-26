@@ -50,7 +50,7 @@ public class BlogServiceImpl implements BlogService {
     if(result){
       return FollowConstant.FOLLOWED;
     }
-    return FollowConstant.UNFOLLOWED;
+    return FollowConstant.NOT_FOLLOWED;
   }
 
   @Override
