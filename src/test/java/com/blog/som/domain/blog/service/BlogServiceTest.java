@@ -7,16 +7,24 @@ import static org.mockito.BDDMockito.*;
 import com.blog.som.EntityCreator;
 import com.blog.som.domain.blog.constant.FollowConstant;
 import com.blog.som.domain.blog.dto.BlogMemberDto;
+import com.blog.som.domain.blog.dto.BlogPostDto;
+import com.blog.som.domain.blog.dto.BlogPostList;
 import com.blog.som.domain.follow.entity.FollowEntity;
 import com.blog.som.domain.follow.service.FollowService;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
+import com.blog.som.domain.post.entity.PostEntity;
 import com.blog.som.domain.post.repository.PostRepository;
+import com.blog.som.domain.tag.entity.PostTagEntity;
+import com.blog.som.domain.tag.entity.TagEntity;
 import com.blog.som.domain.tag.repository.PostTagRepository;
 import com.blog.som.domain.tag.repository.TagRepository;
+import com.blog.som.global.constant.NumberConstant;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.BlogException;
 import com.blog.som.global.exception.custom.MemberException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
@@ -28,6 +36,9 @@ import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
@@ -130,6 +141,274 @@ class BlogServiceTest {
     }
   }
 
+  @Nested
+  @DisplayName("Blog 메인 페이지 조회 - 정렬 방법")
+  class GetBlogPostListBySortType{
+    @Test
+    @DisplayName("성공 : sort=latest_latest")
+    void getBlogPostListBySortType(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      String accountName = member.getAccountName();
+      String sort = "latest";
+      int page = 1;
+      PageRequest pageRequest =
+          PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by("registeredAt").descending());
+
+      List<PostEntity> postList = new ArrayList<>();
+
+      for (int i = 1; i <= 5; i++){
+        postList.add(EntityCreator.createPost(1000L + i, member));
+      }
+
+      //given
+      when(memberRepository.findByAccountName(accountName))
+          .thenReturn(Optional.of(member));
+      when(postRepository.findByMember(member, pageRequest))
+          .thenReturn(new PageImpl<>(postList));
+
+      //when
+      BlogPostList blogPostList = blogService.getBlogPostListBySortType(accountName, sort, page);
+
+      //then
+      verify(postTagRepository, times(postList.size())).findAllByPost(any(PostEntity.class));
+
+      for(BlogPostDto bp : blogPostList.getPostList()){
+        assertThat(bp.getMemberId()).isEqualTo(member.getMemberId());
+        assertThat(bp.getAccountName()).isEqualTo(member.getAccountName());
+      }
+      assertThat(blogPostList.getPageDto().getCurrentPage()).isEqualTo(1);
+      assertThat(blogPostList.getPageDto().getTotalElement()).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("성공 : sort=hot")
+    void getBlogPostListBySortType_hot(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      String accountName = member.getAccountName();
+      String sort = "hot";
+      int page = 1;
+      PageRequest pageRequest =
+          PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by("views").descending());
+
+      List<PostEntity> postList = new ArrayList<>();
+
+      for (int i = 1; i <= 5; i++){
+        postList.add(EntityCreator.createPost(1000L + i, member));
+      }
+
+      //given
+      when(memberRepository.findByAccountName(accountName))
+          .thenReturn(Optional.of(member));
+      when(postRepository.findByMember(member, pageRequest))
+          .thenReturn(new PageImpl<>(postList));
+
+      //when
+      BlogPostList blogPostList = blogService.getBlogPostListBySortType(accountName, sort, page);
+
+      //then
+      verify(postTagRepository, times(postList.size())).findAllByPost(any(PostEntity.class));
+
+      for(BlogPostDto bp : blogPostList.getPostList()){
+        assertThat(bp.getMemberId()).isEqualTo(member.getMemberId());
+        assertThat(bp.getAccountName()).isEqualTo(member.getAccountName());
+      }
+      assertThat(blogPostList.getPageDto().getCurrentPage()).isEqualTo(1);
+      assertThat(blogPostList.getPageDto().getTotalElement()).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("실패 : BLOG_NOT_FOUND")
+    void getBlogPostListBySortType_BLOG_NOT_FOUND(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      String accountName = member.getAccountName();
+      String sort = "latest";
+      int page = 1;
+      PageRequest pageRequest =
+          PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by("views").descending());
+
+      List<PostEntity> postList = new ArrayList<>();
+
+      for (int i = 1; i <= 5; i++){
+        postList.add(EntityCreator.createPost(1000L + i, member));
+      }
+
+      //given
+      when(memberRepository.findByAccountName(accountName))
+          .thenReturn(Optional.empty());
+
+      //when
+      //then
+      BlogException blogException =
+          assertThrows(BlogException.class, () -> blogService.getBlogPostListBySortType(accountName, sort, page));
+      assertThat(blogException.getErrorCode()).isEqualTo(ErrorCode.BLOG_NOT_FOUND);
+
+      verify(postTagRepository, never()).findAllByPost(any(PostEntity.class));
+    }
+
+  }
+
+  @Nested
+  @DisplayName("Blog 메인 페이지 조회 - 태그로 검색")
+  class GetBlogPostListByTag{
+
+    @Test
+    @DisplayName("성공")
+    void getBlogPostListByTag(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      TagEntity tag = EntityCreator.createTag(10L, "test-tag", member);
+
+      String accountName = member.getAccountName();
+      int page = 1;
+      PageRequest pageRequest =
+          PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by("postCreatedTime").descending());
+
+      List<PostTagEntity> postTagList = new ArrayList<>();
+      List<PostEntity> postList = new ArrayList<>();
+      for (int i = 1; i <= 5; i++){
+        PostEntity post = EntityCreator.createPost(100L + i, member);
+        postTagList.add(EntityCreator.createPostTag(1000L + i, post, tag));
+        postList.add(post);
+      }
+
+      //given
+      when(memberRepository.findByAccountName(accountName))
+          .thenReturn(Optional.of(member));
+      when(tagRepository.findByTagNameAndMember(tag.getTagName(), member))
+          .thenReturn(Optional.of(tag));
+      when(postTagRepository.findByMemberAndTag(member, tag, pageRequest))
+          .thenReturn(new PageImpl<>(postTagList));
+
+
+      //when
+      BlogPostList blogPostList = blogService.getBlogPostListByTag(accountName, tag.getTagName(), page);
+
+      //then
+      verify(postTagRepository, times(postTagList.size())).findAllByPost(any(PostEntity.class));
+
+      for(BlogPostDto bp : blogPostList.getPostList()){
+        assertThat(bp.getMemberId()).isEqualTo(member.getMemberId());
+        assertThat(bp.getAccountName()).isEqualTo(member.getAccountName());
+      }
+      assertThat(blogPostList.getPageDto().getCurrentPage()).isEqualTo(1);
+      assertThat(blogPostList.getPageDto().getTotalElement()).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("실패 : BLOG_NOT_FOUND")
+    void getBlogPostListByTag_BLOG_NOT_FOUND(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      TagEntity tag = EntityCreator.createTag(10L, "test-tag", member);
+
+      String accountName = member.getAccountName();
+      int page = 1;
+      PageRequest pageRequest =
+          PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by("postCreatedTime").descending());
+
+      //given
+      when(memberRepository.findByAccountName(accountName))
+          .thenReturn(Optional.empty());
+
+
+      //when
+      //then
+      BlogException blogException = assertThrows(BlogException.class,
+          () -> blogService.getBlogPostListByTag(accountName, tag.getTagName(), page));
+      assertThat(blogException.getErrorCode()).isEqualTo(ErrorCode.BLOG_NOT_FOUND);
+
+      verify(postTagRepository, never()).findByMemberAndTag(member, tag, pageRequest);
+    }
+
+    @Test
+    @DisplayName("실패 : TAG_NOT_FOUND")
+    void getBlogPostListByTag_TAG_NOT_FOUND(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      TagEntity tag = EntityCreator.createTag(10L, "test-tag", member);
+
+      String accountName = member.getAccountName();
+      int page = 1;
+      PageRequest pageRequest =
+          PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by("postCreatedTime").descending());
+
+      //given
+      when(memberRepository.findByAccountName(accountName))
+          .thenReturn(Optional.of(member));
+      when(tagRepository.findByTagNameAndMember(tag.getTagName(), member))
+          .thenReturn(Optional.empty());
+
+      //when
+      //then
+      BlogException blogException = assertThrows(BlogException.class,
+          () -> blogService.getBlogPostListByTag(accountName, tag.getTagName(), page));
+      assertThat(blogException.getErrorCode()).isEqualTo(ErrorCode.TAG_NOT_FOUND);
+
+      verify(postTagRepository, never()).findByMemberAndTag(member, tag, pageRequest);
+    }
+
+  }
+
+  @Nested
+  @DisplayName("Blog 메인 페이지 조회 - 검색어")
+  class GetBlogPostListByQuery{
+    @Test
+    @DisplayName("성공")
+    void getBlogPostListByQuery(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      String accountName = member.getAccountName();
+      int page = 1;
+      String query = "test";
+      PageRequest pageRequest =
+          PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by("registeredAt").descending());
+
+      List<PostEntity> postList = new ArrayList<>();
+      for (int i = 1; i <= 5; i++){
+        postList.add(EntityCreator.createPost(100L + i, member));
+      }
+
+      //given
+      when(memberRepository.findByAccountName(accountName))
+          .thenReturn(Optional.of(member));
+      when(postRepository.findByMemberAndTitleContainingOrIntroductionContaining(member, query,query, pageRequest))
+          .thenReturn(new PageImpl<>(postList));
+
+      //when
+      BlogPostList blogPostList = blogService.getBlogPostListByQuery(accountName, query, page);
+
+      //then
+      verify(postTagRepository, times(postList.size())).findAllByPost(any(PostEntity.class));
+
+      for(BlogPostDto bp : blogPostList.getPostList()){
+        assertThat(bp.getMemberId()).isEqualTo(member.getMemberId());
+        assertThat(bp.getAccountName()).isEqualTo(member.getAccountName());
+      }
+      assertThat(blogPostList.getPageDto().getCurrentPage()).isEqualTo(1);
+      assertThat(blogPostList.getPageDto().getTotalElement()).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("실패 : BLOG_NOT_FOUND")
+    void getBlogPostListByQuery_BLOG_NOT_FOUND(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      String accountName = member.getAccountName();
+      int page = 1;
+      String query = "test";
+      PageRequest pageRequest =
+          PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by("registeredAt").descending());
+
+      //given
+      when(memberRepository.findByAccountName(accountName))
+          .thenReturn(Optional.empty());
+
+      //when
+      //then
+      BlogException blogException =
+          assertThrows(BlogException.class, () -> blogService.getBlogPostListByQuery(accountName, query, page));
+      assertThat(blogException.getErrorCode()).isEqualTo(ErrorCode.BLOG_NOT_FOUND);
+
+      verify(postRepository, never())
+          .findByMemberAndTitleContainingOrIntroductionContaining(member, query, query, pageRequest);
+    }
+
+  }
 
 
 }
