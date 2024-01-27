@@ -2,11 +2,13 @@ package com.blog.som.domain.post.service;
 
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
+import com.blog.som.domain.post.elasticsearch.document.PostDocument;
 import com.blog.som.domain.post.dto.PostDeleteResponse;
 import com.blog.som.domain.post.dto.PostDto;
 import com.blog.som.domain.post.dto.PostEditRequest;
 import com.blog.som.domain.post.dto.PostWriteRequest;
 import com.blog.som.domain.post.entity.PostEntity;
+import com.blog.som.domain.post.elasticsearch.repository.ElasticSearchPostRepository;
 import com.blog.som.domain.post.repository.PostRepository;
 import com.blog.som.domain.tag.entity.PostTagEntity;
 import com.blog.som.domain.tag.entity.TagEntity;
@@ -29,14 +31,15 @@ import org.springframework.util.StringUtils;
 @Slf4j
 @RequiredArgsConstructor
 @Transactional
-//@Service
-public class PostServiceImpl implements PostService {
+@Service
+public class PostServiceElasticSearch implements PostService {
 
   private final PostRepository postRepository;
   private final MemberRepository memberRepository;
   private final TagRepository tagRepository;
   private final PostTagRepository postTagRepository;
   private final CacheRepository cacheRepository;
+  private final ElasticSearchPostRepository elasticSearchPostRepository;
 
   @Override
   public PostDto writePost(PostWriteRequest request, Long memberId) {
@@ -50,6 +53,9 @@ public class PostServiceImpl implements PostService {
 
     this.handleNewTags(tagList, member, post);
 
+    //es에 저장
+    elasticSearchPostRepository.save(PostDocument.fromEntity(post, tagList));
+
     return PostDto.fromEntity(post, tagList);
   }
 
@@ -58,10 +64,18 @@ public class PostServiceImpl implements PostService {
     PostEntity post = postRepository.findById(postId)
         .orElseThrow(() -> new PostException(ErrorCode.POST_NOT_FOUND));
 
-    List<String> tagList = postTagRepository.findAllByPost(post)
-        .stream()
-        .map(pt -> pt.getTag().getTagName())
-        .toList();
+    List<String> tagList;
+
+    Optional<PostDocument> postDocument = elasticSearchPostRepository.findById(post.getPostId());
+    if(postDocument.isPresent()){
+      tagList = postDocument.get().getTags();
+    }else{
+      log.info("elasticSearch postDocument [id={}] not found", post.getPostId());
+      tagList = postTagRepository.findAllByPost(post)
+          .stream()
+          .map(pt -> pt.getTag().getTagName())
+          .toList();
+    }
 
     if(StringUtils.hasText(accessUserAgent) && cacheRepository.canAddView(accessUserAgent)){
       post.addView();
@@ -110,6 +124,9 @@ public class PostServiceImpl implements PostService {
     log.info("[PostService.editPost()] remain List tags : {} ", editRequestTags);
     this.handleNewTags(editRequestTags, member, post);
 
+    elasticSearchPostRepository.deleteById(postId);
+    elasticSearchPostRepository.save(PostDocument.fromEntity(post, requestList));
+
     return PostDto.fromEntity(post, requestList);
   }
 
@@ -155,6 +172,8 @@ public class PostServiceImpl implements PostService {
       }
     }
     postRepository.delete(post);
+
+    elasticSearchPostRepository.deleteById(postId);
 
     return new PostDeleteResponse(post.getPostId(), post.getTitle());
   }
