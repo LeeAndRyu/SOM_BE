@@ -146,7 +146,7 @@ class PostServiceTest {
           .thenReturn(Optional.of(post));
       when(postTagRepository.findAllByPost(post))
           .thenReturn(new ArrayList<>(Arrays.asList(postTag1, postTag2)));
-      when(cacheRepository.canAddView(userAgent))
+      when(cacheRepository.canAddView(userAgent, 10L))
           .thenReturn(true);
 
       //when
@@ -175,7 +175,7 @@ class PostServiceTest {
           .thenReturn(Optional.of(post));
       when(postTagRepository.findAllByPost(post))
           .thenReturn(new ArrayList<>(Arrays.asList(postTag1, postTag2)));
-      when(cacheRepository.canAddView(userAgent))
+      when(cacheRepository.canAddView(userAgent, 10L))
           .thenReturn(false);
 
       //when

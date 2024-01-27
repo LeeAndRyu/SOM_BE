@@ -17,11 +17,18 @@ public class ElasticSearchConfig extends AbstractElasticsearchConfiguration {
   @Value("${spring.elasticsearch.url}")
   private String elasticsearchUrl;
 
+  @Value("${spring.es.username}")
+  private String username;
+
+  @Value("${spring.es.password}")
+  private String password;
+
   @Override
   public RestHighLevelClient elasticsearchClient() {
     ClientConfiguration clientConfiguration =
         ClientConfiguration.builder()
             .connectedTo(elasticsearchUrl)
+            .withBasicAuth(username, password)
             .withConnectTimeout(10000)
             .withSocketTimeout(10000)
             .build();

@@ -66,20 +66,27 @@ public class PostServiceElasticSearch implements PostService {
 
     List<String> tagList;
 
-    Optional<PostDocument> postDocument = elasticSearchPostRepository.findById(post.getPostId());
-    if(postDocument.isPresent()){
-      tagList = postDocument.get().getTags();
+    Optional<PostDocument> optionalPostDocument = elasticSearchPostRepository.findById(post.getPostId());
+
+    PostDocument postDocument;
+
+    if(optionalPostDocument.isPresent()){
+      postDocument = optionalPostDocument.get();
+      tagList = postDocument.getTags();
     }else{
       log.info("elasticSearch postDocument [id={}] not found", post.getPostId());
       tagList = postTagRepository.findAllByPost(post)
           .stream()
           .map(pt -> pt.getTag().getTagName())
           .toList();
+      postDocument = elasticSearchPostRepository.save(PostDocument.fromEntity(post, tagList));
     }
 
-    if(StringUtils.hasText(accessUserAgent) && cacheRepository.canAddView(accessUserAgent)){
+    if(StringUtils.hasText(accessUserAgent) && cacheRepository.canAddView(accessUserAgent, postId)){
       post.addView();
       postRepository.save(post);
+      postDocument.addView();
+      elasticSearchPostRepository.save(postDocument);
     }
 
     return PostDto.fromEntity(post, tagList);
@@ -173,7 +180,7 @@ public class PostServiceElasticSearch implements PostService {
     }
     postRepository.delete(post);
 
-    elasticSearchPostRepository.deleteById(postId);
+    elasticSearchPostRepository.deleteByPostId(postId);
 
     return new PostDeleteResponse(post.getPostId(), post.getTitle());
   }

@@ -7,6 +7,9 @@ import com.blog.som.domain.blog.dto.BlogPostList;
 import com.blog.som.domain.follow.service.FollowService;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
+import com.blog.som.domain.post.elasticsearch.document.PostDocument;
+import com.blog.som.domain.post.elasticsearch.repository.ElasticSearchPostQueryRepository;
+import com.blog.som.domain.post.elasticsearch.repository.ElasticSearchPostRepository;
 import com.blog.som.domain.post.entity.PostEntity;
 import com.blog.som.domain.post.repository.PostRepository;
 import com.blog.som.domain.tag.entity.PostTagEntity;
@@ -22,19 +25,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort;`
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @RequiredArgsConstructor
-//@Service
-public class BlogServiceImpl implements BlogService {
+@Service
+public class BlogServiceElasticSearch implements BlogService {
 
   private final MemberRepository memberRepository;
   private final PostRepository postRepository;
   private final TagRepository tagRepository;
   private final PostTagRepository postTagRepository;
   private final FollowService followService;
+  private final ElasticSearchPostRepository elasticSearchPostRepository;
+  private final ElasticSearchPostQueryRepository queryRepository;
 
   @Override
   public BlogMemberDto getBlogMember(String accountName) {
@@ -62,17 +67,12 @@ public class BlogServiceImpl implements BlogService {
     if(sort.equals("hot")){
       sortBy = "views";
     }
+    PageRequest pageRequest = PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by(sortBy).descending());
+    Page<PostDocument> documents = elasticSearchPostRepository.findAllByAccountName(accountName, pageRequest);
+    log.info("documents : {}", documents);
+    List<BlogPostDto> blogPostDtoList = documents.getContent().stream().map(BlogPostDto::fromDocument).toList();
 
-    Page<PostEntity> posts =
-        postRepository.findByMember(member,
-            PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by(sortBy).descending()));
-
-    List<BlogPostDto> blogPostList =
-        posts.getContent().stream()
-            .map(this::getBlogPostDtoFromPostEntity)
-            .toList();
-
-    return new BlogPostList(PageDto.fromPostEntityPage(posts), blogPostList);
+    return new BlogPostList(PageDto.fromPostDocumentPage(documents), blogPostDtoList);
   }
 
   @Override

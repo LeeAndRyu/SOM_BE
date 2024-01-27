@@ -22,7 +22,6 @@ import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
@@ -63,7 +62,7 @@ public class PostServiceImpl implements PostService {
         .map(pt -> pt.getTag().getTagName())
         .toList();
 
-    if(StringUtils.hasText(accessUserAgent) && cacheRepository.canAddView(accessUserAgent)){
+    if(StringUtils.hasText(accessUserAgent) && cacheRepository.canAddView(accessUserAgent, postId)){
       post.addView();
       postRepository.save(post);
     }

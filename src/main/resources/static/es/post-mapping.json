@@ -1,6 +1,10 @@
 {
   "properties": {
 
+    "post_id": {
+      "type": "long"
+    },
+
     "member_id": {
       "type": "long"
     },
@@ -39,11 +43,11 @@
 
     "registered_at": {
       "type": "date",
-      "format": "uuuu-MM-dd'T'HH:mm:ss.SSS||epoch_millis"
+      "format": "yyyy-MM-dd'T'HH:mm:ss.SSS||epoch_millis"
     },
 
     "tags": {
-      "type": "object"
+      "type": "text"
     }
   }
 

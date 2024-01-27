@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -23,13 +24,17 @@ import org.springframework.data.elasticsearch.annotations.Setting;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 @Setting(settingPath = "static/es/es-settings.json")
 @Mapping(mappingPath = "static/es/post-mapping.json")
 @Document(indexName = "post")
 public class PostDocument {
 
   @Id
-  @Field(name = "post_id")
+  @Field(name = "id", type = FieldType.Keyword)
+  private Long id;
+
+  @Field(name = "post_id", type = FieldType.Long)
   private Long postId;
 
   @Field(name = "member_id", type = FieldType.Long)
@@ -59,11 +64,20 @@ public class PostDocument {
   @Field(name = "registered_at", type = FieldType.Date, format = {DateFormat.date_hour_minute_second_millis, DateFormat.epoch_millis})
   private LocalDateTime registeredAt;
 
-  @Field(name = "tags", type = FieldType.Object)
+  @Field(name = "tags", type = FieldType.Text)
   private List<String> tags = new ArrayList<>();
+
+  public void addView(){
+    this.views += 1;
+  }
+
+  public void addLikes(){
+    this.likes += 1;
+  }
 
   public static PostDocument fromEntity(PostEntity postEntity, List<String> tags){
     return PostDocument.builder()
+        .id(postEntity.getPostId())
         .postId(postEntity.getPostId())
         .memberId(postEntity.getMember().getMemberId())
         .accountName(postEntity.getMember().getAccountName())

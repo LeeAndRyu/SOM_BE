@@ -6,5 +6,5 @@ public interface CacheRepository {
 
   String getEmailByUuid(String uuid);
 
-  boolean canAddView(String accessUserAgent);
+  boolean canAddView(String accessUserAgent, Long postId);
 }
