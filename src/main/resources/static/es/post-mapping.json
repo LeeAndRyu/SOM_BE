@@ -1,0 +1,50 @@
+{
+  "properties": {
+
+    "member_id": {
+      "type": "long"
+    },
+
+    "account_name": {
+      "type": "text",
+      "analyzer": "korean"
+    },
+
+    "title": {
+      "type": "text",
+      "analyzer": "korean"
+    },
+
+    "thumbnail": {
+      "type": "text"
+    },
+
+    "introduction": {
+      "type": "text",
+      "analyzer": "korean"
+    },
+
+    "content": {
+      "type": "text",
+      "analyzer": "korean"
+    },
+
+    "likes": {
+      "type": "integer"
+    },
+
+    "views": {
+      "type": "integer"
+    },
+
+    "registered_at": {
+      "type": "date",
+      "format": "uuuu-MM-dd'T'HH:mm:ss.SSS||epoch_millis"
+    },
+
+    "tags": {
+      "type": "object"
+    }
+  }
+
+}

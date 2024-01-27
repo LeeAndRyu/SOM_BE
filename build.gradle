@@ -33,6 +33,9 @@ dependencies {
     // redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+    //Elastic Search
+    implementation 'org.springframework.data:spring-data-elasticsearch:4.4.2'
+
     //mail
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
