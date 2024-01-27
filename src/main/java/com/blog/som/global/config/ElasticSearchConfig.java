@@ -1,6 +1,5 @@
 package com.blog.som.global.config;
 
-import com.blog.som.domain.post.elasticsearch.repository.ElasticSearchPostQueryRepository;
 import com.blog.som.domain.post.elasticsearch.repository.ElasticSearchPostRepository;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,7 +9,7 @@ import org.springframework.data.elasticsearch.client.RestClients;
 import org.springframework.data.elasticsearch.config.AbstractElasticsearchConfiguration;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 
-@EnableElasticsearchRepositories(basePackageClasses = {ElasticSearchPostRepository.class, ElasticSearchPostQueryRepository.class})
+@EnableElasticsearchRepositories(basePackageClasses = {ElasticSearchPostRepository.class})
 @Configuration
 public class ElasticSearchConfig extends AbstractElasticsearchConfiguration {
 

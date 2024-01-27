@@ -32,7 +32,7 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 @Transactional
 @Service
-public class PostServiceElasticSearch implements PostService {
+public class ElasticsearchPostService implements PostService {
 
   private final PostRepository postRepository;
   private final MemberRepository memberRepository;

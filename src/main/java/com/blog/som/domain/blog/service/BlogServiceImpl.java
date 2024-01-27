@@ -14,6 +14,7 @@ import com.blog.som.domain.tag.entity.TagEntity;
 import com.blog.som.domain.tag.repository.PostTagRepository;
 import com.blog.som.domain.tag.repository.TagRepository;
 import com.blog.som.global.constant.NumberConstant;
+import com.blog.som.global.constant.SearchConstant;
 import com.blog.som.global.dto.PageDto;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.BlogException;
@@ -58,10 +59,11 @@ public class BlogServiceImpl implements BlogService {
     MemberEntity member = memberRepository.findByAccountName(accountName)
         .orElseThrow(() -> new BlogException(ErrorCode.BLOG_NOT_FOUND));
 
-    String sortBy = "registeredAt";
-    if(sort.equals("hot")){
-      sortBy = "views";
+    String sortBy = SearchConstant.REGISTERED_AT;
+    if (sort.equals(SearchConstant.HOT)) {
+      sortBy = SearchConstant.VIEWS;
     }
+
 
     Page<PostEntity> posts =
         postRepository.findByMember(member,
@@ -85,7 +87,7 @@ public class BlogServiceImpl implements BlogService {
 
     PageRequest pageRequest =
         PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE,
-            Sort.by("postCreatedTime").descending());
+            Sort.by(SearchConstant.POST_CREATE_TIME).descending());
 
     Page<PostTagEntity> postTags = postTagRepository.findByMemberAndTag(member, tag, pageRequest);
 
@@ -104,7 +106,7 @@ public class BlogServiceImpl implements BlogService {
 
     PageRequest pageRequest =
         PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE,
-            Sort.by("registeredAt").descending());
+            Sort.by(SearchConstant.REGISTERED_AT).descending());
 
     Page<PostEntity> posts =
         postRepository.findByMemberAndTitleContainingOrIntroductionContaining(member, query, query, pageRequest);

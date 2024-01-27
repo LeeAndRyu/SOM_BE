@@ -8,38 +8,32 @@ import com.blog.som.domain.follow.service.FollowService;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.domain.post.elasticsearch.document.PostDocument;
-import com.blog.som.domain.post.elasticsearch.repository.ElasticSearchPostQueryRepository;
 import com.blog.som.domain.post.elasticsearch.repository.ElasticSearchPostRepository;
 import com.blog.som.domain.post.entity.PostEntity;
 import com.blog.som.domain.post.repository.PostRepository;
-import com.blog.som.domain.tag.entity.PostTagEntity;
-import com.blog.som.domain.tag.entity.TagEntity;
-import com.blog.som.domain.tag.repository.PostTagRepository;
-import com.blog.som.domain.tag.repository.TagRepository;
 import com.blog.som.global.constant.NumberConstant;
+import com.blog.som.global.constant.SearchConstant;
 import com.blog.som.global.dto.PageDto;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.BlogException;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;`
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class BlogServiceElasticSearch implements BlogService {
+public class ElasticsearchBlogService implements BlogService {
 
   private final MemberRepository memberRepository;
   private final PostRepository postRepository;
-  private final TagRepository tagRepository;
-  private final PostTagRepository postTagRepository;
   private final FollowService followService;
   private final ElasticSearchPostRepository elasticSearchPostRepository;
-  private final ElasticSearchPostQueryRepository queryRepository;
 
   @Override
   public BlogMemberDto getBlogMember(String accountName) {
@@ -52,7 +46,7 @@ public class BlogServiceElasticSearch implements BlogService {
   @Override
   public String getFollowStatus(Long memberId, String accountName) {
     boolean result = followService.isFollowing(memberId, accountName);
-    if(result){
+    if (result) {
       return FollowConstant.FOLLOWED;
     }
     return FollowConstant.NOT_FOLLOWED;
@@ -60,41 +54,34 @@ public class BlogServiceElasticSearch implements BlogService {
 
   @Override
   public BlogPostList getBlogPostListBySortType(String accountName, String sort, int page) {
-    MemberEntity member = memberRepository.findByAccountName(accountName)
-        .orElseThrow(() -> new BlogException(ErrorCode.BLOG_NOT_FOUND));
+    String sortBy = SearchConstant.REGISTERED_AT;
 
-    String sortBy = "registeredAt";
-    if(sort.equals("hot")){
-      sortBy = "views";
+    if (sort.equals(SearchConstant.HOT)) {
+      sortBy = SearchConstant.VIEWS;
     }
-    PageRequest pageRequest = PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by(sortBy).descending());
-    Page<PostDocument> documents = elasticSearchPostRepository.findAllByAccountName(accountName, pageRequest);
-    log.info("documents : {}", documents);
-    List<BlogPostDto> blogPostDtoList = documents.getContent().stream().map(BlogPostDto::fromDocument).toList();
 
+    PageRequest pageRequest = PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by(sortBy).descending());
+
+    Page<PostDocument> documents = elasticSearchPostRepository.findAllByAccountName(accountName, pageRequest);
+
+    List<BlogPostDto> blogPostDtoList =
+        documents.getContent()
+            .stream()
+            .map(BlogPostDto::fromDocument).toList();
     return new BlogPostList(PageDto.fromPostDocumentPage(documents), blogPostDtoList);
   }
 
   @Override
   public BlogPostList getBlogPostListByTag(String accountName, String tagName, int page) {
-    MemberEntity member = memberRepository.findByAccountName(accountName)
-        .orElseThrow(() -> new BlogException(ErrorCode.BLOG_NOT_FOUND));
-
-    TagEntity tag = tagRepository.findByTagNameAndMember(tagName, member)
-        .orElseThrow(() -> new BlogException(ErrorCode.TAG_NOT_FOUND));
-
     PageRequest pageRequest =
         PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE,
-            Sort.by("postCreatedTime").descending());
+            Sort.by(SearchConstant.REGISTERED_AT).descending());
 
-    Page<PostTagEntity> postTags = postTagRepository.findByMemberAndTag(member, tag, pageRequest);
+    Page<PostDocument> pageDocument = elasticSearchPostRepository.findByAccountNameAndTagsContaining(
+        accountName, tagName, pageRequest);
+    List<BlogPostDto> blogPostDtoList = pageDocument.getContent().stream().map(BlogPostDto::fromDocument).toList();
 
-    List<PostEntity> posts = postTags.getContent().stream().map(PostTagEntity::getPost).toList();
-
-    List<BlogPostDto> blogPostList = posts.stream().map(this::getBlogPostDtoFromPostEntity).toList();
-
-
-    return new BlogPostList(PageDto.fromPostTagEntityEntityPage(postTags), blogPostList);
+    return new BlogPostList(PageDto.fromPostDocumentPage(pageDocument), blogPostDtoList);
   }
 
   @Override
@@ -104,23 +91,19 @@ public class BlogServiceElasticSearch implements BlogService {
 
     PageRequest pageRequest =
         PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE,
-            Sort.by("registeredAt").descending());
+            Sort.by(SearchConstant.REGISTERED_AT).descending());
 
+    //LikeQuery를 사용하는게 낫다.
     Page<PostEntity> posts =
         postRepository.findByMemberAndTitleContainingOrIntroductionContaining(member, query, query, pageRequest);
 
-    List<BlogPostDto> blogPostList = posts.getContent().stream().map(this::getBlogPostDtoFromPostEntity).toList();
-
-    return new BlogPostList(PageDto.fromPostEntityPage(posts), blogPostList);
-  }
-
-
-  private BlogPostDto getBlogPostDtoFromPostEntity(PostEntity postEntity) {
-    List<String> tagList =
-        postTagRepository.findAllByPost(postEntity)
-            .stream()
-            .map(pt -> pt.getTag().getTagName())
+    List<BlogPostDto> blogPostDtoList =
+        posts.stream()
+            .map(p -> elasticSearchPostRepository.findByPostId(p.getPostId()))
+            .filter(Optional::isPresent)
+            .map(op -> BlogPostDto.fromDocument(op.get()))
             .toList();
-    return BlogPostDto.fromEntity(postEntity, tagList);
+
+    return new BlogPostList(PageDto.fromPostEntityPage(posts), blogPostDtoList);
   }
 }
