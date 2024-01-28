@@ -29,21 +29,6 @@ public class SecurityConfig {
   private final MyAccessDeniedHandler myAccessDeniedHandler;
   private final MyAuthenticationEntryPoint myAuthenticationEntryPoint;
 
-  //모두에게 접근 허용
-  private static final String[] PERMIT_ALL_URL = {
-      //swagger
-      "/v2/api-docs",
-      "/swagger-resources/**",
-      "/configuration/ui",
-      "/configuration/security",
-      "/swagger-ui.html",
-      "/swagger-ui/**",
-      "/webjars/**",
-      "/register/**",
-      "/auth/email-auth",
-      "/test/**"
-  };
-
   //멤버에게만 접근 허용
   private static final String[] PERMIT_ONLY_MEMBER = {
       "/member/**"
@@ -58,14 +43,8 @@ public class SecurityConfig {
         .cors().and()
         .headers().frameOptions().disable();
 
-    http.formLogin().disable();
-
     http
         .authorizeRequests()
-        .antMatchers("/admin/**")
-        .hasAuthority("ROLE_ADMIN")
-        .antMatchers(PERMIT_ONLY_MEMBER)
-        .hasAuthority("ROLE_USER")
         .antMatchers("/**")
         .permitAll();
 
