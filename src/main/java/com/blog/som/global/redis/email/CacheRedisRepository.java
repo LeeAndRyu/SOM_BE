@@ -38,12 +38,13 @@ public class CacheRedisRepository implements CacheRepository {
   }
 
   @Override
-  public boolean canAddView(String accessUserAgent) {
-    String key = RedisConstant.VIEW_PREFIX + accessUserAgent;
+  public boolean canAddView(String accessUserAgent, Long postId) {
+    String key = RedisConstant.VIEW_PREFIX + accessUserAgent + postId;
     if(redisTemplate.hasKey(key)){
       return false;
     }
     ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+
     valueOperations.set(key, "view", Duration.ofMinutes(TimeConstant.ADD_VIEW_MINUTE));
 
     return true;

@@ -1,5 +1,6 @@
 package com.blog.som.global.dto;
 
+import com.blog.som.domain.post.elasticsearch.document.PostDocument;
 import com.blog.som.domain.post.entity.PostEntity;
 import com.blog.som.domain.tag.entity.PostTagEntity;
 import org.springframework.data.domain.Page;
@@ -9,6 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.elasticsearch.core.SearchPage;
 
 @Getter
 @Setter
@@ -34,6 +36,16 @@ public class PageDto {
   }
 
   public static PageDto fromPostTagEntityEntityPage(Page<PostTagEntity> page){
+    return PageDto.builder()
+        .currentPage(page.getNumber() + 1)
+        .currentElements(page.getNumberOfElements())
+        .pageSize(page.getSize())
+        .totalElement((int)page.getTotalElements())
+        .totalPages(page.getTotalPages())
+        .build();
+  }
+
+  public static PageDto fromPostDocumentPage(Page<PostDocument> page){
     return PageDto.builder()
         .currentPage(page.getNumber() + 1)
         .currentElements(page.getNumberOfElements())

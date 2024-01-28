@@ -7,6 +7,7 @@ import com.blog.som.domain.blog.dto.BlogPostList;
 import com.blog.som.domain.blog.service.BlogService;
 import com.blog.som.domain.member.security.userdetails.LoginMember;
 import com.blog.som.domain.member.type.Role;
+import com.blog.som.global.constant.SearchConstant;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.BlogException;
 import io.swagger.annotations.Api;
@@ -55,10 +56,12 @@ public class BlogController {
     if (StringUtils.hasText(tagName) && StringUtils.hasText(query)) {
       throw new BlogException(ErrorCode.BLOG_POSTS_INVALID_QUERY);
     }
+
     //hot
-    if(sort.equals("hot")){
+    if(sort.equals(SearchConstant.HOT)){
       return ResponseEntity.ok(blogService.getBlogPostListBySortType(accountName, sort, page));
     }
+
     //tag 검색
     if(StringUtils.hasText(tagName)){
       return ResponseEntity.ok(blogService.getBlogPostListByTag(accountName, tagName, page));

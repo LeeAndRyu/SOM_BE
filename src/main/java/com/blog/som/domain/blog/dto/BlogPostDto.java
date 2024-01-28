@@ -1,5 +1,6 @@
 package com.blog.som.domain.blog.dto;
 
+import com.blog.som.domain.post.elasticsearch.document.PostDocument;
 import com.blog.som.domain.post.entity.PostEntity;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -51,6 +52,21 @@ public class BlogPostDto {
         .views(post.getViews())
         .registeredAt(post.getRegisteredAt())
         .tags(tagList)
+        .build();
+  }
+
+  public static BlogPostDto fromDocument(PostDocument postDocument){
+    return BlogPostDto.builder()
+        .postId(postDocument.getPostId())
+        .memberId(postDocument.getMemberId())
+        .accountName(postDocument.getAccountName())
+        .title(postDocument.getTitle())
+        .thumbnail(postDocument.getThumbnail())
+        .introduction(postDocument.getIntroduction())
+        .likes(postDocument.getLikes())
+        .views(postDocument.getViews())
+        .registeredAt(postDocument.getRegisteredAt())
+        .tags(postDocument.getTags())
         .build();
   }
 }
