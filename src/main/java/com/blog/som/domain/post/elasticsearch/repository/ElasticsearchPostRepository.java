@@ -9,7 +9,7 @@ import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ElasticSearchPostRepository extends ElasticsearchRepository<PostDocument, Long> {
+public interface ElasticsearchPostRepository extends ElasticsearchRepository<PostDocument, Long> {
 
   Page<PostDocument> findAllByAccountName(String accountName, Pageable pageable);
 

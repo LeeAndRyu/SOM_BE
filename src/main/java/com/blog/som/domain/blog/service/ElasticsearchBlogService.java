@@ -8,7 +8,7 @@ import com.blog.som.domain.follow.service.FollowService;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.domain.post.elasticsearch.document.PostDocument;
-import com.blog.som.domain.post.elasticsearch.repository.ElasticSearchPostRepository;
+import com.blog.som.domain.post.elasticsearch.repository.ElasticsearchPostRepository;
 import com.blog.som.domain.post.entity.PostEntity;
 import com.blog.som.domain.post.repository.PostRepository;
 import com.blog.som.global.constant.NumberConstant;
@@ -33,7 +33,7 @@ public class ElasticsearchBlogService implements BlogService {
   private final MemberRepository memberRepository;
   private final PostRepository postRepository;
   private final FollowService followService;
-  private final ElasticSearchPostRepository elasticSearchPostRepository;
+  private final ElasticsearchPostRepository elasticSearchPostRepository;
 
   @Override
   public BlogMemberDto getBlogMember(String accountName) {

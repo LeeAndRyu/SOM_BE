@@ -2,7 +2,7 @@ package com.blog.som;
 
 import com.blog.som.domain.member.security.userdetails.LoginMember;
 import com.blog.som.domain.post.elasticsearch.document.PostDocument;
-import com.blog.som.domain.post.elasticsearch.repository.ElasticSearchPostRepository;
+import com.blog.som.domain.post.elasticsearch.repository.ElasticsearchPostRepository;
 import com.blog.som.global.s3.S3ImageService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -26,7 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/test")
 public class TestController {
   private final S3ImageService s3ImageService;
-  private final ElasticSearchPostRepository elasticSearchPostRepository;
+  private final ElasticsearchPostRepository elasticSearchPostRepository;
   
   @ApiOperation(value = "로그인 멤버 확인", notes = "토큰만 Header에 포함시켜서 로그인 멤버 확인")
   @GetMapping("/loginUser")
