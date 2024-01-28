@@ -3,10 +3,12 @@ package com.blog.som;
 import com.blog.som.domain.follow.entity.FollowEntity;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.type.Role;
+import com.blog.som.domain.post.elasticsearch.document.PostDocument;
 import com.blog.som.domain.post.entity.PostEntity;
 import com.blog.som.domain.tag.entity.PostTagEntity;
 import com.blog.som.domain.tag.entity.TagEntity;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class EntityCreator {
 
@@ -62,6 +64,23 @@ public class EntityCreator {
         .fromMember(fromMember)
         .toMember(toMember)
         .followAt(LocalDateTime.now())
+        .build();
+  }
+
+  public static PostDocument createPostDocument(PostEntity postEntity, List<String> tags){
+    return PostDocument.builder()
+        .id(postEntity.getPostId())
+        .postId(postEntity.getPostId())
+        .memberId(postEntity.getMember().getMemberId())
+        .accountName(postEntity.getMember().getAccountName())
+        .title(postEntity.getTitle())
+        .thumbnail(postEntity.getThumbnail())
+        .introduction(postEntity.getIntroduction())
+        .content(postEntity.getContent())
+        .likes(postEntity.getLikes())
+        .views(postEntity.getViews())
+        .registeredAt(postEntity.getRegisteredAt())
+        .tags(tags)
         .build();
   }
 }
