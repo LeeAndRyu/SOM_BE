@@ -99,7 +99,7 @@ public class ElasticsearchBlogService implements BlogService {
 
     List<BlogPostDto> blogPostDtoList =
         posts.stream()
-            .map(p -> elasticSearchPostRepository.findByPostId(p.getPostId()))
+            .map(p -> elasticSearchPostRepository.findById(p.getPostId()))
             .filter(Optional::isPresent)
             .map(op -> BlogPostDto.fromDocument(op.get()))
             .toList();

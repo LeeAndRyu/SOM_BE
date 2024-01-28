@@ -8,6 +8,8 @@ import com.blog.som.domain.post.entity.PostEntity;
 import com.blog.som.domain.tag.entity.PostTagEntity;
 import com.blog.som.domain.tag.entity.TagEntity;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class EntityCreator {
@@ -81,6 +83,23 @@ public class EntityCreator {
         .views(postEntity.getViews())
         .registeredAt(postEntity.getRegisteredAt())
         .tags(tags)
+        .build();
+  }
+
+  public static PostDocument createPostDocument(PostEntity postEntity){
+    return PostDocument.builder()
+        .id(postEntity.getPostId())
+        .postId(postEntity.getPostId())
+        .memberId(postEntity.getMember().getMemberId())
+        .accountName(postEntity.getMember().getAccountName())
+        .title(postEntity.getTitle())
+        .thumbnail(postEntity.getThumbnail())
+        .introduction(postEntity.getIntroduction())
+        .content(postEntity.getContent())
+        .likes(postEntity.getLikes())
+        .views(postEntity.getViews())
+        .registeredAt(postEntity.getRegisteredAt())
+        .tags(new ArrayList<>(Arrays.asList("tag1, tag2")))
         .build();
   }
 }
