@@ -9,7 +9,7 @@ import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ElasticSearchPostRepository extends ElasticsearchRepository<PostDocument, Long> {
+public interface ElasticsearchPostRepository extends ElasticsearchRepository<PostDocument, Long> {
 
   Page<PostDocument> findAllByAccountName(String accountName, Pageable pageable);
 
@@ -17,8 +17,6 @@ public interface ElasticSearchPostRepository extends ElasticsearchRepository<Pos
 
   @Query("{\"bool\": {\"must\": [{\"match\": {\"account_name\": \"?0\"}}, {\"match\": {\"tags\": \"?1\"}}]}}")
   Page<PostDocument> findByAccountNameAndTagsContaining(String accountName, String tagName, Pageable pageable);
-
-  Optional<PostDocument> findByPostId(Long postId);
 
   //단어가 일치하는 것을 찾는 쿼리
   @Query("{\"bool\": {\"must\": ["

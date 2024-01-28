@@ -8,7 +8,7 @@ import com.blog.som.domain.post.dto.PostDto;
 import com.blog.som.domain.post.dto.PostEditRequest;
 import com.blog.som.domain.post.dto.PostWriteRequest;
 import com.blog.som.domain.post.entity.PostEntity;
-import com.blog.som.domain.post.elasticsearch.repository.ElasticSearchPostRepository;
+import com.blog.som.domain.post.elasticsearch.repository.ElasticsearchPostRepository;
 import com.blog.som.domain.post.repository.PostRepository;
 import com.blog.som.domain.tag.entity.PostTagEntity;
 import com.blog.som.domain.tag.entity.TagEntity;
@@ -39,7 +39,7 @@ public class ElasticsearchPostService implements PostService {
   private final TagRepository tagRepository;
   private final PostTagRepository postTagRepository;
   private final CacheRepository cacheRepository;
-  private final ElasticSearchPostRepository elasticSearchPostRepository;
+  private final ElasticsearchPostRepository elasticSearchPostRepository;
 
   @Override
   public PostDto writePost(PostWriteRequest request, Long memberId) {
@@ -180,7 +180,7 @@ public class ElasticsearchPostService implements PostService {
     }
     postRepository.delete(post);
 
-    elasticSearchPostRepository.deleteByPostId(postId);
+    elasticSearchPostRepository.deleteById(postId);
 
     return new PostDeleteResponse(post.getPostId(), post.getTitle());
   }
