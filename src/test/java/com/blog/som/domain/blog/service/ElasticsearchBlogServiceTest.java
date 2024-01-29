@@ -212,108 +212,71 @@ class ElasticsearchBlogServiceTest {
 
   }
 
-  @Nested
+  @Test
   @DisplayName("Blog 메인 페이지 조회 - 태그로 검색")
-  class GetBlogPostListByTag {
+  void getBlogPostListByTag() {
+    MemberEntity member = EntityCreator.createMember(1L);
+    String accountName = member.getAccountName();
+    int page = 1;
+    String tagName = "tag1";
+    PageRequest pageRequest =
+        PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE,
+            Sort.by(SearchConstant.REGISTERED_AT).descending());
 
-    @Test
-    @DisplayName("성공")
-    void getBlogPostListByTag() {
-      MemberEntity member = EntityCreator.createMember(1L);
-      String accountName = member.getAccountName();
-      int page = 1;
-      String tagName = "tag1";
-      PageRequest pageRequest =
-          PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE,
-              Sort.by(SearchConstant.REGISTERED_AT).descending());
+    List<PostDocument> postDocumentList = new ArrayList<>();
 
-      List<PostDocument> postDocumentList = new ArrayList<>();
-
-      for (int i = 1; i <= 5; i++) {
-        postDocumentList.add(EntityCreator.createPostDocument(EntityCreator.createPost(100L + i, member)));
-      }
-
-      //given
-      when(elasticSearchPostRepository.findByAccountNameAndTagsContaining(accountName, tagName, pageRequest))
-          .thenReturn(new PageImpl<>(postDocumentList));
-
-      //when
-      BlogPostList blogPostList = blogService.getBlogPostListByTag(accountName, tagName, page);
-
-      //then
-      for (BlogPostDto bp : blogPostList.getPostList()) {
-        assertThat(bp.getMemberId()).isEqualTo(member.getMemberId());
-        assertThat(bp.getAccountName()).isEqualTo(member.getAccountName());
-      }
-      assertThat(blogPostList.getPageDto().getCurrentPage()).isEqualTo(1);
-      assertThat(blogPostList.getPageDto().getTotalElement()).isEqualTo(5);
+    for (int i = 1; i <= 5; i++) {
+      postDocumentList.add(EntityCreator.createPostDocument(EntityCreator.createPost(100L + i, member)));
     }
 
+    //given
+    when(elasticSearchPostRepository.findByAccountNameAndTagsContaining(accountName, tagName, pageRequest))
+        .thenReturn(new PageImpl<>(postDocumentList));
+
+    //when
+    BlogPostList blogPostList = blogService.getBlogPostListByTag(accountName, tagName, page);
+
+    //then
+    for (BlogPostDto bp : blogPostList.getPostList()) {
+      assertThat(bp.getMemberId()).isEqualTo(member.getMemberId());
+      assertThat(bp.getAccountName()).isEqualTo(member.getAccountName());
+    }
+    assertThat(blogPostList.getPageDto().getCurrentPage()).isEqualTo(1);
+    assertThat(blogPostList.getPageDto().getTotalElement()).isEqualTo(5);
   }
 
-  @Nested
+  @Test
   @DisplayName("Blog 메인 페이지 조회 - 검색어")
-  class GetBlogPostListByQuery {
+  void getBlogPostListByQuery() {
+    MemberEntity member = EntityCreator.createMember(1L);
+    String accountName = member.getAccountName();
+    int page = 1;
+    String query = "test";
+    PageRequest pageRequest =
+        PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by("registeredAt").descending());
 
-    @Test
-    @DisplayName("성공")
-    void getBlogPostListByQuery() {
-      MemberEntity member = EntityCreator.createMember(1L);
-      String accountName = member.getAccountName();
-      int page = 1;
-      String query = "test";
-      PageRequest pageRequest =
-          PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by("registeredAt").descending());
+    List<PostDocument> postDocumentList = new ArrayList<>();
 
-      List<PostEntity> postList = new ArrayList<>();
-      for (int i = 1; i <= 5; i++) {
-        postList.add(EntityCreator.createPost(100L + i, member));
-      }
-
-      //given
-      when(memberRepository.findByAccountName(accountName))
-          .thenReturn(Optional.of(member));
-      when(postRepository.findByMemberAndTitleContainingOrIntroductionContaining(member, query, query, pageRequest))
-          .thenReturn(new PageImpl<>(postList));
-
-      //when
-      BlogPostList blogPostList = blogService.getBlogPostListByQuery(accountName, query, page);
-
-      //then
-      verify(elasticSearchPostRepository, times(5)).findById(anyLong());
-
-      for (BlogPostDto bp : blogPostList.getPostList()) {
-        assertThat(bp.getMemberId()).isEqualTo(member.getMemberId());
-        assertThat(bp.getAccountName()).isEqualTo(member.getAccountName());
-      }
-      assertThat(blogPostList.getPageDto().getCurrentPage()).isEqualTo(1);
-      assertThat(blogPostList.getPageDto().getTotalElement()).isEqualTo(5);
+    for (int i = 1; i <= 5; i++) {
+      postDocumentList.add(EntityCreator.createPostDocument(EntityCreator.createPost(100L + i, member)));
     }
 
-    @Test
-    @DisplayName("실패 : BLOG_NOT_FOUND")
-    void getBlogPostListByQuery_BLOG_NOT_FOUND() {
-      MemberEntity member = EntityCreator.createMember(1L);
-      String accountName = member.getAccountName();
-      int page = 1;
-      String query = "test";
-      PageRequest pageRequest =
-          PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by("registeredAt").descending());
+    //given
+    when(elasticSearchPostRepository
+        .findByAccountNameAndTitleContainingOrIntroductionContaining(
+            accountName, query, query, pageRequest))
+        .thenReturn(new PageImpl<>(postDocumentList));
 
-      //given
-      when(memberRepository.findByAccountName(accountName))
-          .thenReturn(Optional.empty());
+    //when
+    BlogPostList blogPostList = blogService.getBlogPostListByQuery(accountName, query, page);
 
-      //when
-      //then
-      BlogException blogException =
-          assertThrows(BlogException.class, () -> blogService.getBlogPostListByQuery(accountName, query, page));
-      assertThat(blogException.getErrorCode()).isEqualTo(ErrorCode.BLOG_NOT_FOUND);
-
-      verify(postRepository, never())
-          .findByMemberAndTitleContainingOrIntroductionContaining(member, query, query, pageRequest);
+    //then
+    for (BlogPostDto bp : blogPostList.getPostList()) {
+      assertThat(bp.getMemberId()).isEqualTo(member.getMemberId());
+      assertThat(bp.getAccountName()).isEqualTo(member.getAccountName());
     }
-
+    assertThat(blogPostList.getPageDto().getCurrentPage()).isEqualTo(1);
+    assertThat(blogPostList.getPageDto().getTotalElement()).isEqualTo(5);
   }
 
 
