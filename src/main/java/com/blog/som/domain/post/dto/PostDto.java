@@ -23,6 +23,8 @@ public class PostDto {
 
   private Long memberId;
 
+  private String accountName;
+
   private String title;
 
   private String content;
@@ -45,6 +47,7 @@ public class PostDto {
     return PostDto.builder()
         .postId(post.getPostId())
         .memberId(post.getMember().getMemberId())
+        .accountName(post.getMember().getAccountName())
         .title(post.getTitle())
         .content(post.getContent())
         .thumbnail(post.getThumbnail())
