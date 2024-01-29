@@ -18,27 +18,58 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class ElasticsearchMainService implements MainService{
+public class ElasticsearchMainService implements MainService {
 
   private final ElasticsearchPostRepository elasticsearchPostRepository;
 
+  @Override
+  public BlogPostList getAllPostListHot(int page) {
+    Page<PostDocument> searchPageResult =
+        elasticsearchPostRepository.findAll(this.getBasicPageRequest(page));
+
+    return this.getBlogPostListBySearchPage(searchPageResult);
+  }
 
   @Override
-  public BlogPostList getMainPageList(String sort, int page) {
-
-    String sortBy = SearchConstant.VIEWS;
-
-    if(sort.equals("latest")){
-      sortBy = SearchConstant.REGISTERED_AT;
-    }
-
+  public BlogPostList getAllPostListLatest(int page) {
     PageRequest pageRequest =
-        PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by(sortBy).descending());
+        PageRequest.of(page - 1,
+            NumberConstant.DEFAULT_PAGE_SIZE, Sort.by(SearchConstant.REGISTERED_AT).descending());
 
-    Page<PostDocument> findPage = elasticsearchPostRepository.findAll(pageRequest);
+    Page<PostDocument> searchPageResult = elasticsearchPostRepository.findAll(pageRequest);
 
-    List<BlogPostDto> blogPostDtoList = findPage.getContent().stream().map(BlogPostDto::fromDocument).toList();
+    return this.getBlogPostListBySearchPage(searchPageResult);
+  }
 
-    return new BlogPostList(PageDto.fromPostDocumentPage(findPage), blogPostDtoList);
+  @Override
+  public BlogPostList searchAllPostByTitleOrIntroduction(String query, int page) {
+    Page<PostDocument> searchPageResult = elasticsearchPostRepository.
+        findByTitleContainingOrIntroductionContaining(query, query, this.getBasicPageRequest(page));
+    return this.getBlogPostListBySearchPage(searchPageResult);
+  }
+
+  @Override
+  public BlogPostList searchAllPostByContent(String query, int page) {
+    Page<PostDocument> searchPageResult =
+        elasticsearchPostRepository
+            .findByContentContaining(query, this.getBasicPageRequest(page));
+    return this.getBlogPostListBySearchPage(searchPageResult);
+  }
+
+  @Override
+  public BlogPostList searchAllPostByTag(String query, int page) {
+    Page<PostDocument> searchPageResult =
+        elasticsearchPostRepository.findByTagsContaining(query, this.getBasicPageRequest(page));
+    return this.getBlogPostListBySearchPage(searchPageResult);
+  }
+
+  private BlogPostList getBlogPostListBySearchPage(Page<PostDocument> searchPage) {
+    List<BlogPostDto> blogPostDtoList = searchPage.stream().map(BlogPostDto::fromDocument).toList();
+    return new BlogPostList(PageDto.fromPostDocumentPage(searchPage), blogPostDtoList);
+  }
+
+  private PageRequest getBasicPageRequest(int page) {
+    return PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE,
+        Sort.by(SearchConstant.VIEWS).descending());
   }
 }

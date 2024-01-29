@@ -33,7 +33,7 @@ public class ElasticsearchBlogService implements BlogService {
   private final MemberRepository memberRepository;
   private final PostRepository postRepository;
   private final FollowService followService;
-  private final ElasticsearchPostRepository elasticSearchPostRepository;
+  private final ElasticsearchPostRepository elasticsearchPostRepository;
 
   @Override
   public BlogMemberDto getBlogMember(String accountName) {
@@ -62,7 +62,7 @@ public class ElasticsearchBlogService implements BlogService {
 
     PageRequest pageRequest = PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by(sortBy).descending());
 
-    Page<PostDocument> documents = elasticSearchPostRepository.findAllByAccountName(accountName, pageRequest);
+    Page<PostDocument> documents = elasticsearchPostRepository.findAllByAccountName(accountName, pageRequest);
 
     List<BlogPostDto> blogPostDtoList =
         documents.getContent()
@@ -77,7 +77,7 @@ public class ElasticsearchBlogService implements BlogService {
         PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE,
             Sort.by(SearchConstant.REGISTERED_AT).descending());
 
-    Page<PostDocument> pageDocument = elasticSearchPostRepository.findByAccountNameAndTagsContaining(
+    Page<PostDocument> pageDocument = elasticsearchPostRepository.findByAccountNameAndTagsContaining(
         accountName, tagName, pageRequest);
     List<BlogPostDto> blogPostDtoList = pageDocument.getContent().stream().map(BlogPostDto::fromDocument).toList();
 
@@ -99,7 +99,7 @@ public class ElasticsearchBlogService implements BlogService {
 
     List<BlogPostDto> blogPostDtoList =
         posts.stream()
-            .map(p -> elasticSearchPostRepository.findById(p.getPostId()))
+            .map(p -> elasticsearchPostRepository.findById(p.getPostId()))
             .filter(Optional::isPresent)
             .map(op -> BlogPostDto.fromDocument(op.get()))
             .toList();

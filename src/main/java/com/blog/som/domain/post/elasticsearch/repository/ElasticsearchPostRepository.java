@@ -19,13 +19,12 @@ public interface ElasticsearchPostRepository extends ElasticsearchRepository<Pos
 
   Page<PostDocument> findAll(Pageable pageable);
 
-  //단어가 일치하는 것을 찾는 쿼리
-  @Query("{\"bool\": {\"must\": ["
-      + "{\"match\": {\"account_name\": \"?0\"}}, "
-      + "{\"bool\": {\"should\": ["
-      + "{\"match_phrase\": {\"title\": \"?1\"}}, "
-      + "{\"match_phrase\": {\"introduction\": \"?1\"}}"
-      + "]}}"
-      + "]}}")
-  Page<PostDocument> findByAccountNameAndTitleOrIntroductionContaining(String accountName, String query, Pageable pageable);
+  Page<PostDocument> findByTitleContainingOrIntroductionContaining(String title, String introduction, Pageable pageable);
+
+  Page<PostDocument> findByContentContaining(String query, Pageable pageable);
+
+  //정확히 일치하는 경우만 반환
+  @Query("{\"bool\": {\"must\": [{\"match\": {\"tags\": \"?0\"}}]}}")
+  Page<PostDocument> findByTagsContaining(String query, Pageable pageable);
+
 }

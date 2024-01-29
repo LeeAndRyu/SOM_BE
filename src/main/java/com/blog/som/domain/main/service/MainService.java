@@ -4,5 +4,13 @@ import com.blog.som.domain.blog.dto.BlogPostList;
 
 public interface MainService {
 
-  BlogPostList getMainPageList(String sort, int page);
+  BlogPostList getAllPostListHot(int page);
+
+  BlogPostList getAllPostListLatest(int page);
+
+  BlogPostList searchAllPostByTitleOrIntroduction(String query, int page);
+
+  BlogPostList searchAllPostByContent(String query, int page);
+
+  BlogPostList searchAllPostByTag(String query, int page);
 }
