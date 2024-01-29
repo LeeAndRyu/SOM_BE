@@ -26,6 +26,8 @@ public class BlogPostDto {
 
   private String accountName;
 
+  private String profileImage;
+
   private String title;
 
   private String thumbnail;
@@ -69,5 +71,23 @@ public class BlogPostDto {
         .tags(postDocument.getTags())
         .build();
   }
+
+  public static BlogPostDto fromDocument(PostDocument postDocument, String memberProfileImage){
+    return BlogPostDto.builder()
+        .postId(postDocument.getPostId())
+        .memberId(postDocument.getMemberId())
+        .profileImage(memberProfileImage)
+        .accountName(postDocument.getAccountName())
+        .title(postDocument.getTitle())
+        .thumbnail(postDocument.getThumbnail())
+        .introduction(postDocument.getIntroduction())
+        .likes(postDocument.getLikes())
+        .views(postDocument.getViews())
+        .registeredAt(postDocument.getRegisteredAt())
+        .tags(postDocument.getTags())
+        .build();
+  }
+
+
 }
 

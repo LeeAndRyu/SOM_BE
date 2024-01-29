@@ -7,12 +7,14 @@ import com.blog.som.EntityCreator;
 import com.blog.som.domain.blog.dto.BlogPostDto;
 import com.blog.som.domain.blog.dto.BlogPostList;
 import com.blog.som.domain.member.entity.MemberEntity;
+import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.domain.post.elasticsearch.document.PostDocument;
 import com.blog.som.domain.post.elasticsearch.repository.ElasticsearchPostRepository;
 import com.blog.som.global.constant.NumberConstant;
 import com.blog.som.global.constant.SearchConstant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,6 +32,8 @@ class ElasticsearchMainServiceTest {
 
   @Mock
   private ElasticsearchPostRepository elasticSearchPostRepository;
+  @Mock
+  private MemberRepository memberRepository;
 
   @InjectMocks
   private ElasticsearchMainService mainService;
@@ -61,6 +65,8 @@ class ElasticsearchMainServiceTest {
     //given
     when(elasticSearchPostRepository.findAll(pageRequest))
         .thenReturn(new PageImpl<>(postDocumentList));
+    when(memberRepository.findByAccountName(member.getAccountName()))
+        .thenReturn(Optional.of(member));
 
     //when
     BlogPostList result = mainService.getAllPostListHot(page);
@@ -86,6 +92,8 @@ class ElasticsearchMainServiceTest {
     //given
     when(elasticSearchPostRepository.findAll(pageRequest))
         .thenReturn(new PageImpl<>(postDocumentList));
+    when(memberRepository.findByAccountName(member.getAccountName()))
+        .thenReturn(Optional.of(member));
 
     //when
     BlogPostList result = mainService.getAllPostListLatest(page);
@@ -112,6 +120,8 @@ class ElasticsearchMainServiceTest {
     when(elasticSearchPostRepository.
         findByTitleContainingOrIntroductionContaining(query, query, pageRequest))
         .thenReturn(new PageImpl<>(postDocumentList));
+    when(memberRepository.findByAccountName(member.getAccountName()))
+        .thenReturn(Optional.of(member));
 
     //when
     BlogPostList result = mainService.searchAllPostByTitleOrIntroduction(query, page);
@@ -138,6 +148,8 @@ class ElasticsearchMainServiceTest {
     when(elasticSearchPostRepository
         .findByContentContaining(query, pageRequest))
         .thenReturn(new PageImpl<>(postDocumentList));
+    when(memberRepository.findByAccountName(member.getAccountName()))
+        .thenReturn(Optional.of(member));
 
     //when
     BlogPostList result = mainService.searchAllPostByContent(query, page);
@@ -164,6 +176,8 @@ class ElasticsearchMainServiceTest {
     when(elasticSearchPostRepository
         .findByTagsContaining(query, pageRequest))
         .thenReturn(new PageImpl<>(postDocumentList));
+    when(memberRepository.findByAccountName(member.getAccountName()))
+        .thenReturn(Optional.of(member));
 
     //when
     BlogPostList result = mainService.searchAllPostByTag(query, page);
