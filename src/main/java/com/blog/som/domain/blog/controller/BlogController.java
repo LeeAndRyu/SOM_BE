@@ -4,6 +4,7 @@ package com.blog.som.domain.blog.controller;
 
 import com.blog.som.domain.blog.dto.BlogMemberDto;
 import com.blog.som.domain.blog.dto.BlogPostList;
+import com.blog.som.domain.blog.dto.BlogTagListDto;
 import com.blog.som.domain.blog.service.BlogService;
 import com.blog.som.domain.member.security.userdetails.LoginMember;
 import com.blog.som.domain.member.type.Role;
@@ -44,6 +45,17 @@ public class BlogController {
 
     return ResponseEntity.ok(blogMember);
   }
+
+  @ApiOperation("블로그 태그 리스트 조회")
+  @GetMapping("/blog/{accountName}/tags")
+  public ResponseEntity<BlogTagListDto> blogTags(@PathVariable String accountName){
+
+    BlogTagListDto blogTags = blogService.getBlogTags(accountName);
+
+    return ResponseEntity.ok(blogTags);
+  }
+
+
 
   @ApiOperation("블로그 게시글 list 조회")
   @GetMapping("/blog/{accountName}/posts")

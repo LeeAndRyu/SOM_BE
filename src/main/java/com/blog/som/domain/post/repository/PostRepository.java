@@ -16,4 +16,6 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
       MemberEntity member, String title, String introduction, Pageable pageable);
 
   Page<PostEntity> findByTitleContainingOrIntroductionContaining(String title, String introduction, Pageable pageable);
+
+  int countByMember(MemberEntity member);
 }

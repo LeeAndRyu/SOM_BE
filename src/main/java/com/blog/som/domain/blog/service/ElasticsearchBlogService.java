@@ -4,11 +4,15 @@ import com.blog.som.domain.blog.constant.FollowConstant;
 import com.blog.som.domain.blog.dto.BlogMemberDto;
 import com.blog.som.domain.blog.dto.BlogPostDto;
 import com.blog.som.domain.blog.dto.BlogPostList;
+import com.blog.som.domain.blog.dto.BlogTagListDto;
 import com.blog.som.domain.follow.service.FollowService;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.domain.post.elasticsearch.document.PostDocument;
 import com.blog.som.domain.post.elasticsearch.repository.ElasticsearchPostRepository;
+import com.blog.som.domain.post.repository.PostRepository;
+import com.blog.som.domain.tag.dto.TagDto;
+import com.blog.som.domain.tag.repository.TagRepository;
 import com.blog.som.global.constant.NumberConstant;
 import com.blog.som.global.constant.SearchConstant;
 import com.blog.som.global.dto.PageDto;
@@ -30,6 +34,8 @@ public class ElasticsearchBlogService implements BlogService {
   private final MemberRepository memberRepository;
   private final FollowService followService;
   private final ElasticsearchPostRepository elasticsearchPostRepository;
+  private final TagRepository tagRepository;
+  private final PostRepository postRepository;
 
   @Override
   public BlogMemberDto getBlogMember(String accountName) {
@@ -40,8 +46,23 @@ public class ElasticsearchBlogService implements BlogService {
   }
 
   @Override
+  public BlogTagListDto getBlogTags(String accountName) {
+    MemberEntity member = memberRepository.findByAccountName(accountName)
+        .orElseThrow(() -> new BlogException(ErrorCode.BLOG_NOT_FOUND));
+
+    List<TagDto> tagDtoList = tagRepository.findAllByMember(member)
+        .stream()
+        .map(TagDto::fromEntity)
+        .toList();
+
+    int count = postRepository.countByMember(member);
+
+    return new BlogTagListDto(count, tagDtoList);
+  }
+
+  @Override
   public void validateAccountName(String accountName) {
-    if(!memberRepository.existsByAccountName(accountName)){
+    if (!memberRepository.existsByAccountName(accountName)) {
       throw new BlogException(ErrorCode.BLOG_NOT_FOUND);
     }
   }

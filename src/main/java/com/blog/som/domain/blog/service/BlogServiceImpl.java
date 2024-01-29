@@ -4,11 +4,13 @@ import com.blog.som.domain.blog.constant.FollowConstant;
 import com.blog.som.domain.blog.dto.BlogMemberDto;
 import com.blog.som.domain.blog.dto.BlogPostDto;
 import com.blog.som.domain.blog.dto.BlogPostList;
+import com.blog.som.domain.blog.dto.BlogTagListDto;
 import com.blog.som.domain.follow.service.FollowService;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.domain.post.entity.PostEntity;
 import com.blog.som.domain.post.repository.PostRepository;
+import com.blog.som.domain.tag.dto.TagDto;
 import com.blog.som.domain.tag.entity.PostTagEntity;
 import com.blog.som.domain.tag.entity.TagEntity;
 import com.blog.som.domain.tag.repository.PostTagRepository;
@@ -43,6 +45,21 @@ public class BlogServiceImpl implements BlogService {
         .orElseThrow(() -> new BlogException(ErrorCode.BLOG_NOT_FOUND));
 
     return BlogMemberDto.fromEntity(member);
+  }
+
+  @Override
+  public BlogTagListDto getBlogTags(String accountName) {
+    MemberEntity member = memberRepository.findByAccountName(accountName)
+        .orElseThrow(() -> new BlogException(ErrorCode.BLOG_NOT_FOUND));
+
+    List<TagDto> tagDtoList = tagRepository.findAllByMember(member)
+        .stream()
+        .map(TagDto::fromEntity)
+        .toList();
+
+    int count = postRepository.countByMember(member);
+
+    return new BlogTagListDto(count, tagDtoList);
   }
 
   @Override
