@@ -14,8 +14,12 @@ public interface ElasticsearchPostRepository extends ElasticsearchRepository<Pos
 
   void deleteByPostId(Long postId);
 
+  //정확히 일치하는 경우만 반환
   @Query("{\"bool\": {\"must\": [{\"match\": {\"account_name\": \"?0\"}}, {\"match\": {\"tags\": \"?1\"}}]}}")
   Page<PostDocument> findByAccountNameAndTagsContaining(String accountName, String tagName, Pageable pageable);
+
+  Page<PostDocument> findByAccountNameAndTitleContainingOrIntroductionContaining(
+      String accountName, String title, String introduction, Pageable pageable);
 
   Page<PostDocument> findAll(Pageable pageable);
 
