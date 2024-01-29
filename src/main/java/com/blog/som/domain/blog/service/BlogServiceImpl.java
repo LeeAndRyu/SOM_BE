@@ -46,6 +46,13 @@ public class BlogServiceImpl implements BlogService {
   }
 
   @Override
+  public void validateAccountName(String accountName) {
+    if(!memberRepository.existsByAccountName(accountName)){
+      throw new BlogException(ErrorCode.BLOG_NOT_FOUND);
+    }
+  }
+
+  @Override
   public String getFollowStatus(Long memberId, String accountName) {
     boolean result = followService.isFollowing(memberId, accountName);
     if(result){

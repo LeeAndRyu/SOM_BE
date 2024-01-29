@@ -40,6 +40,13 @@ public class ElasticsearchBlogService implements BlogService {
   }
 
   @Override
+  public void validateAccountName(String accountName) {
+    if(!memberRepository.existsByAccountName(accountName)){
+      throw new BlogException(ErrorCode.BLOG_NOT_FOUND);
+    }
+  }
+
+  @Override
   public String getFollowStatus(Long memberId, String accountName) {
     boolean result = followService.isFollowing(memberId, accountName);
     if (result) {
@@ -77,9 +84,6 @@ public class ElasticsearchBlogService implements BlogService {
 
   @Override
   public BlogPostList getBlogPostListByQuery(String accountName, String query, int page) {
-    MemberEntity member = memberRepository.findByAccountName(accountName)
-        .orElseThrow(() -> new BlogException(ErrorCode.BLOG_NOT_FOUND));
-
     PageRequest pageRequest =
         PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE,
             Sort.by(SearchConstant.REGISTERED_AT).descending());

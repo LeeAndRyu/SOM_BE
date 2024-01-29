@@ -52,6 +52,10 @@ public class BlogController {
       @RequestParam(value = "tag", required = false, defaultValue = "") String tagName,
       @RequestParam(value = "q", required = false, defaultValue = "")String query,
       @RequestParam(value = "p",required = false, defaultValue = "1") int page){
+    
+    //accountName이 존재하는지 검증
+    blogService.validateAccountName(accountName);
+    
     //두가지 모두 query로 들어올 순 없음
     if (StringUtils.hasText(tagName) && StringUtils.hasText(query)) {
       throw new BlogException(ErrorCode.BLOG_POSTS_INVALID_QUERY);

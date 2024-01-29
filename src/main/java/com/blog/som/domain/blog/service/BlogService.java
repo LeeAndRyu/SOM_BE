@@ -11,6 +11,12 @@ public interface BlogService {
    */
   BlogMemberDto getBlogMember(String accountName);
 
+
+  /**
+   * 블로그 명 (accountName)이 유효한 지 검증
+   */
+  void validateAccountName(String accountName);
+
   /**
    * 로그인 유저의 팔로우 여부
    */
