@@ -46,8 +46,6 @@ class ElasticsearchBlogServiceTest {
   @Mock
   private MemberRepository memberRepository;
   @Mock
-  private PostRepository postRepository;
-  @Mock
   private FollowService followService;
   @Mock
   private ElasticsearchPostRepository elasticSearchPostRepository;
