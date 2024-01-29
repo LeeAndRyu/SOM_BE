@@ -3,6 +3,7 @@ package com.blog.som.domain.blog.service;
 
 import com.blog.som.domain.blog.dto.BlogMemberDto;
 import com.blog.som.domain.blog.dto.BlogPostList;
+import com.blog.som.domain.blog.dto.BlogTagListDto;
 
 public interface BlogService {
 
@@ -10,6 +11,11 @@ public interface BlogService {
    * 블로그 회원 정보 조회
    */
   BlogMemberDto getBlogMember(String accountName);
+
+  /**
+   * 블로그 태그 리스트 조회
+   */
+  BlogTagListDto getBlogTags(String accountName);
 
 
   /**

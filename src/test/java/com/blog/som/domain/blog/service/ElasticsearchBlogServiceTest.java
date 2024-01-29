@@ -13,6 +13,7 @@ import com.blog.som.domain.blog.constant.FollowConstant;
 import com.blog.som.domain.blog.dto.BlogMemberDto;
 import com.blog.som.domain.blog.dto.BlogPostDto;
 import com.blog.som.domain.blog.dto.BlogPostList;
+import com.blog.som.domain.blog.dto.BlogTagListDto;
 import com.blog.som.domain.follow.service.FollowService;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
@@ -20,6 +21,8 @@ import com.blog.som.domain.post.elasticsearch.document.PostDocument;
 import com.blog.som.domain.post.elasticsearch.repository.ElasticsearchPostRepository;
 import com.blog.som.domain.post.entity.PostEntity;
 import com.blog.som.domain.post.repository.PostRepository;
+import com.blog.som.domain.tag.entity.TagEntity;
+import com.blog.som.domain.tag.repository.TagRepository;
 import com.blog.som.global.constant.NumberConstant;
 import com.blog.som.global.constant.SearchConstant;
 import com.blog.som.global.exception.ErrorCode;
@@ -49,6 +52,10 @@ class ElasticsearchBlogServiceTest {
   private FollowService followService;
   @Mock
   private ElasticsearchPostRepository elasticSearchPostRepository;
+  @Mock
+  private PostRepository postRepository;
+  @Mock
+  private TagRepository tagRepository;
 
   @InjectMocks
   private ElasticsearchBlogService blogService;
@@ -94,6 +101,51 @@ class ElasticsearchBlogServiceTest {
       //then
       BlogException blogException =
           assertThrows(BlogException.class, () -> blogService.getBlogMember(accountName));
+      assertThat(blogException.getErrorCode()).isEqualTo(ErrorCode.BLOG_NOT_FOUND);
+    }
+  }
+
+  @Nested
+  @DisplayName("Blog 태그 목록 조회")
+  class GetBlogTags{
+    @Test
+    @DisplayName("성공")
+    void getBlogTags(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      String accountName=  member.getAccountName();
+      List<TagEntity> list = new ArrayList<>();
+      for(int i = 1 ; i <= 5; i++){
+        list.add(EntityCreator.createTag(10L + i, "tag" + i, member));
+      }
+      //given
+      when(memberRepository.findByAccountName(accountName))
+          .thenReturn(Optional.of(member));
+      when(tagRepository.findAllByMember(member))
+          .thenReturn(list);
+      when(postRepository.countByMember(member))
+          .thenReturn(5);
+      //when
+      BlogTagListDto blogTags = blogService.getBlogTags(accountName);
+
+      //then
+      assertThat(blogTags.getTotalPostCount()).isEqualTo(5);
+      assertThat(blogTags.getTagList().size()).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("실패")
+    void getBlogTags_BLOG_NOT_FOUND(){
+      MemberEntity member = EntityCreator.createMember(1L);
+      String accountName=  member.getAccountName();
+
+      //given
+      when(memberRepository.findByAccountName(accountName))
+          .thenReturn(Optional.empty());
+
+      //when
+      //then
+      BlogException blogException =
+          assertThrows(BlogException.class, () -> blogService.getBlogTags(accountName));
       assertThat(blogException.getErrorCode()).isEqualTo(ErrorCode.BLOG_NOT_FOUND);
     }
   }
