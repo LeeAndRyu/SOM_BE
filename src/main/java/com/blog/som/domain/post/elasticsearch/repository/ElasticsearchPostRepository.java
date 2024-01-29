@@ -1,7 +1,6 @@
 package com.blog.som.domain.post.elasticsearch.repository;
 
 import com.blog.som.domain.post.elasticsearch.document.PostDocument;
-import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.annotations.Query;
@@ -15,16 +14,21 @@ public interface ElasticsearchPostRepository extends ElasticsearchRepository<Pos
 
   void deleteByPostId(Long postId);
 
+  //정확히 일치하는 경우만 반환
   @Query("{\"bool\": {\"must\": [{\"match\": {\"account_name\": \"?0\"}}, {\"match\": {\"tags\": \"?1\"}}]}}")
   Page<PostDocument> findByAccountNameAndTagsContaining(String accountName, String tagName, Pageable pageable);
 
-  //단어가 일치하는 것을 찾는 쿼리
-  @Query("{\"bool\": {\"must\": ["
-      + "{\"match\": {\"account_name\": \"?0\"}}, "
-      + "{\"bool\": {\"should\": ["
-      + "{\"match_phrase\": {\"title\": \"?1\"}}, "
-      + "{\"match_phrase\": {\"introduction\": \"?1\"}}"
-      + "]}}"
-      + "]}}")
-  Page<PostDocument> findByAccountNameAndTitleOrIntroductionContaining(String accountName, String query, Pageable pageable);
+  Page<PostDocument> findByAccountNameAndTitleContainingOrIntroductionContaining(
+      String accountName, String title, String introduction, Pageable pageable);
+
+  Page<PostDocument> findAll(Pageable pageable);
+
+  Page<PostDocument> findByTitleContainingOrIntroductionContaining(String title, String introduction, Pageable pageable);
+
+  Page<PostDocument> findByContentContaining(String query, Pageable pageable);
+
+  //정확히 일치하는 경우만 반환
+  @Query("{\"bool\": {\"must\": [{\"match\": {\"tags\": \"?0\"}}]}}")
+  Page<PostDocument> findByTagsContaining(String query, Pageable pageable);
+
 }
