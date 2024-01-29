@@ -17,6 +17,7 @@ import com.blog.som.domain.member.dto.MemberRegister.Request;
 import com.blog.som.domain.member.dto.RegisterEmailInput;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
+import com.blog.som.domain.post.elasticsearch.component.ElasticsearchPostComponent;
 import com.blog.som.global.components.mail.MailSender;
 import com.blog.som.global.components.mail.SendMailDto;
 import com.blog.som.global.components.password.PasswordUtils;
@@ -51,6 +52,8 @@ class MemberServiceTest {
   private MailSender mailSender;
   @Mock
   private S3ImageService s3ImageService;
+  @Mock
+  private ElasticsearchPostComponent elasticsearchPostComponent;
 
   @InjectMocks
   private MemberServiceImpl memberService;

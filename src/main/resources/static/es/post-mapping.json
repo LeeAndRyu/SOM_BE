@@ -9,9 +9,12 @@
       "type": "long"
     },
 
+    "profile_image": {
+      "type": "text"
+    },
+
     "account_name": {
-      "type": "text",
-      "analyzer": "korean"
+      "type": "keyword"
     },
 
     "title": {
