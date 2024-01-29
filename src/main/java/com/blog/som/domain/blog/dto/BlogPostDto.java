@@ -24,6 +24,8 @@ public class BlogPostDto {
 
   private Long memberId;
 
+  private String profileImage;
+
   private String accountName;
 
   private String title;
@@ -44,6 +46,7 @@ public class BlogPostDto {
     return BlogPostDto.builder()
         .postId(post.getPostId())
         .memberId(post.getMember().getMemberId())
+        .profileImage(post.getMember().getProfileImage())
         .accountName(post.getMember().getAccountName())
         .title(post.getTitle())
         .thumbnail(post.getThumbnail())
@@ -59,6 +62,7 @@ public class BlogPostDto {
     return BlogPostDto.builder()
         .postId(postDocument.getPostId())
         .memberId(postDocument.getMemberId())
+        .profileImage(postDocument.getProfileImage())
         .accountName(postDocument.getAccountName())
         .title(postDocument.getTitle())
         .thumbnail(postDocument.getThumbnail())
@@ -69,5 +73,6 @@ public class BlogPostDto {
         .tags(postDocument.getTags())
         .build();
   }
+
 }
 

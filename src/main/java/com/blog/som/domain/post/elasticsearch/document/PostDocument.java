@@ -41,7 +41,10 @@ public class PostDocument {
   @Field(name = "member_id", type = FieldType.Long)
   private Long memberId;
 
-  @Field(name = "account_name", type = FieldType.Text)
+  @Field(name = "profile_image", type = FieldType.Text)
+  private String profileImage;
+
+  @Field(name = "account_name", type = FieldType.Keyword)
   private String accountName;
 
   @Field(name = "title", type = FieldType.Text)
@@ -81,6 +84,7 @@ public class PostDocument {
         .id(postEntity.getPostId())
         .postId(postEntity.getPostId())
         .memberId(postEntity.getMember().getMemberId())
+        .profileImage(postEntity.getMember().getProfileImage())
         .accountName(postEntity.getMember().getAccountName())
         .title(postEntity.getTitle())
         .thumbnail(postEntity.getThumbnail())
