@@ -32,8 +32,6 @@ class ElasticsearchMainServiceTest {
 
   @Mock
   private ElasticsearchPostRepository elasticSearchPostRepository;
-  @Mock
-  private MemberRepository memberRepository;
 
   @InjectMocks
   private ElasticsearchMainService mainService;
@@ -65,8 +63,6 @@ class ElasticsearchMainServiceTest {
     //given
     when(elasticSearchPostRepository.findAll(pageRequest))
         .thenReturn(new PageImpl<>(postDocumentList));
-    when(memberRepository.findByAccountName(member.getAccountName()))
-        .thenReturn(Optional.of(member));
 
     //when
     BlogPostList result = mainService.getAllPostListHot(page);
@@ -92,8 +88,6 @@ class ElasticsearchMainServiceTest {
     //given
     when(elasticSearchPostRepository.findAll(pageRequest))
         .thenReturn(new PageImpl<>(postDocumentList));
-    when(memberRepository.findByAccountName(member.getAccountName()))
-        .thenReturn(Optional.of(member));
 
     //when
     BlogPostList result = mainService.getAllPostListLatest(page);
@@ -120,8 +114,6 @@ class ElasticsearchMainServiceTest {
     when(elasticSearchPostRepository.
         findByTitleContainingOrIntroductionContaining(query, query, pageRequest))
         .thenReturn(new PageImpl<>(postDocumentList));
-    when(memberRepository.findByAccountName(member.getAccountName()))
-        .thenReturn(Optional.of(member));
 
     //when
     BlogPostList result = mainService.searchAllPostByTitleOrIntroduction(query, page);
@@ -148,8 +140,6 @@ class ElasticsearchMainServiceTest {
     when(elasticSearchPostRepository
         .findByContentContaining(query, pageRequest))
         .thenReturn(new PageImpl<>(postDocumentList));
-    when(memberRepository.findByAccountName(member.getAccountName()))
-        .thenReturn(Optional.of(member));
 
     //when
     BlogPostList result = mainService.searchAllPostByContent(query, page);
@@ -176,8 +166,6 @@ class ElasticsearchMainServiceTest {
     when(elasticSearchPostRepository
         .findByTagsContaining(query, pageRequest))
         .thenReturn(new PageImpl<>(postDocumentList));
-    when(memberRepository.findByAccountName(member.getAccountName()))
-        .thenReturn(Optional.of(member));
 
     //when
     BlogPostList result = mainService.searchAllPostByTag(query, page);

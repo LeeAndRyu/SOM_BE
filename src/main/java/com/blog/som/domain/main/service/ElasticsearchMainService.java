@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service;
 public class ElasticsearchMainService implements MainService {
 
   private final ElasticsearchPostRepository elasticsearchPostRepository;
-  private final MemberRepository memberRepository;
 
   @Override
   public BlogPostList getAllPostListHot(int page) {
@@ -69,13 +68,10 @@ public class ElasticsearchMainService implements MainService {
   }
 
   private BlogPostList getBlogPostListBySearchPage(Page<PostDocument> searchPage) {
-    List<BlogPostDto> blogPostDtoList = new ArrayList<>();
-    for(PostDocument pd : searchPage.getContent()){
-      Optional<MemberEntity> optionalMember = memberRepository.findByAccountName(pd.getAccountName());
-      if(optionalMember.isPresent()){
-        blogPostDtoList.add(BlogPostDto.fromDocument(pd, optionalMember.get().getProfileImage()));
-      }
-    }
+    List<BlogPostDto> blogPostDtoList = searchPage.getContent()
+        .stream()
+        .map(BlogPostDto::fromDocument)
+        .toList();
     return new BlogPostList(PageDto.fromPostDocumentPage(searchPage), blogPostDtoList);
   }
 
