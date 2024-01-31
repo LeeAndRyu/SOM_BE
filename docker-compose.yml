@@ -56,6 +56,32 @@ services:
       - elasticsearch
     networks:
       - es-bridge
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - 27017:27017
+    volumes:
+      - data:/data
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=a1234
+    networks:
+      - backend
+    restart: always
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=a1234
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+    networks:
+      - backend
 
 volumes:
   data: { }
@@ -66,3 +92,4 @@ networks:
     driver: bridge
   es-bridge:
     driver: bridge
+
