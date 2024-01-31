@@ -1,6 +1,7 @@
 package com.blog.som.domain.comment.controller;
 
 import com.blog.som.domain.comment.dto.CommentDto;
+import com.blog.som.domain.comment.dto.CommentInput;
 import com.blog.som.domain.comment.service.CommentService;
 import com.blog.som.domain.member.security.userdetails.LoginMember;
 import io.swagger.annotations.Api;
@@ -34,7 +35,7 @@ public class CommentController {
       @RequestBody CommentInput input,
       @AuthenticationPrincipal LoginMember loginMember) {
 
-    CommentDto result = commentService.writeComment(postId, loginMember.getMemberId(), input.getComment());
+    CommentDto result = commentService.writeComment(postId, loginMember.getMemberId(), input.getContent());
 
     return ResponseEntity.ok(result);
   }
@@ -56,7 +57,7 @@ public class CommentController {
       @AuthenticationPrincipal LoginMember loginMember) {
 
     CommentDto result =
-        commentService.updateComment(commentId, loginMember.getMemberId(), input.getComment());
+        commentService.updateComment(commentId, loginMember.getMemberId(), input.getContent());
 
     return ResponseEntity.ok(result);
   }

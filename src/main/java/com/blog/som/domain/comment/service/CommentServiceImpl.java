@@ -44,7 +44,7 @@ public class CommentServiceImpl implements CommentService {
     PostEntity post = postRepository.findById(postId)
         .orElseThrow(() -> new PostException(ErrorCode.POST_NOT_FOUND));
 
-    List<CommentEntity> commentList = commentRepository.findByPostOrderByRegisteredAt(post);
+    List<CommentEntity> commentList = commentRepository.findByPostOrderByRegisteredAtDesc(post);
 
     return commentList.stream()
         .map(CommentDto::fromEntity)
