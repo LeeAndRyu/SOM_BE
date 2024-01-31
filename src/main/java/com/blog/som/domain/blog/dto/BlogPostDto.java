@@ -2,6 +2,7 @@ package com.blog.som.domain.blog.dto;
 
 import com.blog.som.domain.post.elasticsearch.document.PostEsDocument;
 import com.blog.som.domain.post.entity.PostEntity;
+import com.blog.som.domain.post.mongo.document.PostDocument;
 import java.time.LocalDateTime;
 import java.util.List;
 import javax.persistence.EntityListeners;
@@ -38,6 +39,8 @@ public class BlogPostDto {
 
   private int views;
 
+  private int comments;
+
   private LocalDateTime registeredAt;
 
   private List<String> tags;
@@ -53,12 +56,31 @@ public class BlogPostDto {
         .introduction(post.getIntroduction())
         .likes(post.getLikes())
         .views(post.getViews())
+        .comments(post.getComments())
         .registeredAt(post.getRegisteredAt())
         .tags(tagList)
         .build();
   }
 
-  public static BlogPostDto fromDocument(PostEsDocument postEsDocument){
+  public static BlogPostDto fromDocument(PostDocument postDocument) {
+    return BlogPostDto.builder()
+        .postId(postDocument.getPostId())
+        .memberId(postDocument.getMemberId())
+        .profileImage(postDocument.getProfileImage())
+        .accountName(postDocument.getAccountName())
+        .title(postDocument.getTitle())
+        .thumbnail(postDocument.getThumbnail())
+        .introduction(postDocument.getIntroduction())
+        .likes(postDocument.getLikes())
+        .views(postDocument.getViews())
+        .comments(postDocument.getComments())
+        .registeredAt(postDocument.getRegisteredAt())
+        .tags(postDocument.getTags())
+        .build();
+  }
+
+
+  public static BlogPostDto fromEsDocument(PostEsDocument postEsDocument) {
     return BlogPostDto.builder()
         .postId(postEsDocument.getPostId())
         .memberId(postEsDocument.getMemberId())

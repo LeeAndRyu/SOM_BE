@@ -16,7 +16,13 @@ public interface MongoPostRepository extends MongoRepository<PostDocument, Strin
 
   void deleteByPostId(Long postId);
 
-//  @Query("{ 'registeredAt' :  {$gt :  ?0}, 'views' :  {$exists: true}}")
-//  Page<PostDocument> findRecentAndHighViews(LocalDateTime oneMonthAgo, Pageable pageable);
+  @Query("{ 'registeredAt' :  {$gt :  ?0}, 'views' :  {$exists: true}}")
+  Page<PostDocument> findRecentAndHighViews(LocalDateTime oneMonthAgo, Pageable pageable);
+
+  Page<PostDocument> findByTitleContainingOrIntroductionContaining(String title, String introduction, Pageable pageable);
+
+  Page<PostDocument> findByContentContaining(String content, Pageable pageable);
+
+  Page<PostDocument> findByTagsContaining(String tagName, Pageable pageable);
 
 }

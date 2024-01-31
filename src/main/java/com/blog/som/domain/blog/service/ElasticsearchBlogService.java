@@ -118,8 +118,8 @@ public class ElasticsearchBlogService implements BlogService {
   }
 
   private BlogPostList getBlogPostListBySearchPage(Page<PostEsDocument> searchPage) {
-    List<BlogPostDto> blogPostDtoList = searchPage.stream().map(BlogPostDto::fromDocument).toList();
-    return new BlogPostList(PageDto.fromPostDocumentPage(searchPage), blogPostDtoList);
+    List<BlogPostDto> blogPostDtoList = searchPage.stream().map(BlogPostDto::fromEsDocument).toList();
+    return new BlogPostList(PageDto.fromEsDocumentPage(searchPage), blogPostDtoList);
   }
 
 

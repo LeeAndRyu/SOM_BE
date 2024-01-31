@@ -52,6 +52,7 @@ public class MainController {
     }
 
     if (type.equals("tag")) {
+      query = query.toLowerCase();
       return ResponseEntity.ok(mainService.searchAllPostByTag(query, page));
     }
 

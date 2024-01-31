@@ -12,6 +12,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.IndexDirection;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -27,10 +28,10 @@ public class PostDocument {
   @Id
   private ObjectId id;
 
-  @Indexed(unique = true)
+  @Indexed(name = "post_id", unique = true, direction = IndexDirection.DESCENDING)
   private Long postId;
 
-  @Indexed(unique = true)
+  @Indexed(name = "account_name")
   private String accountName;
 
   private Long memberId;
@@ -47,10 +48,12 @@ public class PostDocument {
 
   private int likes;
 
+  @Indexed(direction = IndexDirection.DESCENDING)
   private int views;
 
   private int comments;
 
+  @Indexed(direction = IndexDirection.DESCENDING)
   private LocalDateTime registeredAt;
 
   private List<String> tags = new ArrayList<>();
