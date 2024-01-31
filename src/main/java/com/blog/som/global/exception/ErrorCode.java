@@ -32,8 +32,8 @@ public enum ErrorCode{
 
   //Comment 관련
   COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "댓글이 존재하지 않습니다."),
-  COMMENT_DELETE_NO_AUTHORITY(HttpStatus.NOT_FOUND, "댓글 삭제 권한이 없습니다."),
-  COMMENT_UPDATE_NO_AUTHORITY(HttpStatus.NOT_FOUND, "댓글 수정 권한이 없습니다."),
+  COMMENT_DELETE_NO_AUTHORITY(HttpStatus.FORBIDDEN, "댓글 삭제 권한이 없습니다."),
+  COMMENT_UPDATE_NO_AUTHORITY(HttpStatus.FORBIDDEN, "댓글 수정 권한이 없습니다."),
 
   //Blog 관련
   BLOG_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 블로그가 존재하지 않습니다."),
