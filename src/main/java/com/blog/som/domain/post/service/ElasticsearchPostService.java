@@ -31,7 +31,7 @@ import org.springframework.util.StringUtils;
 @Slf4j
 @RequiredArgsConstructor
 @Transactional
-@Service
+//@Service
 public class ElasticsearchPostService implements PostService {
 
   private final PostRepository postRepository;
