@@ -33,7 +33,7 @@ public interface BlogService {
    * - sort=latest(default) : 최신 순
    * - sort=hot : 조회수 순
    */
-  BlogPostList getBlogPostListBySortType(String accountName, String sort, int page);
+  BlogPostList getAllBlogPostListBySortType(String accountName, String sort, int page);
 
   /**
    * tagName 태그를 가진 postList 조회

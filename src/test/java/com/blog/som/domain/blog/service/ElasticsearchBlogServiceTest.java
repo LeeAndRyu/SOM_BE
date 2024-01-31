@@ -211,7 +211,7 @@ class ElasticsearchBlogServiceTest {
           .thenReturn(new PageImpl<>(postEsDocumentList));
 
       //when
-      BlogPostList blogPostList = blogService.getBlogPostListBySortType(accountName, sort, page);
+      BlogPostList blogPostList = blogService.getAllBlogPostListBySortType(accountName, sort, page);
 
       //then
 
@@ -244,7 +244,7 @@ class ElasticsearchBlogServiceTest {
           .thenReturn(new PageImpl<>(postEsDocumentList));
 
       //when
-      BlogPostList blogPostList = blogService.getBlogPostListBySortType(accountName, sort, page);
+      BlogPostList blogPostList = blogService.getAllBlogPostListBySortType(accountName, sort, page);
 
       //then
 

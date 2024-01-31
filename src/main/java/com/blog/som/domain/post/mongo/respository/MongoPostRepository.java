@@ -25,4 +25,14 @@ public interface MongoPostRepository extends MongoRepository<PostDocument, Strin
 
   Page<PostDocument> findByTagsContaining(String tagName, Pageable pageable);
 
+  int countByAccountName(String accountName);
+
+  Page<PostDocument> findByAccountName(String accountName, Pageable pageable);
+
+  Page<PostDocument> findByAccountNameAndTagsContaining(String accountName, String tagName, Pageable pageable);
+
+  Page<PostDocument> findByAccountNameAndTitleContainingOrIntroductionContaining(
+      String accountName, String title, String introduction, Pageable pageable);
+
+
 }

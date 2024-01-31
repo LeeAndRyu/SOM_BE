@@ -8,9 +8,8 @@ import com.blog.som.domain.blog.dto.BlogTagListDto;
 import com.blog.som.domain.follow.service.FollowService;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
-import com.blog.som.domain.post.elasticsearch.document.PostEsDocument;
-import com.blog.som.domain.post.elasticsearch.repository.ElasticsearchPostRepository;
-import com.blog.som.domain.post.repository.PostRepository;
+import com.blog.som.domain.post.mongo.document.PostDocument;
+import com.blog.som.domain.post.mongo.respository.MongoPostRepository;
 import com.blog.som.domain.tag.dto.TagDto;
 import com.blog.som.domain.tag.repository.TagRepository;
 import com.blog.som.global.constant.NumberConstant;
@@ -28,14 +27,13 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @RequiredArgsConstructor
-//@Service
-public class ElasticsearchBlogService implements BlogService {
+@Service
+public class MongoBlogService implements BlogService {
 
   private final MemberRepository memberRepository;
-  private final FollowService followService;
-  private final ElasticsearchPostRepository elasticsearchPostRepository;
   private final TagRepository tagRepository;
-  private final PostRepository postRepository;
+  private final FollowService followService;
+  private final MongoPostRepository mongoPostRepository;
 
   @Override
   public BlogMemberDto getBlogMember(String accountName) {
@@ -55,7 +53,7 @@ public class ElasticsearchBlogService implements BlogService {
         .map(TagDto::fromEntity)
         .toList();
 
-    int count = postRepository.countByMember(member);
+    int count = mongoPostRepository.countByAccountName(accountName);
 
     return new BlogTagListDto(count, tagDtoList);
   }
@@ -83,10 +81,10 @@ public class ElasticsearchBlogService implements BlogService {
     if (sort.equals(SearchConstant.HOT)) {
       sortBy = SearchConstant.VIEWS;
     }
-
     PageRequest pageRequest = PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by(sortBy).descending());
 
-    Page<PostEsDocument> searchPageResult = elasticsearchPostRepository.findAllByAccountName(accountName, pageRequest);
+    Page<PostDocument> searchPageResult =
+        mongoPostRepository.findByAccountName(accountName, pageRequest);
 
     return this.getBlogPostListBySearchPage(searchPageResult);
   }
@@ -96,9 +94,8 @@ public class ElasticsearchBlogService implements BlogService {
     PageRequest pageRequest =
         PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE,
             Sort.by(SearchConstant.REGISTERED_AT).descending());
-
-    Page<PostEsDocument> searchPageResult =
-        elasticsearchPostRepository.findByAccountNameAndTagsContaining(accountName, tagName, pageRequest);
+    Page<PostDocument> searchPageResult =
+        mongoPostRepository.findByAccountNameAndTagsContaining(accountName, tagName, pageRequest);
 
     return this.getBlogPostListBySearchPage(searchPageResult);
   }
@@ -108,19 +105,19 @@ public class ElasticsearchBlogService implements BlogService {
     PageRequest pageRequest =
         PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE,
             Sort.by(SearchConstant.REGISTERED_AT).descending());
+    Page<PostDocument> searchPageResult =
+        mongoPostRepository
+            .findByAccountNameAndTitleContainingOrIntroductionContaining(
+                accountName, query, query, pageRequest);
 
-    Page<PostEsDocument> searchPageList = elasticsearchPostRepository.
-        findByAccountNameAndTitleContainingOrIntroductionContaining(
-            accountName, query, query, pageRequest);
-
-    return this.getBlogPostListBySearchPage(searchPageList);
-
+    return this.getBlogPostListBySearchPage(searchPageResult);
   }
 
-  private BlogPostList getBlogPostListBySearchPage(Page<PostEsDocument> searchPage) {
-    List<BlogPostDto> blogPostDtoList = searchPage.stream().map(BlogPostDto::fromEsDocument).toList();
-    return new BlogPostList(PageDto.fromEsDocumentPage(searchPage), blogPostDtoList);
+  private BlogPostList getBlogPostListBySearchPage(Page<PostDocument> searchPage) {
+    List<BlogPostDto> blogPostDtoList = searchPage.getContent()
+        .stream()
+        .map(BlogPostDto::fromDocument)
+        .toList();
+    return new BlogPostList(PageDto.fromDocumentPage(searchPage), blogPostDtoList);
   }
-
-
 }
