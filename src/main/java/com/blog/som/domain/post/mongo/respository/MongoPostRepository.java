@@ -1,6 +1,7 @@
 package com.blog.som.domain.post.mongo.respository;
 
 import com.blog.som.domain.post.mongo.document.PostDocument;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -17,7 +18,7 @@ public interface MongoPostRepository extends MongoRepository<PostDocument, Strin
   void deleteByPostId(Long postId);
 
   @Query("{ 'registeredAt' :  {$gt :  ?0}, 'views' :  {$exists: true}}")
-  Page<PostDocument> findRecentAndHighViews(LocalDateTime oneMonthAgo, Pageable pageable);
+  Page<PostDocument> findRecentAndHighViews(LocalDate oneMonthAgo, Pageable pageable);
 
   Page<PostDocument> findByTitleContainingOrIntroductionContaining(String title, String introduction, Pageable pageable);
 

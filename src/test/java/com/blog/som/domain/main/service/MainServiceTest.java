@@ -1,16 +1,18 @@
 package com.blog.som.domain.main.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.when;
 
 import com.blog.som.EntityCreator;
 import com.blog.som.domain.blog.dto.BlogPostDto;
 import com.blog.som.domain.blog.dto.BlogPostList;
 import com.blog.som.domain.member.entity.MemberEntity;
-import com.blog.som.domain.post.elasticsearch.document.PostEsDocument;
-import com.blog.som.domain.post.elasticsearch.repository.ElasticsearchPostRepository;
+import com.blog.som.domain.post.mongo.document.PostDocument;
+import com.blog.som.domain.post.mongo.respository.MongoPostRepository;
 import com.blog.som.global.constant.NumberConstant;
 import com.blog.som.global.constant.SearchConstant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -26,24 +28,24 @@ import org.springframework.data.domain.Sort;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
-class ElasticsearchMainServiceTest {
+class MainServiceTest {
 
   @Mock
-  private ElasticsearchPostRepository elasticSearchPostRepository;
+  private MongoPostRepository mongoPostRepository;
 
   @InjectMocks
-  private ElasticsearchMainService mainService;
+  private MainServiceImpl mainService;
 
   private MemberEntity member;
 
-  private List<PostEsDocument> getPostDocumentList() {
+  private List<PostDocument> getPostDocumentList() {
     member = EntityCreator.createMember(1L);
-    List<PostEsDocument> postEsDocumentList = new ArrayList<>();
+    List<PostDocument> PostDocumentList = new ArrayList<>();
 
     for (int i = 1; i <= 5; i++) {
-      postEsDocumentList.add(EntityCreator.createPostDocument(EntityCreator.createPost(100L + i, member)));
+      PostDocumentList.add(EntityCreator.createPostDocument(EntityCreator.createPost(100L + i, member)));
     }
-    return postEsDocumentList;
+    return PostDocumentList;
   }
 
   private PageRequest getPageDefaultRequest(int page) {
@@ -53,14 +55,14 @@ class ElasticsearchMainServiceTest {
   @Test
   @DisplayName("전체 글 조회 - hot")
   void getAllPostListHot() {
-    List<PostEsDocument> postEsDocumentList = this.getPostDocumentList();
+    List<PostDocument> PostDocumentList = this.getPostDocumentList();
 
     int page = 1;
     PageRequest pageRequest = getPageDefaultRequest(page);
 
     //given
-    when(elasticSearchPostRepository.findAll(pageRequest))
-        .thenReturn(new PageImpl<>(postEsDocumentList));
+    when(mongoPostRepository.findRecentAndHighViews(LocalDate.now().minusMonths(6L), pageRequest))
+        .thenReturn(new PageImpl<>(PostDocumentList));
 
     //when
     BlogPostList result = mainService.getAllPostListHot(page);
@@ -77,15 +79,15 @@ class ElasticsearchMainServiceTest {
   @Test
   @DisplayName("전체 글 조회 - latest")
   void getAllPostListLatest() {
-    List<PostEsDocument> postEsDocumentList = this.getPostDocumentList();
+    List<PostDocument> PostDocumentList = this.getPostDocumentList();
 
     int page = 1;
     PageRequest pageRequest = PageRequest.of(page - 1,
         NumberConstant.DEFAULT_PAGE_SIZE, Sort.by(SearchConstant.REGISTERED_AT).descending());
 
     //given
-    when(elasticSearchPostRepository.findAll(pageRequest))
-        .thenReturn(new PageImpl<>(postEsDocumentList));
+    when(mongoPostRepository.findRecentAndHighViews(LocalDate.now().minusMonths(6L), pageRequest))
+        .thenReturn(new PageImpl<>(PostDocumentList));
 
     //when
     BlogPostList result = mainService.getAllPostListLatest(page);
@@ -102,16 +104,16 @@ class ElasticsearchMainServiceTest {
   @Test
   @DisplayName("전체 글 검색 - title 또는 introduction")
   void searchAllPostByTitleOrIntroduction() {
-    List<PostEsDocument> postEsDocumentList = this.getPostDocumentList();
+    List<PostDocument> PostDocumentList = this.getPostDocumentList();
 
     int page = 1;
     PageRequest pageRequest = getPageDefaultRequest(page);
     String query = "test";
 
     //given
-    when(elasticSearchPostRepository.
+    when(mongoPostRepository.
         findByTitleContainingOrIntroductionContaining(query, query, pageRequest))
-        .thenReturn(new PageImpl<>(postEsDocumentList));
+        .thenReturn(new PageImpl<>(PostDocumentList));
 
     //when
     BlogPostList result = mainService.searchAllPostByTitleOrIntroduction(query, page);
@@ -128,16 +130,16 @@ class ElasticsearchMainServiceTest {
   @Test
   @DisplayName("전체 글 검색 - content")
   void searchAllPostByContent() {
-    List<PostEsDocument> postEsDocumentList = this.getPostDocumentList();
+    List<PostDocument> PostDocumentList = this.getPostDocumentList();
 
     int page = 1;
     PageRequest pageRequest = getPageDefaultRequest(page);
     String query = "test";
 
     //given
-    when(elasticSearchPostRepository
+    when(mongoPostRepository
         .findByContentContaining(query, pageRequest))
-        .thenReturn(new PageImpl<>(postEsDocumentList));
+        .thenReturn(new PageImpl<>(PostDocumentList));
 
     //when
     BlogPostList result = mainService.searchAllPostByContent(query, page);
@@ -154,16 +156,16 @@ class ElasticsearchMainServiceTest {
   @Test
   @DisplayName("전체 글 검색 - tag")
   void searchAllPostByTag() {
-    List<PostEsDocument> postEsDocumentList = this.getPostDocumentList();
+    List<PostDocument> PostDocumentList = this.getPostDocumentList();
 
     int page = 1;
     PageRequest pageRequest = getPageDefaultRequest(page);
     String query = "test";
 
     //given
-    when(elasticSearchPostRepository
+    when(mongoPostRepository
         .findByTagsContaining(query, pageRequest))
-        .thenReturn(new PageImpl<>(postEsDocumentList));
+        .thenReturn(new PageImpl<>(PostDocumentList));
 
     //when
     BlogPostList result = mainService.searchAllPostByTag(query, page);

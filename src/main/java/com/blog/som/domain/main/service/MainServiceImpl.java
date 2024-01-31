@@ -7,6 +7,7 @@ import com.blog.som.domain.post.mongo.respository.MongoPostRepository;
 import com.blog.som.global.constant.NumberConstant;
 import com.blog.som.global.constant.SearchConstant;
 import com.blog.som.global.dto.PageDto;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ public class MainServiceImpl implements MainService {
   public BlogPostList getAllPostListHot(int page) {
 
     Page<PostDocument> searchPageResult = mongoPostRepository
-        .findRecentAndHighViews(LocalDateTime.now().minusMonths(6L), this.getBasicPageRequest(page));
+        .findRecentAndHighViews(LocalDate.now().minusMonths(6L), this.getBasicPageRequest(page));
 
     return this.getBlogPostListBySearchPage(searchPageResult);
   }
@@ -39,7 +40,7 @@ public class MainServiceImpl implements MainService {
             NumberConstant.DEFAULT_PAGE_SIZE, Sort.by(SearchConstant.REGISTERED_AT).descending());
 
     Page<PostDocument> searchPageResult = mongoPostRepository
-        .findRecentAndHighViews(LocalDateTime.now().minusMonths(6L), pageRequest);
+        .findRecentAndHighViews(LocalDate.now().minusMonths(6L), pageRequest);
 
     return this.getBlogPostListBySearchPage(searchPageResult);
   }
