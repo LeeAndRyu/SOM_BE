@@ -7,6 +7,8 @@ import com.blog.som.domain.post.dto.PostDto;
 import com.blog.som.domain.post.dto.PostEditRequest;
 import com.blog.som.domain.post.dto.PostWriteRequest;
 import com.blog.som.domain.post.entity.PostEntity;
+import com.blog.som.domain.post.mongo.document.PostDocument;
+import com.blog.som.domain.post.mongo.respository.MongoPostRepository;
 import com.blog.som.domain.post.repository.PostRepository;
 import com.blog.som.domain.tag.entity.PostTagEntity;
 import com.blog.som.domain.tag.entity.TagEntity;
@@ -22,13 +24,14 @@ import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 @Slf4j
 @RequiredArgsConstructor
 @Transactional
-//@Service
+@Service
 public class PostServiceImpl implements PostService {
 
   private final PostRepository postRepository;
@@ -36,6 +39,7 @@ public class PostServiceImpl implements PostService {
   private final TagRepository tagRepository;
   private final PostTagRepository postTagRepository;
   private final CacheRepository cacheRepository;
+  private final MongoPostRepository mongoPostRepository;
 
   @Override
   public PostDto writePost(PostWriteRequest request, Long memberId) {
@@ -49,6 +53,8 @@ public class PostServiceImpl implements PostService {
 
     this.handleNewTags(tagList, member, post);
 
+    mongoPostRepository.save(PostDocument.fromEntity(post, tagList));
+
     return PostDto.fromEntity(post, tagList);
   }
 
@@ -57,14 +63,28 @@ public class PostServiceImpl implements PostService {
     PostEntity post = postRepository.findById(postId)
         .orElseThrow(() -> new PostException(ErrorCode.POST_NOT_FOUND));
 
-    List<String> tagList = postTagRepository.findAllByPost(post)
-        .stream()
-        .map(pt -> pt.getTag().getTagName())
-        .toList();
+    Optional<PostDocument> optionalPostDocument = mongoPostRepository.findByPostId(postId);
+
+    PostDocument postDocument;
+    List<String> tagList;
+
+    if(optionalPostDocument.isPresent()){
+      postDocument = optionalPostDocument.get();
+      tagList = postDocument.getTags();
+    }else{
+      log.info("mongo postDocument [id={}] not found", post.getPostId());
+      tagList = postTagRepository.findAllByPost(post)
+          .stream()
+          .map(pt -> pt.getTag().getTagName())
+          .toList();
+      postDocument = mongoPostRepository.save(PostDocument.fromEntity(post, tagList));
+    }
 
     if(StringUtils.hasText(accessUserAgent) && cacheRepository.canAddView(accessUserAgent, postId)){
       post.addView();
       postRepository.save(post);
+      postDocument.addView();
+      mongoPostRepository.save(postDocument);
     }
 
     return PostDto.fromEntity(post, tagList);
@@ -108,6 +128,9 @@ public class PostServiceImpl implements PostService {
     }
     log.info("[PostService.editPost()] remain List tags : {} ", editRequestTags);
     this.handleNewTags(editRequestTags, member, post);
+
+    mongoPostRepository.deleteByPostId(postId);
+    mongoPostRepository.save(PostDocument.fromEntity(post, requestList));
 
     return PostDto.fromEntity(post, requestList);
   }
@@ -154,6 +177,8 @@ public class PostServiceImpl implements PostService {
       }
     }
     postRepository.delete(post);
+
+    mongoPostRepository.deleteByPostId(postId);
 
     return new PostDeleteResponse(post.getPostId(), post.getTitle());
   }

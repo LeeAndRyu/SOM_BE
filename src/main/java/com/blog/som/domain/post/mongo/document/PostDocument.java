@@ -1,5 +1,4 @@
-package com.blog.som.domain.post.elasticsearch.document;
-
+package com.blog.som.domain.post.mongo.document;
 
 import com.blog.som.domain.post.entity.PostEntity;
 import java.time.LocalDateTime;
@@ -12,13 +11,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.DateFormat;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
-import org.springframework.data.elasticsearch.annotations.Mapping;
-import org.springframework.data.elasticsearch.annotations.Setting;
+import org.springframework.data.mongodb.core.index.IndexDirection;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 @Getter
 @Setter
@@ -26,62 +23,52 @@ import org.springframework.data.elasticsearch.annotations.Setting;
 @NoArgsConstructor
 @Builder
 @ToString
-@Setting(settingPath = "static/es/es-settings.json")
-@Mapping(mappingPath = "static/es/post-mapping.json")
-@Document(indexName = "post")
+@Document(collection = "post")
 public class PostDocument {
 
   @Id
-  @Field(name = "id", type = FieldType.Keyword)
-  private Long id;
+  private ObjectId id;
 
-  @Field(name = "post_id", type = FieldType.Long)
+  @Indexed(name = "post_id", unique = true, direction = IndexDirection.DESCENDING)
   private Long postId;
 
-  @Field(name = "member_id", type = FieldType.Long)
-  private Long memberId;
-
-  @Field(name = "profile_image", type = FieldType.Text)
-  private String profileImage;
-
-  @Field(name = "account_name", type = FieldType.Keyword)
+  @Indexed(name = "account_name")
   private String accountName;
 
-  @Field(name = "title", type = FieldType.Text)
+  private Long memberId;
+
+  private String profileImage;
+
   private String title;
 
-  @Field(name = "thumbnail", type = FieldType.Text)
   private String thumbnail;
 
-  @Field(name = "introduction", type = FieldType.Text)
   private String introduction;
 
-  @Field(name = "content", type = FieldType.Text)
   private String content;
 
-  @Field(name = "likes", type = FieldType.Integer)
   private int likes;
 
-  @Field(name = "views", type = FieldType.Integer)
+  @Indexed(direction = IndexDirection.DESCENDING)
   private int views;
 
-  @Field(name = "registered_at", type = FieldType.Date, format = {DateFormat.date_hour_minute_second_millis, DateFormat.epoch_millis})
+  private int comments;
+
+  @Indexed(direction = IndexDirection.DESCENDING)
   private LocalDateTime registeredAt;
 
-  @Field(name = "tags", type = FieldType.Text)
   private List<String> tags = new ArrayList<>();
 
-  public void addView(){
+  public void addView() {
     this.views += 1;
   }
 
-  public void addLikes(){
+  public void addLikes() {
     this.likes += 1;
   }
 
-  public static PostDocument fromEntity(PostEntity postEntity, List<String> tags){
+  public static PostDocument fromEntity(PostEntity postEntity, List<String> tags) {
     return PostDocument.builder()
-        .id(postEntity.getPostId())
         .postId(postEntity.getPostId())
         .memberId(postEntity.getMember().getMemberId())
         .profileImage(postEntity.getMember().getProfileImage())
@@ -106,11 +93,12 @@ public class PostDocument {
       return false;
     }
     PostDocument that = (PostDocument) o;
-    return Objects.equals(id, that.id);
+    return Objects.equals(postId, that.postId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id);
+    return Objects.hash(postId);
   }
+
 }

@@ -3,8 +3,8 @@ package com.blog.som;
 import com.blog.som.domain.follow.entity.FollowEntity;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.type.Role;
-import com.blog.som.domain.post.elasticsearch.document.PostDocument;
 import com.blog.som.domain.post.entity.PostEntity;
+import com.blog.som.domain.post.mongo.document.PostDocument;
 import com.blog.som.domain.tag.entity.PostTagEntity;
 import com.blog.som.domain.tag.entity.TagEntity;
 import java.time.LocalDateTime;
@@ -60,7 +60,7 @@ public class EntityCreator {
         .build();
   }
 
-  public static FollowEntity createFollowEntity(Long id, MemberEntity fromMember, MemberEntity toMember){
+  public static FollowEntity createFollowEntity(Long id, MemberEntity fromMember, MemberEntity toMember) {
     return FollowEntity.builder()
         .followId(id)
         .fromMember(fromMember)
@@ -69,9 +69,8 @@ public class EntityCreator {
         .build();
   }
 
-  public static PostDocument createPostDocument(PostEntity postEntity, List<String> tags){
+  public static PostDocument createPostDocument(PostEntity postEntity, List<String> tags) {
     return PostDocument.builder()
-        .id(postEntity.getPostId())
         .postId(postEntity.getPostId())
         .memberId(postEntity.getMember().getMemberId())
         .accountName(postEntity.getMember().getAccountName())
@@ -86,9 +85,8 @@ public class EntityCreator {
         .build();
   }
 
-  public static PostDocument createPostDocument(PostEntity postEntity){
+  public static PostDocument createPostDocument(PostEntity postEntity) {
     return PostDocument.builder()
-        .id(postEntity.getPostId())
         .postId(postEntity.getPostId())
         .memberId(postEntity.getMember().getMemberId())
         .accountName(postEntity.getMember().getAccountName())
@@ -102,4 +100,5 @@ public class EntityCreator {
         .tags(new ArrayList<>(Arrays.asList("tag1, tag2")))
         .build();
   }
+
 }

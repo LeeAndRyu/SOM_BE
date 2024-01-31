@@ -209,7 +209,7 @@ class BlogServiceImplTest {
           .thenReturn(new PageImpl<>(postList));
 
       //when
-      BlogPostList blogPostList = blogService.getBlogPostListBySortType(accountName, sort, page);
+      BlogPostList blogPostList = blogService.getAllBlogPostListBySortType(accountName, sort, page);
 
       //then
       verify(postTagRepository, times(postList.size())).findAllByPost(any(PostEntity.class));
@@ -245,7 +245,7 @@ class BlogServiceImplTest {
           .thenReturn(new PageImpl<>(postList));
 
       //when
-      BlogPostList blogPostList = blogService.getBlogPostListBySortType(accountName, sort, page);
+      BlogPostList blogPostList = blogService.getAllBlogPostListBySortType(accountName, sort, page);
 
       //then
       verify(postTagRepository, times(postList.size())).findAllByPost(any(PostEntity.class));
@@ -281,7 +281,7 @@ class BlogServiceImplTest {
       //when
       //then
       BlogException blogException =
-          assertThrows(BlogException.class, () -> blogService.getBlogPostListBySortType(accountName, sort, page));
+          assertThrows(BlogException.class, () -> blogService.getAllBlogPostListBySortType(accountName, sort, page));
       assertThat(blogException.getErrorCode()).isEqualTo(ErrorCode.BLOG_NOT_FOUND);
 
       verify(postTagRepository, never()).findAllByPost(any(PostEntity.class));

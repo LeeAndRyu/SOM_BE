@@ -75,7 +75,7 @@ public class BlogController {
 
     //hot
     if(sort.equals(SearchConstant.HOT)){
-      return ResponseEntity.ok(blogService.getBlogPostListBySortType(accountName, sort, page));
+      return ResponseEntity.ok(blogService.getAllBlogPostListBySortType(accountName, sort, page));
     }
 
     //tag 검색
@@ -89,7 +89,7 @@ public class BlogController {
     }
 
     //전체 검색
-    return ResponseEntity.ok(blogService.getBlogPostListBySortType(accountName, sort, page));
+    return ResponseEntity.ok(blogService.getAllBlogPostListBySortType(accountName, sort, page));
   }
 
 }

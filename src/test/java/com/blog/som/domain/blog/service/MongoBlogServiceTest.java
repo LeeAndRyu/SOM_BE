@@ -2,10 +2,6 @@ package com.blog.som.domain.blog.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.BDDMockito.never;
-import static org.mockito.BDDMockito.times;
-import static org.mockito.BDDMockito.verify;
 import static org.mockito.BDDMockito.when;
 
 import com.blog.som.EntityCreator;
@@ -17,9 +13,8 @@ import com.blog.som.domain.blog.dto.BlogTagListDto;
 import com.blog.som.domain.follow.service.FollowService;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
-import com.blog.som.domain.post.elasticsearch.document.PostDocument;
-import com.blog.som.domain.post.elasticsearch.repository.ElasticsearchPostRepository;
-import com.blog.som.domain.post.entity.PostEntity;
+import com.blog.som.domain.post.mongo.document.PostDocument;
+import com.blog.som.domain.post.mongo.respository.MongoPostRepository;
 import com.blog.som.domain.post.repository.PostRepository;
 import com.blog.som.domain.tag.entity.TagEntity;
 import com.blog.som.domain.tag.repository.TagRepository;
@@ -44,21 +39,21 @@ import org.springframework.data.domain.Sort;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
-class ElasticsearchBlogServiceTest {
+class MongoBlogServiceTest {
 
   @Mock
   private MemberRepository memberRepository;
   @Mock
   private FollowService followService;
   @Mock
-  private ElasticsearchPostRepository elasticSearchPostRepository;
+  private MongoPostRepository mongoPostRepository;
   @Mock
   private PostRepository postRepository;
   @Mock
   private TagRepository tagRepository;
 
   @InjectMocks
-  private ElasticsearchBlogService blogService;
+  private MongoBlogService blogService;
 
   @Nested
   @DisplayName("Blog 메인 페이지 조회 - 회원")
@@ -122,7 +117,7 @@ class ElasticsearchBlogServiceTest {
           .thenReturn(Optional.of(member));
       when(tagRepository.findAllByMember(member))
           .thenReturn(list);
-      when(postRepository.countByMember(member))
+      when(mongoPostRepository.countByAccountName(accountName))
           .thenReturn(5);
       //when
       BlogTagListDto blogTags = blogService.getBlogTags(accountName);
@@ -204,18 +199,18 @@ class ElasticsearchBlogServiceTest {
           PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE,
               Sort.by(SearchConstant.REGISTERED_AT).descending());
 
-      List<PostDocument> postDocumentList = new ArrayList<>();
+      List<PostDocument> PostDocumentList = new ArrayList<>();
 
       for (int i = 1; i <= 5; i++) {
-        postDocumentList.add(EntityCreator.createPostDocument(EntityCreator.createPost(100L + i, member)));
+        PostDocumentList.add(EntityCreator.createPostDocument(EntityCreator.createPost(100L + i, member)));
       }
 
       //given
-      when(elasticSearchPostRepository.findAllByAccountName(accountName, pageRequest))
-          .thenReturn(new PageImpl<>(postDocumentList));
+      when(mongoPostRepository.findByAccountName(accountName, pageRequest))
+          .thenReturn(new PageImpl<>(PostDocumentList));
 
       //when
-      BlogPostList blogPostList = blogService.getBlogPostListBySortType(accountName, sort, page);
+      BlogPostList blogPostList = blogService.getAllBlogPostListBySortType(accountName, sort, page);
 
       //then
 
@@ -237,18 +232,18 @@ class ElasticsearchBlogServiceTest {
       PageRequest pageRequest =
           PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by(SearchConstant.VIEWS).descending());
 
-      List<PostDocument> postDocumentList = new ArrayList<>();
+      List<PostDocument> PostDocumentList = new ArrayList<>();
 
       for (int i = 1; i <= 5; i++) {
-        postDocumentList.add(EntityCreator.createPostDocument(EntityCreator.createPost(100L + i, member)));
+        PostDocumentList.add(EntityCreator.createPostDocument(EntityCreator.createPost(100L + i, member)));
       }
 
       //given
-      when(elasticSearchPostRepository.findAllByAccountName(accountName, pageRequest))
-          .thenReturn(new PageImpl<>(postDocumentList));
+      when(mongoPostRepository.findByAccountName(accountName, pageRequest))
+          .thenReturn(new PageImpl<>(PostDocumentList));
 
       //when
-      BlogPostList blogPostList = blogService.getBlogPostListBySortType(accountName, sort, page);
+      BlogPostList blogPostList = blogService.getAllBlogPostListBySortType(accountName, sort, page);
 
       //then
 
@@ -273,15 +268,15 @@ class ElasticsearchBlogServiceTest {
         PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE,
             Sort.by(SearchConstant.REGISTERED_AT).descending());
 
-    List<PostDocument> postDocumentList = new ArrayList<>();
+    List<PostDocument> PostDocumentList = new ArrayList<>();
 
     for (int i = 1; i <= 5; i++) {
-      postDocumentList.add(EntityCreator.createPostDocument(EntityCreator.createPost(100L + i, member)));
+      PostDocumentList.add(EntityCreator.createPostDocument(EntityCreator.createPost(100L + i, member)));
     }
 
     //given
-    when(elasticSearchPostRepository.findByAccountNameAndTagsContaining(accountName, tagName, pageRequest))
-        .thenReturn(new PageImpl<>(postDocumentList));
+    when(mongoPostRepository.findByAccountNameAndTagsContaining(accountName, tagName, pageRequest))
+        .thenReturn(new PageImpl<>(PostDocumentList));
 
     //when
     BlogPostList blogPostList = blogService.getBlogPostListByTag(accountName, tagName, page);
@@ -305,17 +300,17 @@ class ElasticsearchBlogServiceTest {
     PageRequest pageRequest =
         PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by("registeredAt").descending());
 
-    List<PostDocument> postDocumentList = new ArrayList<>();
+    List<PostDocument> PostDocumentList = new ArrayList<>();
 
     for (int i = 1; i <= 5; i++) {
-      postDocumentList.add(EntityCreator.createPostDocument(EntityCreator.createPost(100L + i, member)));
+      PostDocumentList.add(EntityCreator.createPostDocument(EntityCreator.createPost(100L + i, member)));
     }
 
     //given
-    when(elasticSearchPostRepository
+    when(mongoPostRepository
         .findByAccountNameAndTitleContainingOrIntroductionContaining(
             accountName, query, query, pageRequest))
-        .thenReturn(new PageImpl<>(postDocumentList));
+        .thenReturn(new PageImpl<>(PostDocumentList));
 
     //when
     BlogPostList blogPostList = blogService.getBlogPostListByQuery(accountName, query, page);

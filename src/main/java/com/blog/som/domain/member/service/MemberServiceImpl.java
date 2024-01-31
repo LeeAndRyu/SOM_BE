@@ -8,7 +8,6 @@ import com.blog.som.domain.member.dto.MemberRegister.Request;
 import com.blog.som.domain.member.dto.RegisterEmailInput;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
-import com.blog.som.domain.post.elasticsearch.component.ElasticsearchPostComponent;
 import com.blog.som.global.components.mail.MailSender;
 import com.blog.som.global.components.mail.SendMailDto;
 import com.blog.som.global.components.password.PasswordUtils;
@@ -32,7 +31,6 @@ public class MemberServiceImpl implements MemberService {
   private final MailSender mailSender;
   private final CacheRepository cacheRepository;
   private final S3ImageService s3ImageService;
-  private final ElasticsearchPostComponent elasticsearchPostComponent;
 
   @Override
   public EmailDuplicateResponse emailDuplicateCheckAndStartRegister(RegisterEmailInput input) {
@@ -111,7 +109,6 @@ public class MemberServiceImpl implements MemberService {
     member.setProfileImage(newImageAddress);
     memberRepository.save(member);
 
-    elasticsearchPostComponent.updatePostDocumentProfileImage(member.getAccountName(), newImageAddress);
 
     return MemberDto.fromEntity(member);
   }
@@ -128,8 +125,6 @@ public class MemberServiceImpl implements MemberService {
     s3ImageService.deleteImageFromS3(member.getProfileImage());
     member.setProfileImage(null);
     memberRepository.save(member);
-
-    elasticsearchPostComponent.updatePostDocumentProfileImage(member.getAccountName(), null);
 
     return MemberDto.fromEntity(member);
   }

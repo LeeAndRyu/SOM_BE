@@ -57,6 +57,9 @@ public class PostEntity {
   @Column(name = "views")
   private int views;
 
+  @Column(name = "comments")
+  private int comments;
+
   @CreatedDate
   @Column(name = "registered_at", nullable = false)
   private LocalDateTime registeredAt;
