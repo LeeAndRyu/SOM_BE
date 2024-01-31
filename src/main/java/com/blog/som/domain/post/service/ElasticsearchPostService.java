@@ -2,7 +2,7 @@ package com.blog.som.domain.post.service;
 
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
-import com.blog.som.domain.post.elasticsearch.document.PostDocument;
+import com.blog.som.domain.post.elasticsearch.document.PostEsDocument;
 import com.blog.som.domain.post.dto.PostDeleteResponse;
 import com.blog.som.domain.post.dto.PostDto;
 import com.blog.som.domain.post.dto.PostEditRequest;
@@ -54,7 +54,7 @@ public class ElasticsearchPostService implements PostService {
     this.handleNewTags(tagList, member, post);
 
     //es에 저장
-    elasticSearchPostRepository.save(PostDocument.fromEntity(post, tagList));
+    elasticSearchPostRepository.save(PostEsDocument.fromEntity(post, tagList));
 
     return PostDto.fromEntity(post, tagList);
   }
@@ -66,27 +66,27 @@ public class ElasticsearchPostService implements PostService {
 
     List<String> tagList;
 
-    Optional<PostDocument> optionalPostDocument = elasticSearchPostRepository.findById(post.getPostId());
+    Optional<PostEsDocument> optionalPostDocument = elasticSearchPostRepository.findById(post.getPostId());
 
-    PostDocument postDocument;
+    PostEsDocument postEsDocument;
 
     if(optionalPostDocument.isPresent()){
-      postDocument = optionalPostDocument.get();
-      tagList = postDocument.getTags();
+      postEsDocument = optionalPostDocument.get();
+      tagList = postEsDocument.getTags();
     }else{
       log.info("elasticSearch postDocument [id={}] not found", post.getPostId());
       tagList = postTagRepository.findAllByPost(post)
           .stream()
           .map(pt -> pt.getTag().getTagName())
           .toList();
-      postDocument = elasticSearchPostRepository.save(PostDocument.fromEntity(post, tagList));
+      postEsDocument = elasticSearchPostRepository.save(PostEsDocument.fromEntity(post, tagList));
     }
 
     if(StringUtils.hasText(accessUserAgent) && cacheRepository.canAddView(accessUserAgent, postId)){
       post.addView();
       postRepository.save(post);
-      postDocument.addView();
-      elasticSearchPostRepository.save(postDocument);
+      postEsDocument.addView();
+      elasticSearchPostRepository.save(postEsDocument);
     }
 
     return PostDto.fromEntity(post, tagList);
@@ -132,7 +132,7 @@ public class ElasticsearchPostService implements PostService {
     this.handleNewTags(editRequestTags, member, post);
 
     elasticSearchPostRepository.deleteById(postId);
-    elasticSearchPostRepository.save(PostDocument.fromEntity(post, requestList));
+    elasticSearchPostRepository.save(PostEsDocument.fromEntity(post, requestList));
 
     return PostDto.fromEntity(post, requestList);
   }

@@ -29,7 +29,7 @@ import org.springframework.data.elasticsearch.annotations.Setting;
 @Setting(settingPath = "static/es/es-settings.json")
 @Mapping(mappingPath = "static/es/post-mapping.json")
 @Document(indexName = "post")
-public class PostDocument {
+public class PostEsDocument {
 
   @Id
   @Field(name = "id", type = FieldType.Keyword)
@@ -79,8 +79,8 @@ public class PostDocument {
     this.likes += 1;
   }
 
-  public static PostDocument fromEntity(PostEntity postEntity, List<String> tags){
-    return PostDocument.builder()
+  public static PostEsDocument fromEntity(PostEntity postEntity, List<String> tags){
+    return PostEsDocument.builder()
         .id(postEntity.getPostId())
         .postId(postEntity.getPostId())
         .memberId(postEntity.getMember().getMemberId())
@@ -105,7 +105,7 @@ public class PostDocument {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    PostDocument that = (PostDocument) o;
+    PostEsDocument that = (PostEsDocument) o;
     return Objects.equals(id, that.id);
   }
 

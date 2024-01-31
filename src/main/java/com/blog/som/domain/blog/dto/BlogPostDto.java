@@ -1,6 +1,6 @@
 package com.blog.som.domain.blog.dto;
 
-import com.blog.som.domain.post.elasticsearch.document.PostDocument;
+import com.blog.som.domain.post.elasticsearch.document.PostEsDocument;
 import com.blog.som.domain.post.entity.PostEntity;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -58,19 +58,19 @@ public class BlogPostDto {
         .build();
   }
 
-  public static BlogPostDto fromDocument(PostDocument postDocument){
+  public static BlogPostDto fromDocument(PostEsDocument postEsDocument){
     return BlogPostDto.builder()
-        .postId(postDocument.getPostId())
-        .memberId(postDocument.getMemberId())
-        .profileImage(postDocument.getProfileImage())
-        .accountName(postDocument.getAccountName())
-        .title(postDocument.getTitle())
-        .thumbnail(postDocument.getThumbnail())
-        .introduction(postDocument.getIntroduction())
-        .likes(postDocument.getLikes())
-        .views(postDocument.getViews())
-        .registeredAt(postDocument.getRegisteredAt())
-        .tags(postDocument.getTags())
+        .postId(postEsDocument.getPostId())
+        .memberId(postEsDocument.getMemberId())
+        .profileImage(postEsDocument.getProfileImage())
+        .accountName(postEsDocument.getAccountName())
+        .title(postEsDocument.getTitle())
+        .thumbnail(postEsDocument.getThumbnail())
+        .introduction(postEsDocument.getIntroduction())
+        .likes(postEsDocument.getLikes())
+        .views(postEsDocument.getViews())
+        .registeredAt(postEsDocument.getRegisteredAt())
+        .tags(postEsDocument.getTags())
         .build();
   }
 

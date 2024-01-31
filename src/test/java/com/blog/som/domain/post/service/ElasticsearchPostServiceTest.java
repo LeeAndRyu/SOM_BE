@@ -15,7 +15,7 @@ import com.blog.som.domain.post.dto.PostDeleteResponse;
 import com.blog.som.domain.post.dto.PostDto;
 import com.blog.som.domain.post.dto.PostEditRequest;
 import com.blog.som.domain.post.dto.PostWriteRequest;
-import com.blog.som.domain.post.elasticsearch.document.PostDocument;
+import com.blog.som.domain.post.elasticsearch.document.PostEsDocument;
 import com.blog.som.domain.post.elasticsearch.repository.ElasticsearchPostRepository;
 import com.blog.som.domain.post.entity.PostEntity;
 import com.blog.som.domain.post.repository.PostRepository;
@@ -104,7 +104,7 @@ class ElasticsearchPostServiceTest {
       PostDto result = postService.writePost(request, 1L);
 
       //then
-      verify(elasticsearchPostRepository, times(1)).save(PostDocument.fromEntity(post, tagList));
+      verify(elasticsearchPostRepository, times(1)).save(PostEsDocument.fromEntity(post, tagList));
       assertThat(result.getTitle()).isEqualTo(request.getTitle());
       assertThat(result.getContent()).isEqualTo(request.getContent());
       assertThat(result.getTags()).containsAll(tagList);
@@ -144,7 +144,7 @@ class ElasticsearchPostServiceTest {
       PostTagEntity postTag1 = EntityCreator.createPostTag(1000L, post, tag1);
       PostTagEntity postTag2 = EntityCreator.createPostTag(1001L, post, tag2);
 
-      PostDocument postDocument = EntityCreator.createPostDocument(post, new ArrayList<>(Arrays.asList(TAG_1, TAG_2)));
+      PostEsDocument postEsDocument = EntityCreator.createPostDocument(post, new ArrayList<>(Arrays.asList(TAG_1, TAG_2)));
 
       String userAgent = "CHROME/123";
 
@@ -152,7 +152,7 @@ class ElasticsearchPostServiceTest {
       when(postRepository.findById(10L))
           .thenReturn(Optional.of(post));
       when(elasticsearchPostRepository.findById(10L))
-          .thenReturn(Optional.of(postDocument));
+          .thenReturn(Optional.of(postEsDocument));
       when(cacheRepository.canAddView(userAgent, 10L))
           .thenReturn(true);
 
@@ -161,7 +161,7 @@ class ElasticsearchPostServiceTest {
 
       //then
       verify(postRepository, times(1)).save(post);
-      verify(elasticsearchPostRepository, times(1)).save(postDocument);
+      verify(elasticsearchPostRepository, times(1)).save(postEsDocument);
       assertThat(postDto.getPostId()).isEqualTo(post.getPostId());
       assertThat(postDto.getTitle()).isEqualTo(post.getTitle());
     }
@@ -176,7 +176,7 @@ class ElasticsearchPostServiceTest {
       PostTagEntity postTag1 = EntityCreator.createPostTag(1000L, post, tag1);
       PostTagEntity postTag2 = EntityCreator.createPostTag(1001L, post, tag2);
 
-      PostDocument postDocument = EntityCreator.createPostDocument(post, new ArrayList<>(Arrays.asList(TAG_1, TAG_2)));
+      PostEsDocument postEsDocument = EntityCreator.createPostDocument(post, new ArrayList<>(Arrays.asList(TAG_1, TAG_2)));
 
       String userAgent = "CHROME/123";
 
@@ -187,8 +187,8 @@ class ElasticsearchPostServiceTest {
           .thenReturn(Optional.empty());
       when(postTagRepository.findAllByPost(post))
           .thenReturn(new ArrayList<>(Arrays.asList(postTag1, postTag2)));
-      when(elasticsearchPostRepository.save(PostDocument.fromEntity(post, new ArrayList<>(Arrays.asList(TAG_1, TAG_2)))))
-          .thenReturn(postDocument);
+      when(elasticsearchPostRepository.save(PostEsDocument.fromEntity(post, new ArrayList<>(Arrays.asList(TAG_1, TAG_2)))))
+          .thenReturn(postEsDocument);
       when(cacheRepository.canAddView(userAgent, 10L))
           .thenReturn(true);
 
@@ -197,7 +197,7 @@ class ElasticsearchPostServiceTest {
 
       //then
       verify(postRepository, times(1)).save(post);
-      verify(elasticsearchPostRepository, times(2)).save(postDocument);
+      verify(elasticsearchPostRepository, times(2)).save(postEsDocument);
       assertThat(postDto.getPostId()).isEqualTo(post.getPostId());
       assertThat(postDto.getTitle()).isEqualTo(post.getTitle());
     }
@@ -212,7 +212,7 @@ class ElasticsearchPostServiceTest {
       PostTagEntity postTag1 = EntityCreator.createPostTag(1000L, post, tag1);
       PostTagEntity postTag2 = EntityCreator.createPostTag(1001L, post, tag2);
 
-      PostDocument postDocument = EntityCreator.createPostDocument(post, new ArrayList<>(Arrays.asList(TAG_1, TAG_2)));
+      PostEsDocument postEsDocument = EntityCreator.createPostDocument(post, new ArrayList<>(Arrays.asList(TAG_1, TAG_2)));
 
       String userAgent = "CHROME/123";
 
@@ -220,7 +220,7 @@ class ElasticsearchPostServiceTest {
       when(postRepository.findById(10L))
           .thenReturn(Optional.of(post));
       when(elasticsearchPostRepository.findById(10L))
-          .thenReturn(Optional.of(postDocument));
+          .thenReturn(Optional.of(postEsDocument));
       when(cacheRepository.canAddView(userAgent, 10L))
           .thenReturn(false);
 
@@ -229,7 +229,7 @@ class ElasticsearchPostServiceTest {
 
       //then
       verify(postRepository, never()).save(post);
-      verify(elasticsearchPostRepository, never()).save(postDocument);
+      verify(elasticsearchPostRepository, never()).save(postEsDocument);
       assertThat(postDto.getPostId()).isEqualTo(post.getPostId());
       assertThat(postDto.getTitle()).isEqualTo(post.getTitle());
     }
@@ -244,7 +244,7 @@ class ElasticsearchPostServiceTest {
       PostTagEntity postTag1 = EntityCreator.createPostTag(1000L, post, tag1);
       PostTagEntity postTag2 = EntityCreator.createPostTag(1001L, post, tag2);
 
-      PostDocument postDocument = EntityCreator.createPostDocument(post, new ArrayList<>(Arrays.asList(TAG_1, TAG_2)));
+      PostEsDocument postEsDocument = EntityCreator.createPostDocument(post, new ArrayList<>(Arrays.asList(TAG_1, TAG_2)));
 
       String userAgent = "CHROME/123";
 
@@ -263,7 +263,7 @@ class ElasticsearchPostServiceTest {
 
       //then
       verify(postRepository, never()).save(post);
-      verify(elasticsearchPostRepository, times(1)).save(postDocument);
+      verify(elasticsearchPostRepository, times(1)).save(postEsDocument);
       assertThat(postDto.getPostId()).isEqualTo(post.getPostId());
       assertThat(postDto.getTitle()).isEqualTo(post.getTitle());
     }
@@ -338,7 +338,7 @@ class ElasticsearchPostServiceTest {
       verify(tagRepository, never()).findByTagNameAndMember(TAG_1, member);
       verify(tagRepository, never()).findByTagNameAndMember(TAG_2, member);
       verify(elasticsearchPostRepository, times(1)).deleteById(post.getPostId());
-      verify(elasticsearchPostRepository, times(1)).save(PostDocument.fromEntity(post, list));
+      verify(elasticsearchPostRepository, times(1)).save(PostEsDocument.fromEntity(post, list));
 
 
       assertThat(postDto.getTags()).containsAll(list);
@@ -391,7 +391,7 @@ class ElasticsearchPostServiceTest {
       verify(postTagRepository, times(1)).save(any(PostTagEntity.class));
       //elasticsearch
       verify(elasticsearchPostRepository, times(1)).deleteById(post.getPostId());
-      verify(elasticsearchPostRepository, times(1)).save(PostDocument.fromEntity(post, list));
+      verify(elasticsearchPostRepository, times(1)).save(PostEsDocument.fromEntity(post, list));
 
       assertThat(postDto.getTags()).containsAll(list);
       assertThat(postDto.getTitle()).isEqualTo(request.getTitle());
@@ -442,7 +442,7 @@ class ElasticsearchPostServiceTest {
       verify(postTagRepository, times(1)).save(any(PostTagEntity.class));
       //elasticsearch
       verify(elasticsearchPostRepository, times(1)).deleteById(post.getPostId());
-      verify(elasticsearchPostRepository, times(1)).save(PostDocument.fromEntity(post, list));
+      verify(elasticsearchPostRepository, times(1)).save(PostEsDocument.fromEntity(post, list));
 
       assertThat(postDto.getTags()).containsAll(list);
       assertThat(postDto.getTitle()).isEqualTo(request.getTitle());

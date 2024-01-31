@@ -2,16 +2,12 @@ package com.blog.som.domain.main.service;
 
 import com.blog.som.domain.blog.dto.BlogPostDto;
 import com.blog.som.domain.blog.dto.BlogPostList;
-import com.blog.som.domain.member.entity.MemberEntity;
-import com.blog.som.domain.member.repository.MemberRepository;
-import com.blog.som.domain.post.elasticsearch.document.PostDocument;
+import com.blog.som.domain.post.elasticsearch.document.PostEsDocument;
 import com.blog.som.domain.post.elasticsearch.repository.ElasticsearchPostRepository;
 import com.blog.som.global.constant.NumberConstant;
 import com.blog.som.global.constant.SearchConstant;
 import com.blog.som.global.dto.PageDto;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -28,7 +24,7 @@ public class ElasticsearchMainService implements MainService {
 
   @Override
   public BlogPostList getAllPostListHot(int page) {
-    Page<PostDocument> searchPageResult =
+    Page<PostEsDocument> searchPageResult =
         elasticsearchPostRepository.findAll(this.getBasicPageRequest(page));
 
     return this.getBlogPostListBySearchPage(searchPageResult);
@@ -40,21 +36,21 @@ public class ElasticsearchMainService implements MainService {
         PageRequest.of(page - 1,
             NumberConstant.DEFAULT_PAGE_SIZE, Sort.by(SearchConstant.REGISTERED_AT).descending());
 
-    Page<PostDocument> searchPageResult = elasticsearchPostRepository.findAll(pageRequest);
+    Page<PostEsDocument> searchPageResult = elasticsearchPostRepository.findAll(pageRequest);
 
     return this.getBlogPostListBySearchPage(searchPageResult);
   }
 
   @Override
   public BlogPostList searchAllPostByTitleOrIntroduction(String query, int page) {
-    Page<PostDocument> searchPageResult = elasticsearchPostRepository.
+    Page<PostEsDocument> searchPageResult = elasticsearchPostRepository.
         findByTitleContainingOrIntroductionContaining(query, query, this.getBasicPageRequest(page));
     return this.getBlogPostListBySearchPage(searchPageResult);
   }
 
   @Override
   public BlogPostList searchAllPostByContent(String query, int page) {
-    Page<PostDocument> searchPageResult =
+    Page<PostEsDocument> searchPageResult =
         elasticsearchPostRepository
             .findByContentContaining(query, this.getBasicPageRequest(page));
     return this.getBlogPostListBySearchPage(searchPageResult);
@@ -62,12 +58,12 @@ public class ElasticsearchMainService implements MainService {
 
   @Override
   public BlogPostList searchAllPostByTag(String query, int page) {
-    Page<PostDocument> searchPageResult =
+    Page<PostEsDocument> searchPageResult =
         elasticsearchPostRepository.findByTagsContaining(query, this.getBasicPageRequest(page));
     return this.getBlogPostListBySearchPage(searchPageResult);
   }
 
-  private BlogPostList getBlogPostListBySearchPage(Page<PostDocument> searchPage) {
+  private BlogPostList getBlogPostListBySearchPage(Page<PostEsDocument> searchPage) {
     List<BlogPostDto> blogPostDtoList = searchPage.getContent()
         .stream()
         .map(BlogPostDto::fromDocument)

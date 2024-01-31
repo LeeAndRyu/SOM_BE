@@ -1,6 +1,6 @@
 package com.blog.som.domain.post.elasticsearch.component;
 
-import com.blog.som.domain.post.elasticsearch.document.PostDocument;
+import com.blog.som.domain.post.elasticsearch.document.PostEsDocument;
 import com.blog.som.domain.post.elasticsearch.repository.ElasticsearchPostRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -23,15 +23,15 @@ public class ElasticsearchPostComponent {
     int pageSize = 100;
     int amount = 0;
 
-    Page<PostDocument> documentPage =
+    Page<PostEsDocument> documentPage =
         elasticsearchPostRepository
             .findAllByAccountName(accountName, PageRequest.of(page, pageSize));
 
     while (documentPage.getNumberOfElements() != 0) {
-      List<PostDocument> list = documentPage.getContent();
+      List<PostEsDocument> list = documentPage.getContent();
       amount += list.size();
-      for (PostDocument postDocument : list) {
-        postDocument.setProfileImage(profileImage);
+      for (PostEsDocument postEsDocument : list) {
+        postEsDocument.setProfileImage(profileImage);
       }
       elasticsearchPostRepository.saveAll(list);
       log.info("page={}, accumulate={}", page, amount);

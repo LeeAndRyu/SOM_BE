@@ -8,7 +8,7 @@ import com.blog.som.domain.blog.dto.BlogTagListDto;
 import com.blog.som.domain.follow.service.FollowService;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
-import com.blog.som.domain.post.elasticsearch.document.PostDocument;
+import com.blog.som.domain.post.elasticsearch.document.PostEsDocument;
 import com.blog.som.domain.post.elasticsearch.repository.ElasticsearchPostRepository;
 import com.blog.som.domain.post.repository.PostRepository;
 import com.blog.som.domain.tag.dto.TagDto;
@@ -86,7 +86,7 @@ public class ElasticsearchBlogService implements BlogService {
 
     PageRequest pageRequest = PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by(sortBy).descending());
 
-    Page<PostDocument> searchPageResult = elasticsearchPostRepository.findAllByAccountName(accountName, pageRequest);
+    Page<PostEsDocument> searchPageResult = elasticsearchPostRepository.findAllByAccountName(accountName, pageRequest);
 
     return this.getBlogPostListBySearchPage(searchPageResult);
   }
@@ -97,7 +97,7 @@ public class ElasticsearchBlogService implements BlogService {
         PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE,
             Sort.by(SearchConstant.REGISTERED_AT).descending());
 
-    Page<PostDocument> searchPageResult =
+    Page<PostEsDocument> searchPageResult =
         elasticsearchPostRepository.findByAccountNameAndTagsContaining(accountName, tagName, pageRequest);
 
     return this.getBlogPostListBySearchPage(searchPageResult);
@@ -109,7 +109,7 @@ public class ElasticsearchBlogService implements BlogService {
         PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE,
             Sort.by(SearchConstant.REGISTERED_AT).descending());
 
-    Page<PostDocument> searchPageList = elasticsearchPostRepository.
+    Page<PostEsDocument> searchPageList = elasticsearchPostRepository.
         findByAccountNameAndTitleContainingOrIntroductionContaining(
             accountName, query, query, pageRequest);
 
@@ -117,7 +117,7 @@ public class ElasticsearchBlogService implements BlogService {
 
   }
 
-  private BlogPostList getBlogPostListBySearchPage(Page<PostDocument> searchPage) {
+  private BlogPostList getBlogPostListBySearchPage(Page<PostEsDocument> searchPage) {
     List<BlogPostDto> blogPostDtoList = searchPage.stream().map(BlogPostDto::fromDocument).toList();
     return new BlogPostList(PageDto.fromPostDocumentPage(searchPage), blogPostDtoList);
   }

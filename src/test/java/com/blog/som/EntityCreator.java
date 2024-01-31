@@ -3,7 +3,7 @@ package com.blog.som;
 import com.blog.som.domain.follow.entity.FollowEntity;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.type.Role;
-import com.blog.som.domain.post.elasticsearch.document.PostDocument;
+import com.blog.som.domain.post.elasticsearch.document.PostEsDocument;
 import com.blog.som.domain.post.entity.PostEntity;
 import com.blog.som.domain.tag.entity.PostTagEntity;
 import com.blog.som.domain.tag.entity.TagEntity;
@@ -69,8 +69,8 @@ public class EntityCreator {
         .build();
   }
 
-  public static PostDocument createPostDocument(PostEntity postEntity, List<String> tags){
-    return PostDocument.builder()
+  public static PostEsDocument createPostDocument(PostEntity postEntity, List<String> tags){
+    return PostEsDocument.builder()
         .id(postEntity.getPostId())
         .postId(postEntity.getPostId())
         .memberId(postEntity.getMember().getMemberId())
@@ -86,8 +86,8 @@ public class EntityCreator {
         .build();
   }
 
-  public static PostDocument createPostDocument(PostEntity postEntity){
-    return PostDocument.builder()
+  public static PostEsDocument createPostDocument(PostEntity postEntity){
+    return PostEsDocument.builder()
         .id(postEntity.getPostId())
         .postId(postEntity.getPostId())
         .memberId(postEntity.getMember().getMemberId())

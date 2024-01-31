@@ -2,9 +2,6 @@ package com.blog.som.domain.blog.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.BDDMockito.never;
-import static org.mockito.BDDMockito.times;
 import static org.mockito.BDDMockito.verify;
 import static org.mockito.BDDMockito.when;
 
@@ -17,9 +14,8 @@ import com.blog.som.domain.blog.dto.BlogTagListDto;
 import com.blog.som.domain.follow.service.FollowService;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
-import com.blog.som.domain.post.elasticsearch.document.PostDocument;
+import com.blog.som.domain.post.elasticsearch.document.PostEsDocument;
 import com.blog.som.domain.post.elasticsearch.repository.ElasticsearchPostRepository;
-import com.blog.som.domain.post.entity.PostEntity;
 import com.blog.som.domain.post.repository.PostRepository;
 import com.blog.som.domain.tag.entity.TagEntity;
 import com.blog.som.domain.tag.repository.TagRepository;
@@ -204,15 +200,15 @@ class ElasticsearchBlogServiceTest {
           PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE,
               Sort.by(SearchConstant.REGISTERED_AT).descending());
 
-      List<PostDocument> postDocumentList = new ArrayList<>();
+      List<PostEsDocument> postEsDocumentList = new ArrayList<>();
 
       for (int i = 1; i <= 5; i++) {
-        postDocumentList.add(EntityCreator.createPostDocument(EntityCreator.createPost(100L + i, member)));
+        postEsDocumentList.add(EntityCreator.createPostDocument(EntityCreator.createPost(100L + i, member)));
       }
 
       //given
       when(elasticSearchPostRepository.findAllByAccountName(accountName, pageRequest))
-          .thenReturn(new PageImpl<>(postDocumentList));
+          .thenReturn(new PageImpl<>(postEsDocumentList));
 
       //when
       BlogPostList blogPostList = blogService.getBlogPostListBySortType(accountName, sort, page);
@@ -237,15 +233,15 @@ class ElasticsearchBlogServiceTest {
       PageRequest pageRequest =
           PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by(SearchConstant.VIEWS).descending());
 
-      List<PostDocument> postDocumentList = new ArrayList<>();
+      List<PostEsDocument> postEsDocumentList = new ArrayList<>();
 
       for (int i = 1; i <= 5; i++) {
-        postDocumentList.add(EntityCreator.createPostDocument(EntityCreator.createPost(100L + i, member)));
+        postEsDocumentList.add(EntityCreator.createPostDocument(EntityCreator.createPost(100L + i, member)));
       }
 
       //given
       when(elasticSearchPostRepository.findAllByAccountName(accountName, pageRequest))
-          .thenReturn(new PageImpl<>(postDocumentList));
+          .thenReturn(new PageImpl<>(postEsDocumentList));
 
       //when
       BlogPostList blogPostList = blogService.getBlogPostListBySortType(accountName, sort, page);
@@ -273,15 +269,15 @@ class ElasticsearchBlogServiceTest {
         PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE,
             Sort.by(SearchConstant.REGISTERED_AT).descending());
 
-    List<PostDocument> postDocumentList = new ArrayList<>();
+    List<PostEsDocument> postEsDocumentList = new ArrayList<>();
 
     for (int i = 1; i <= 5; i++) {
-      postDocumentList.add(EntityCreator.createPostDocument(EntityCreator.createPost(100L + i, member)));
+      postEsDocumentList.add(EntityCreator.createPostDocument(EntityCreator.createPost(100L + i, member)));
     }
 
     //given
     when(elasticSearchPostRepository.findByAccountNameAndTagsContaining(accountName, tagName, pageRequest))
-        .thenReturn(new PageImpl<>(postDocumentList));
+        .thenReturn(new PageImpl<>(postEsDocumentList));
 
     //when
     BlogPostList blogPostList = blogService.getBlogPostListByTag(accountName, tagName, page);
@@ -305,17 +301,17 @@ class ElasticsearchBlogServiceTest {
     PageRequest pageRequest =
         PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by("registeredAt").descending());
 
-    List<PostDocument> postDocumentList = new ArrayList<>();
+    List<PostEsDocument> postEsDocumentList = new ArrayList<>();
 
     for (int i = 1; i <= 5; i++) {
-      postDocumentList.add(EntityCreator.createPostDocument(EntityCreator.createPost(100L + i, member)));
+      postEsDocumentList.add(EntityCreator.createPostDocument(EntityCreator.createPost(100L + i, member)));
     }
 
     //given
     when(elasticSearchPostRepository
         .findByAccountNameAndTitleContainingOrIntroductionContaining(
             accountName, query, query, pageRequest))
-        .thenReturn(new PageImpl<>(postDocumentList));
+        .thenReturn(new PageImpl<>(postEsDocumentList));
 
     //when
     BlogPostList blogPostList = blogService.getBlogPostListByQuery(accountName, query, page);

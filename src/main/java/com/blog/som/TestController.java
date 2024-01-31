@@ -1,7 +1,7 @@
 package com.blog.som;
 
 import com.blog.som.domain.member.security.userdetails.LoginMember;
-import com.blog.som.domain.post.elasticsearch.document.PostDocument;
+import com.blog.som.domain.post.elasticsearch.document.PostEsDocument;
 import com.blog.som.domain.post.elasticsearch.repository.ElasticsearchPostRepository;
 import com.blog.som.global.s3.S3ImageService;
 import io.swagger.annotations.Api;
@@ -57,7 +57,7 @@ public class TestController {
 
   @GetMapping("/find/all")
   public ResponseEntity<?> findAll(){
-    Iterable<PostDocument> all = elasticSearchPostRepository.findAll();
+    Iterable<PostEsDocument> all = elasticSearchPostRepository.findAll();
     return ResponseEntity.ok(all);
   }
 
