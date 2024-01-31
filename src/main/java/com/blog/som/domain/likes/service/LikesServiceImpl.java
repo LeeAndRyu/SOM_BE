@@ -26,23 +26,7 @@ public class LikesServiceImpl implements LikesService {
   private final LikesRepository likesRepository;
 
   @Override
-  public LikesResponse doLikes(Long postId, Long loginMemberId) {
-    PostEntity post = postRepository.findById(postId)
-        .orElseThrow(() -> new PostException(ErrorCode.POST_NOT_FOUND));
-    MemberEntity member = memberRepository.findById(loginMemberId)
-        .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
-
-    if (likesRepository.existsByMemberAndPost(member, post)) {
-      return new LikesResponse(false, loginMemberId, postId, LikesConstant.LIKES_ALREADY_EXISTS);
-    }
-
-    likesRepository.save(new LikesEntity(member, post));
-
-    return new LikesResponse(true, loginMemberId, postId, LikesConstant.LIKES_COMPLETE);
-  }
-
-  @Override
-  public LikesResponse cancelLikes(Long postId, Long loginMemberId) {
+  public LikesResponse.ToggleResult toggleLikes(Long postId, Long loginMemberId) {
     PostEntity post = postRepository.findById(postId)
         .orElseThrow(() -> new PostException(ErrorCode.POST_NOT_FOUND));
     MemberEntity member = memberRepository.findById(loginMemberId)
@@ -51,24 +35,26 @@ public class LikesServiceImpl implements LikesService {
     Optional<LikesEntity> optionalLikes = likesRepository.findByMemberAndPost(member, post);
 
     if (optionalLikes.isEmpty()) {
-      return new LikesResponse(false, loginMemberId, postId, LikesConstant.LIKES_DOESNT_EXISTS);
+
+      likesRepository.save(new LikesEntity(member, post));
+
+      return new LikesResponse.ToggleResult(true, loginMemberId, postId);
     }
 
-    likesRepository.delete(optionalLikes.get());
-
-    return new LikesResponse(true, loginMemberId, postId, LikesConstant.LIKES_CANCEL_COMPLETE);
+    return null;
   }
 
+
   @Override
-  public LikesResponse memberLikesPost(Long postId, Long loginMemberId) {
+  public LikesResponse.MemberLikesPost memberLikesPost(Long postId, Long loginMemberId) {
     PostEntity post = postRepository.findById(postId)
         .orElseThrow(() -> new PostException(ErrorCode.POST_NOT_FOUND));
     MemberEntity member = memberRepository.findById(loginMemberId)
         .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
 
     if (likesRepository.existsByMemberAndPost(member, post)) {
-      return new LikesResponse(true, loginMemberId, postId, LikesConstant.LIKES_EXISTS);
+      return new LikesResponse.MemberLikesPost(true, loginMemberId, postId);
     }
-    return new LikesResponse(false, loginMemberId, postId, LikesConstant.LIKES_DOESNT_EXISTS);
+    return new LikesResponse.MemberLikesPost(false, loginMemberId, postId);
   }
 }
