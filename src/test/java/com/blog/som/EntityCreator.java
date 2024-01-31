@@ -3,7 +3,6 @@ package com.blog.som;
 import com.blog.som.domain.follow.entity.FollowEntity;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.type.Role;
-import com.blog.som.domain.post.elasticsearch.document.PostEsDocument;
 import com.blog.som.domain.post.entity.PostEntity;
 import com.blog.som.domain.post.mongo.document.PostDocument;
 import com.blog.som.domain.tag.entity.PostTagEntity;
@@ -61,7 +60,7 @@ public class EntityCreator {
         .build();
   }
 
-  public static FollowEntity createFollowEntity(Long id, MemberEntity fromMember, MemberEntity toMember){
+  public static FollowEntity createFollowEntity(Long id, MemberEntity fromMember, MemberEntity toMember) {
     return FollowEntity.builder()
         .followId(id)
         .fromMember(fromMember)
@@ -70,7 +69,7 @@ public class EntityCreator {
         .build();
   }
 
-  public static PostDocument createPostDocument(PostEntity postEntity, List<String> tags){
+  public static PostDocument createPostDocument(PostEntity postEntity, List<String> tags) {
     return PostDocument.builder()
         .postId(postEntity.getPostId())
         .memberId(postEntity.getMember().getMemberId())
@@ -86,7 +85,7 @@ public class EntityCreator {
         .build();
   }
 
-  public static PostDocument createPostDocument(PostEntity postEntity){
+  public static PostDocument createPostDocument(PostEntity postEntity) {
     return PostDocument.builder()
         .postId(postEntity.getPostId())
         .memberId(postEntity.getMember().getMemberId())
@@ -102,35 +101,4 @@ public class EntityCreator {
         .build();
   }
 
-  public static PostEsDocument createPostEsDocument(PostEntity postEntity, List<String> tags){
-    return PostEsDocument.builder()
-        .postId(postEntity.getPostId())
-        .memberId(postEntity.getMember().getMemberId())
-        .accountName(postEntity.getMember().getAccountName())
-        .title(postEntity.getTitle())
-        .thumbnail(postEntity.getThumbnail())
-        .introduction(postEntity.getIntroduction())
-        .content(postEntity.getContent())
-        .likes(postEntity.getLikes())
-        .views(postEntity.getViews())
-        .registeredAt(postEntity.getRegisteredAt())
-        .tags(tags)
-        .build();
-  }
-
-  public static PostEsDocument createPostEsDocument(PostEntity postEntity){
-    return PostEsDocument.builder()
-        .postId(postEntity.getPostId())
-        .memberId(postEntity.getMember().getMemberId())
-        .accountName(postEntity.getMember().getAccountName())
-        .title(postEntity.getTitle())
-        .thumbnail(postEntity.getThumbnail())
-        .introduction(postEntity.getIntroduction())
-        .content(postEntity.getContent())
-        .likes(postEntity.getLikes())
-        .views(postEntity.getViews())
-        .registeredAt(postEntity.getRegisteredAt())
-        .tags(new ArrayList<>(Arrays.asList("tag1, tag2")))
-        .build();
-  }
 }
