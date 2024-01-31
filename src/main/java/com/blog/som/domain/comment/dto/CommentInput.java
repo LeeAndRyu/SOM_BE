@@ -1,4 +1,4 @@
-package com.blog.som.domain.comment.controller;
+package com.blog.som.domain.comment.dto;
 
 
 import lombok.AllArgsConstructor;
@@ -14,5 +14,5 @@ import lombok.Setter;
 @Builder
 public class CommentInput {
 
-  private String comment;
+  private String content;
 }
