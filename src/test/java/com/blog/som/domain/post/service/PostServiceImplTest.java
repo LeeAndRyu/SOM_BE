@@ -16,6 +16,8 @@ import com.blog.som.domain.post.dto.PostDto;
 import com.blog.som.domain.post.dto.PostEditRequest;
 import com.blog.som.domain.post.dto.PostWriteRequest;
 import com.blog.som.domain.post.entity.PostEntity;
+import com.blog.som.domain.post.mongo.document.PostDocument;
+import com.blog.som.domain.post.mongo.respository.MongoPostRepository;
 import com.blog.som.domain.post.repository.PostRepository;
 import com.blog.som.domain.tag.entity.PostTagEntity;
 import com.blog.som.domain.tag.entity.TagEntity;
@@ -52,6 +54,8 @@ class PostServiceImplTest {
   private PostTagRepository postTagRepository;
   @Mock
   private CacheRepository cacheRepository;
+  @Mock
+  private MongoPostRepository mongoPostRepository;
 
   @InjectMocks
   private PostServiceImpl postService;
@@ -100,6 +104,7 @@ class PostServiceImplTest {
       PostDto result = postService.writePost(request, 1L);
 
       //then
+      verify(mongoPostRepository, times(1)).save(PostDocument.fromEntity(post, tagList));
       assertThat(result.getTitle()).isEqualTo(request.getTitle());
       assertThat(result.getContent()).isEqualTo(request.getContent());
       assertThat(result.getTags()).containsAll(tagList);
@@ -130,8 +135,8 @@ class PostServiceImplTest {
   class GetPost {
 
     @Test
-    @DisplayName("성공 : 조회수 증가")
-    void getPost() {
+    @DisplayName("성공 : 조회수 증가, PostDocument 존재")
+    void getPost_PostDocument_exists() {
       MemberEntity member = EntityCreator.createMember(1L);
       PostEntity post = EntityCreator.createPost(10L, member);
       TagEntity tag1 = EntityCreator.createTag(100L, TAG_1, member);
@@ -139,13 +144,15 @@ class PostServiceImplTest {
       PostTagEntity postTag1 = EntityCreator.createPostTag(1000L, post, tag1);
       PostTagEntity postTag2 = EntityCreator.createPostTag(1001L, post, tag2);
 
+      PostDocument PostDocument = EntityCreator.createPostDocument(post, new ArrayList<>(Arrays.asList(TAG_1, TAG_2)));
+
       String userAgent = "CHROME/123";
 
       //given
       when(postRepository.findById(10L))
           .thenReturn(Optional.of(post));
-      when(postTagRepository.findAllByPost(post))
-          .thenReturn(new ArrayList<>(Arrays.asList(postTag1, postTag2)));
+      when(mongoPostRepository.findByPostId(10L))
+          .thenReturn(Optional.of(PostDocument));
       when(cacheRepository.canAddView(userAgent, 10L))
           .thenReturn(true);
 
@@ -154,13 +161,14 @@ class PostServiceImplTest {
 
       //then
       verify(postRepository, times(1)).save(post);
+      verify(mongoPostRepository, times(1)).save(PostDocument);
       assertThat(postDto.getPostId()).isEqualTo(post.getPostId());
       assertThat(postDto.getTitle()).isEqualTo(post.getTitle());
     }
 
     @Test
-    @DisplayName("성공 : 조회수 증가 X")
-    void getPost_never_add_vew() {
+    @DisplayName("성공 : 조회수 증가, PostDocument X")
+    void getPost_PostDocument_doesnt_exists() {
       MemberEntity member = EntityCreator.createMember(1L);
       PostEntity post = EntityCreator.createPost(10L, member);
       TagEntity tag1 = EntityCreator.createTag(100L, TAG_1, member);
@@ -168,11 +176,83 @@ class PostServiceImplTest {
       PostTagEntity postTag1 = EntityCreator.createPostTag(1000L, post, tag1);
       PostTagEntity postTag2 = EntityCreator.createPostTag(1001L, post, tag2);
 
+      PostDocument PostDocument = EntityCreator.createPostDocument(post, new ArrayList<>(Arrays.asList(TAG_1, TAG_2)));
+
       String userAgent = "CHROME/123";
 
       //given
       when(postRepository.findById(10L))
           .thenReturn(Optional.of(post));
+      when(mongoPostRepository.findByPostId(10L))
+          .thenReturn(Optional.empty());
+      when(postTagRepository.findAllByPost(post))
+          .thenReturn(new ArrayList<>(Arrays.asList(postTag1, postTag2)));
+      when(mongoPostRepository.save(PostDocument.fromEntity(post, new ArrayList<>(Arrays.asList(TAG_1, TAG_2)))))
+          .thenReturn(PostDocument);
+      when(cacheRepository.canAddView(userAgent, 10L))
+          .thenReturn(true);
+
+      //when
+      PostDto postDto = postService.getPost(10L, userAgent);
+
+      //then
+      verify(postRepository, times(1)).save(post);
+      verify(mongoPostRepository, times(2)).save(PostDocument);
+      assertThat(postDto.getPostId()).isEqualTo(post.getPostId());
+      assertThat(postDto.getTitle()).isEqualTo(post.getTitle());
+    }
+
+    @Test
+    @DisplayName("성공 : 조회수 증가 X, PostDocument 존재")
+    void getPost_never_add_view_PostDocument_exists() {
+      MemberEntity member = EntityCreator.createMember(1L);
+      PostEntity post = EntityCreator.createPost(10L, member);
+      TagEntity tag1 = EntityCreator.createTag(100L, TAG_1, member);
+      TagEntity tag2 = EntityCreator.createTag(101L, TAG_2, member);
+      PostTagEntity postTag1 = EntityCreator.createPostTag(1000L, post, tag1);
+      PostTagEntity postTag2 = EntityCreator.createPostTag(1001L, post, tag2);
+
+      PostDocument PostDocument = EntityCreator.createPostDocument(post, new ArrayList<>(Arrays.asList(TAG_1, TAG_2)));
+
+      String userAgent = "CHROME/123";
+
+      //given
+      when(postRepository.findById(10L))
+          .thenReturn(Optional.of(post));
+      when(mongoPostRepository.findByPostId(10L))
+          .thenReturn(Optional.of(PostDocument));
+      when(cacheRepository.canAddView(userAgent, 10L))
+          .thenReturn(false);
+
+      //when
+      PostDto postDto = postService.getPost(10L, userAgent);
+
+      //then
+      verify(postRepository, never()).save(post);
+      verify(mongoPostRepository, never()).save(PostDocument);
+      assertThat(postDto.getPostId()).isEqualTo(post.getPostId());
+      assertThat(postDto.getTitle()).isEqualTo(post.getTitle());
+    }
+
+    @Test
+    @DisplayName("성공 : 조회수 증가 X, PostDocument X")
+    void getPost_never_add_view_PostDocument_doesnt_exists() {
+      MemberEntity member = EntityCreator.createMember(1L);
+      PostEntity post = EntityCreator.createPost(10L, member);
+      TagEntity tag1 = EntityCreator.createTag(100L, TAG_1, member);
+      TagEntity tag2 = EntityCreator.createTag(101L, TAG_2, member);
+      PostTagEntity postTag1 = EntityCreator.createPostTag(1000L, post, tag1);
+      PostTagEntity postTag2 = EntityCreator.createPostTag(1001L, post, tag2);
+
+      PostDocument PostDocument = EntityCreator.createPostDocument(post, new ArrayList<>(Arrays.asList(TAG_1, TAG_2)));
+
+      String userAgent = "CHROME/123";
+
+      //given
+      when(postRepository.findById(10L))
+          .thenReturn(Optional.of(post));
+      when(mongoPostRepository.findByPostId(10L))
+          .thenReturn(Optional.empty());
       when(postTagRepository.findAllByPost(post))
           .thenReturn(new ArrayList<>(Arrays.asList(postTag1, postTag2)));
       when(cacheRepository.canAddView(userAgent, 10L))
@@ -183,6 +263,7 @@ class PostServiceImplTest {
 
       //then
       verify(postRepository, never()).save(post);
+      verify(mongoPostRepository, times(1)).save(PostDocument);
       assertThat(postDto.getPostId()).isEqualTo(post.getPostId());
       assertThat(postDto.getTitle()).isEqualTo(post.getTitle());
     }
@@ -256,6 +337,9 @@ class PostServiceImplTest {
       verify(postTagRepository, never()).delete(any(PostTagEntity.class));
       verify(tagRepository, never()).findByTagNameAndMember(TAG_1, member);
       verify(tagRepository, never()).findByTagNameAndMember(TAG_2, member);
+      verify(mongoPostRepository, times(1)).deleteByPostId(post.getPostId());
+      verify(mongoPostRepository, times(1)).save(PostDocument.fromEntity(post, list));
+
 
       assertThat(postDto.getTags()).containsAll(list);
       assertThat(postDto.getTitle()).isEqualTo(request.getTitle());
@@ -305,6 +389,9 @@ class PostServiceImplTest {
       //handleNewTags
       verify(tagRepository, times(1)).save(any(TagEntity.class));
       verify(postTagRepository, times(1)).save(any(PostTagEntity.class));
+      //elasticsearch
+      verify(mongoPostRepository, times(1)).deleteByPostId(post.getPostId());
+      verify(mongoPostRepository, times(1)).save(PostDocument.fromEntity(post, list));
 
       assertThat(postDto.getTags()).containsAll(list);
       assertThat(postDto.getTitle()).isEqualTo(request.getTitle());
@@ -353,6 +440,9 @@ class PostServiceImplTest {
       verify(tagRepository, never()).delete(tag2);
       verify(tagRepository, times(2)).save(any(TagEntity.class));
       verify(postTagRepository, times(1)).save(any(PostTagEntity.class));
+      //elasticsearch
+      verify(mongoPostRepository, times(1)).deleteByPostId(post.getPostId());
+      verify(mongoPostRepository, times(1)).save(PostDocument.fromEntity(post, list));
 
       assertThat(postDto.getTags()).containsAll(list);
       assertThat(postDto.getTitle()).isEqualTo(request.getTitle());
@@ -429,6 +519,8 @@ class PostServiceImplTest {
       verify(postTagRepository, times(1)).delete(postTag1);
       verify(tagRepository, times(1)).delete(tag1);
       verify(postRepository, times(1)).delete(post);
+      //elasticsearch
+      verify(mongoPostRepository, times(1)).deleteByPostId(post.getPostId());
 
       assertThat(response.getPostId()).isEqualTo(10L);
       assertThat(response.getPostTitle()).isEqualTo(post.getTitle());
@@ -460,6 +552,8 @@ class PostServiceImplTest {
       verify(tagRepository, never()).delete(tag1);
       verify(tagRepository, times(1)).save(tag1);
       verify(postRepository, times(1)).delete(post);
+      //elasticsearch
+      verify(mongoPostRepository, times(1)).deleteByPostId(post.getPostId());
 
       assertThat(response.getPostId()).isEqualTo(10L);
       assertThat(response.getPostTitle()).isEqualTo(post.getTitle());

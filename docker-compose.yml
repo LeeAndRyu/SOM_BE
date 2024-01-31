@@ -23,39 +23,32 @@ services:
       - 6379:6379
     restart: always
 
-  elasticsearch:
-    build:
-      context: .
-      args:
-        VERSION: 7.17.3
-    container_name: elasticsearch
-    environment:
-      - node.name=single-node
-      - cluster.name=es-docker-cluster
-      - discovery.type=single-node
-      - xpack.security.enabled=true
-      - xpack.security.audit.enabled=true
-      - ELASTIC_PASSWORD=a1234
+  mongodb:
+    image: mongo
+    container_name: mongodb
     ports:
-      - 9200:9200
-      - 9300:9300
+      - 27017:27017
+    volumes:
+      - data:/data
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=a1234
     networks:
-      - es-bridge
+      - backend
+    restart: always
 
-  kibana:
-    image: docker.elastic.co/kibana/kibana:7.17.3
-    container_name: kibana
-    environment:
-      SERVER_NAME: kibana
-      ELASTICSEARCH_HOST: http://elasticsearch:9200
-      ELASTICSEARCH_USERNAME: elastic
-      ELASTICSEARCH_PASSWORD: a1234
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    restart: always
     ports:
-      - 5601:5601
-    depends_on:
-      - elasticsearch
+      - 8081:8081
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=a1234
+      - ME_CONFIG_MONGODB_SERVER=mongodb
     networks:
-      - es-bridge
+      - backend
 
 volumes:
   data: { }
@@ -64,5 +57,4 @@ networks:
   backend:
     name: backend
     driver: bridge
-  es-bridge:
-    driver: bridge
+

@@ -1,16 +1,14 @@
 package com.blog.som.global.dto;
 
-import com.blog.som.domain.post.elasticsearch.document.PostDocument;
 import com.blog.som.domain.post.entity.PostEntity;
+import com.blog.som.domain.post.mongo.document.PostDocument;
 import com.blog.som.domain.tag.entity.PostTagEntity;
-import org.springframework.data.domain.Page;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.elasticsearch.core.SearchPage;
+import org.springframework.data.domain.Page;
 
 @Getter
 @Setter
@@ -25,36 +23,34 @@ public class PageDto {
   private int totalElement; //전체 데이터 개수
   private int totalPages; //전체 페이지 개수
 
-  public static PageDto fromPostEntityPage(Page<PostEntity> page){
+  public static PageDto fromPostEntityPage(Page<PostEntity> page) {
     return PageDto.builder()
         .currentPage(page.getNumber() + 1)
         .currentElements(page.getNumberOfElements())
         .pageSize(page.getSize())
-        .totalElement((int)page.getTotalElements())
+        .totalElement((int) page.getTotalElements())
         .totalPages(page.getTotalPages())
         .build();
   }
 
-  public static PageDto fromPostTagEntityEntityPage(Page<PostTagEntity> page){
+  public static PageDto fromPostTagEntityEntityPage(Page<PostTagEntity> page) {
     return PageDto.builder()
         .currentPage(page.getNumber() + 1)
         .currentElements(page.getNumberOfElements())
         .pageSize(page.getSize())
-        .totalElement((int)page.getTotalElements())
+        .totalElement((int) page.getTotalElements())
         .totalPages(page.getTotalPages())
         .build();
   }
 
-  public static PageDto fromPostDocumentPage(Page<PostDocument> page){
+  public static PageDto fromDocumentPage(Page<PostDocument> page) {
     return PageDto.builder()
         .currentPage(page.getNumber() + 1)
         .currentElements(page.getNumberOfElements())
         .pageSize(page.getSize())
-        .totalElement((int)page.getTotalElements())
+        .totalElement((int) page.getTotalElements())
         .totalPages(page.getTotalPages())
         .build();
   }
-
-
 
 }

@@ -79,7 +79,7 @@ public class BlogServiceImpl implements BlogService {
   }
 
   @Override
-  public BlogPostList getBlogPostListBySortType(String accountName, String sort, int page) {
+  public BlogPostList getAllBlogPostListBySortType(String accountName, String sort, int page) {
     MemberEntity member = memberRepository.findByAccountName(accountName)
         .orElseThrow(() -> new BlogException(ErrorCode.BLOG_NOT_FOUND));
 
