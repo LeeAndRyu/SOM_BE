@@ -2,6 +2,7 @@ package com.blog.som.global.exception.handler;
 
 import com.blog.som.global.exception.ErrorResponse;
 import com.blog.som.global.exception.custom.BlogException;
+import com.blog.som.global.exception.custom.CommentException;
 import com.blog.som.global.exception.custom.FollowException;
 import com.blog.som.global.exception.custom.MemberException;
 import com.blog.som.global.exception.custom.CustomSecurityException;
@@ -31,6 +32,12 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(PostException.class)
   public ResponseEntity<ErrorResponse> handlePostException(PostException e) {
+    ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode(), e.getErrorMessage());
+    return new ResponseEntity<>(errorResponse, e.getErrorCode().getStatus());
+  }
+
+  @ExceptionHandler(CommentException.class)
+  public ResponseEntity<ErrorResponse> handleCommentException(CommentException e) {
     ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode(), e.getErrorMessage());
     return new ResponseEntity<>(errorResponse, e.getErrorCode().getStatus());
   }
