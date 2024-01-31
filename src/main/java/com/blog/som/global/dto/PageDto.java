@@ -1,6 +1,5 @@
 package com.blog.som.global.dto;
 
-import com.blog.som.domain.post.elasticsearch.document.PostEsDocument;
 import com.blog.som.domain.post.entity.PostEntity;
 import com.blog.som.domain.post.mongo.document.PostDocument;
 import com.blog.som.domain.tag.entity.PostTagEntity;
@@ -45,16 +44,6 @@ public class PageDto {
   }
 
   public static PageDto fromDocumentPage(Page<PostDocument> page) {
-    return PageDto.builder()
-        .currentPage(page.getNumber() + 1)
-        .currentElements(page.getNumberOfElements())
-        .pageSize(page.getSize())
-        .totalElement((int) page.getTotalElements())
-        .totalPages(page.getTotalPages())
-        .build();
-  }
-
-  public static PageDto fromEsDocumentPage(Page<PostEsDocument> page) {
     return PageDto.builder()
         .currentPage(page.getNumber() + 1)
         .currentElements(page.getNumberOfElements())
