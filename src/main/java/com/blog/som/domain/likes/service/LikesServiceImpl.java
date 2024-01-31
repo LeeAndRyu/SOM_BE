@@ -1,6 +1,5 @@
 package com.blog.som.domain.likes.service;
 
-import com.blog.som.domain.likes.constant.LikesConstant;
 import com.blog.som.domain.likes.dto.LikesResponse;
 import com.blog.som.domain.likes.entity.LikesEntity;
 import com.blog.som.domain.likes.repository.LikesRepository;
@@ -40,8 +39,9 @@ public class LikesServiceImpl implements LikesService {
 
       return new LikesResponse.ToggleResult(true, loginMemberId, postId);
     }
+    likesRepository.delete(optionalLikes.get());
 
-    return null;
+    return new LikesResponse.ToggleResult(false, loginMemberId, postId);
   }
 
 
