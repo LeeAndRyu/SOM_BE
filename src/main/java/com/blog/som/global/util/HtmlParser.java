@@ -1,6 +1,7 @@
 package com.blog.som.global.util;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -13,7 +14,7 @@ public class HtmlParser {
     Document document = Jsoup.parse(html);
     Elements elements = document.select("img");
     return elements.stream().map(e -> e.attr("src"))
-        .toList();
+        .collect(Collectors.toList());
   }
 
 }
