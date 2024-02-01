@@ -9,6 +9,7 @@ import com.blog.som.domain.post.dto.PostWriteRequest;
 import com.blog.som.domain.post.service.PostService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +46,7 @@ public class PostController {
   @ApiOperation("게시글 조회")
   @GetMapping("/post/{postId}")
   public ResponseEntity<PostDto> getPost(@PathVariable Long postId,
-      @RequestHeader(value = "Custom-Access-User", required = false, defaultValue = "") String accessUserAgent){
+      @RequestHeader(value = "Custom-Access-User", required = false, defaultValue = "") String accessUserAgent) {
 
     PostDto postDto = postService.getPost(postId, accessUserAgent);
 
@@ -57,7 +58,7 @@ public class PostController {
   @PutMapping("/post/{postId}")
   public ResponseEntity<PostDto> editPost(@PathVariable Long postId,
       @RequestBody PostEditRequest postEditRequest,
-      @AuthenticationPrincipal LoginMember loginMember){
+      @AuthenticationPrincipal LoginMember loginMember) {
 
     PostDto postDto = postService.editPost(postEditRequest, postId, loginMember.getMemberId());
 
@@ -68,11 +69,19 @@ public class PostController {
   @PreAuthorize("hasAnyRole('ROLE_USER')")
   @DeleteMapping("/post/{postId}")
   public ResponseEntity<PostDeleteResponse> deletePost(@PathVariable Long postId,
-      @AuthenticationPrincipal LoginMember loginMember){
+      @AuthenticationPrincipal LoginMember loginMember) {
 
     PostDeleteResponse response = postService.deletePost(postId, loginMember.getMemberId());
 
     return ResponseEntity.ok(response);
   }
 
+  @ApiOperation(value = "게시글에 포함된 이미지 리스트", notes = "게시글 수정 전에 사용하고, 수정 Request에 포함시킨다.")
+  @GetMapping("/post/{postId}/images")
+  public ResponseEntity<List<String>> getImagesFromPost(@PathVariable Long postId) {
+
+    List<String> imageList = postService.getImagesFromPost(postId);
+
+    return ResponseEntity.ok(imageList);
+  }
 }

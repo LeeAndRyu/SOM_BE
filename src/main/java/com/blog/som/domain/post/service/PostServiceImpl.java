@@ -145,6 +145,17 @@ public class PostServiceImpl implements PostService {
     return PostDto.fromEntity(post, requestList);
   }
 
+  @Override
+  public List<String> getImagesFromPost(Long postId) {
+    PostEntity post = postRepository.findById(postId)
+        .orElseThrow(() -> new PostException(ErrorCode.POST_NOT_FOUND));
+
+    List<String> imageList = HtmlParser.getImageList(post.getContent());
+    imageList.add(post.getThumbnail());
+
+    return imageList;
+  }
+
   /**
    * request 받은 List<String> tagList -> tagEntity와 postTagEntity 처리
    */
