@@ -151,7 +151,9 @@ public class PostServiceImpl implements PostService {
         .orElseThrow(() -> new PostException(ErrorCode.POST_NOT_FOUND));
 
     List<String> imageList = HtmlParser.getImageList(post.getContent());
-    imageList.add(post.getThumbnail());
+    if(!post.getThumbnail().isBlank()){
+      imageList.add(post.getThumbnail());
+    }
 
     return imageList;
   }
