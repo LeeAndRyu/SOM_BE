@@ -23,4 +23,6 @@ public class PostEditRequest {
   private String introduction;
 
   private List<String> tags;
+
+  private List<String> totalImageList;
 }

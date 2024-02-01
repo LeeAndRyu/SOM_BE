@@ -28,6 +28,8 @@ public class PostWriteRequest {
 
   private List<String> tags;
 
+  private List<String> totalImageList;
+
   public static PostEntity toEntity(PostWriteRequest request, MemberEntity member){
     return PostEntity.builder()
         .member(member)

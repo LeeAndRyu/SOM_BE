@@ -18,6 +18,8 @@ import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.MemberException;
 import com.blog.som.global.exception.custom.PostException;
 import com.blog.som.global.redis.email.CacheRepository;
+import com.blog.som.global.s3.S3ImageService;
+import com.blog.som.global.util.HtmlParser;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -40,6 +42,7 @@ public class PostServiceImpl implements PostService {
   private final PostTagRepository postTagRepository;
   private final CacheRepository cacheRepository;
   private final MongoPostRepository mongoPostRepository;
+  private final S3ImageService s3ImageService;
 
   @Override
   public PostDto writePost(PostWriteRequest request, Long memberId) {
@@ -55,6 +58,8 @@ public class PostServiceImpl implements PostService {
 
     mongoPostRepository.save(PostDocument.fromEntity(post, tagList));
 
+    this.deleteUnUsedImageFromS3(request.getTotalImageList(), post.getThumbnail(), post.getContent());
+
     return PostDto.fromEntity(post, tagList);
   }
 
@@ -68,10 +73,10 @@ public class PostServiceImpl implements PostService {
     PostDocument postDocument;
     List<String> tagList;
 
-    if(optionalPostDocument.isPresent()){
+    if (optionalPostDocument.isPresent()) {
       postDocument = optionalPostDocument.get();
       tagList = postDocument.getTags();
-    }else{
+    } else {
       log.info("mongo postDocument [id={}] not found", post.getPostId());
       tagList = postTagRepository.findAllByPost(post)
           .stream()
@@ -80,7 +85,7 @@ public class PostServiceImpl implements PostService {
       postDocument = mongoPostRepository.save(PostDocument.fromEntity(post, tagList));
     }
 
-    if(StringUtils.hasText(accessUserAgent) && cacheRepository.canAddView(accessUserAgent, postId)){
+    if (StringUtils.hasText(accessUserAgent) && cacheRepository.canAddView(accessUserAgent, postId)) {
       post.addView();
       postRepository.save(post);
       postDocument.addView();
@@ -91,25 +96,26 @@ public class PostServiceImpl implements PostService {
   }
 
   @Override
-  public PostDto editPost(PostEditRequest postEditRequest, Long postId, Long loginMemberId) {
+  public PostDto editPost(PostEditRequest request, Long postId, Long loginMemberId) {
     PostEntity post = postRepository.findById(postId)
         .orElseThrow(() -> new PostException(ErrorCode.POST_NOT_FOUND));
     MemberEntity member = post.getMember();
 
-    if(!Objects.equals(member.getMemberId(), loginMemberId)){
+    if (!Objects.equals(member.getMemberId(), loginMemberId)) {
       throw new PostException(ErrorCode.POST_EDIT_NO_AUTHORITY);
     }
-
-    post.editPost(postEditRequest);
+    //게시글 수정
+    post.editPost(request);
     postRepository.save(post);
 
-    List<String> requestList = postEditRequest.getTags().stream().map(String::toLowerCase).toList();
+    //태그 수정 시작
+    List<String> requestList = request.getTags().stream().map(String::toLowerCase).toList();
     List<String> editRequestTags = new ArrayList<>(requestList);
 
     for (PostTagEntity postTag : postTagRepository.findAllByPost(post)) {
       //DB에도 있고, request에도 있는 경우 ( 그대로 인 경우 )
       String currentTagName = postTag.getTag().getTagName();
-      if(editRequestTags.contains(currentTagName)){
+      if (editRequestTags.contains(currentTagName)) {
         editRequestTags.remove(currentTagName);
         continue;
       }
@@ -118,23 +124,30 @@ public class PostServiceImpl implements PostService {
       postTagRepository.delete(postTag);//Tag보다 PostTag를 항상 먼저 삭제해야 한다.
       TagEntity currentTag = postTag.getTag();
 
-      if(currentTag.getCount() <= 1){
+      if (currentTag.getCount() <= 1) {
         tagRepository.delete(currentTag);
-      }else{
+      } else {
         currentTag.minusCount();
         tagRepository.save(currentTag);
       }
 
     }
     log.info("[PostService.editPost()] remain List tags : {} ", editRequestTags);
-    this.handleNewTags(editRequestTags, member, post);
+    this.handleNewTags(editRequestTags, member, post); //태그 수정 끝
 
+    //mongoDB에 refresh
     mongoPostRepository.deleteByPostId(postId);
     mongoPostRepository.save(PostDocument.fromEntity(post, requestList));
+
+    //안쓰는 이미지 삭제
+    this.deleteUnUsedImageFromS3(request.getTotalImageList(), post.getThumbnail(), post.getContent());
 
     return PostDto.fromEntity(post, requestList);
   }
 
+  /**
+   * request 받은 List<String> tagList -> tagEntity와 postTagEntity 처리
+   */
   private void handleNewTags(List<String> tagList, MemberEntity member, PostEntity post) {
     for (String tagName : tagList) {
       Optional<TagEntity> optionalTag = tagRepository.findByTagNameAndMember(tagName, member);
@@ -154,24 +167,38 @@ public class PostServiceImpl implements PostService {
     }
   }
 
+  /**
+   * 사용하지 않는 이미지를 S3에서 삭제
+   */
+  private void deleteUnUsedImageFromS3(List<String> requestTotalList, String thumbnail, String content) {
+    requestTotalList.remove(thumbnail);//전체 리스트에서 썸네일 제외
+    List<String> useImageList = HtmlParser.getImageList(content); //content에 포함된 image list
+
+    //전체 리스트에서 content에 포함된 image list 제거
+    useImageList.stream().forEach(requestTotalList::remove);
+
+    //requestTotalList에 남아 있는 것은 사용되지 않는 image list
+    requestTotalList.stream().forEach(s3ImageService::deleteImageFromS3);
+  }
+
   @Override
   public PostDeleteResponse deletePost(Long postId, Long loginMemberId) {
     PostEntity post = postRepository.findById(postId)
         .orElseThrow(() -> new PostException(ErrorCode.POST_NOT_FOUND));
     MemberEntity member = post.getMember();
 
-    if(!Objects.equals(member.getMemberId(), loginMemberId)){
+    if (!Objects.equals(member.getMemberId(), loginMemberId)) {
       throw new PostException(ErrorCode.POST_DELETE_NO_AUTHORITY);
     }
 
-    for(PostTagEntity postTag : postTagRepository.findAllByPost(post)){
+    for (PostTagEntity postTag : postTagRepository.findAllByPost(post)) {
       TagEntity tag = postTag.getTag();
 
       postTagRepository.delete(postTag);
 
-      if(tag.getCount() <= 1){
+      if (tag.getCount() <= 1) {
         tagRepository.delete(tag);
-      }else{
+      } else {
         tag.minusCount();
         tagRepository.save(tag);
       }
