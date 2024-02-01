@@ -56,9 +56,10 @@ public class PostServiceImpl implements PostService {
 
     this.handleNewTags(tagList, member, post);
 
-    mongoPostRepository.save(PostDocument.fromEntity(post, tagList));
-
     this.deleteUnUsedImageFromS3(request.getTotalImageList(), post.getThumbnail(), post.getContent());
+
+    //mongodb에 저장
+    mongoPostRepository.save(PostDocument.fromEntity(post, tagList));
 
     return PostDto.fromEntity(post, tagList);
   }
@@ -135,13 +136,12 @@ public class PostServiceImpl implements PostService {
     log.info("[PostService.editPost()] remain List tags : {} ", editRequestTags);
     this.handleNewTags(editRequestTags, member, post); //태그 수정 끝
 
-    //mongoDB에 refresh
-    mongoPostRepository.deleteByPostId(postId);
-    mongoPostRepository.save(PostDocument.fromEntity(post, requestList));
-
     //안쓰는 이미지 삭제
     this.deleteUnUsedImageFromS3(request.getTotalImageList(), post.getThumbnail(), post.getContent());
 
+    //mongoDB에 refresh
+    mongoPostRepository.deleteByPostId(postId);
+    mongoPostRepository.save(PostDocument.fromEntity(post, requestList));
     return PostDto.fromEntity(post, requestList);
   }
 
@@ -192,6 +192,7 @@ public class PostServiceImpl implements PostService {
     requestTotalList.stream().forEach(s3ImageService::deleteImageFromS3);
   }
 
+
   @Override
   public PostDeleteResponse deletePost(Long postId, Long loginMemberId) {
     PostEntity post = postRepository.findById(postId)
@@ -217,6 +218,13 @@ public class PostServiceImpl implements PostService {
     postRepository.delete(post);
 
     mongoPostRepository.deleteByPostId(postId);
+
+    //S3에서 이미지 삭제
+    List<String> imageList = HtmlParser.getImageList(post.getContent());
+    imageList.stream().forEach(s3ImageService::deleteImageFromS3);
+    if(!post.getThumbnail().isBlank()){
+      s3ImageService.deleteImageFromS3(post.getThumbnail());
+    }
 
     return new PostDeleteResponse(post.getPostId(), post.getTitle());
   }

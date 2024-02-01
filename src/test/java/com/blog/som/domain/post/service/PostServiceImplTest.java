@@ -27,6 +27,7 @@ import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.MemberException;
 import com.blog.som.global.exception.custom.PostException;
 import com.blog.som.global.redis.email.CacheRepository;
+import com.blog.som.global.s3.S3ImageService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -56,6 +57,8 @@ class PostServiceImplTest {
   private CacheRepository cacheRepository;
   @Mock
   private MongoPostRepository mongoPostRepository;
+  @Mock
+  private S3ImageService s3ImageService;
 
   @InjectMocks
   private PostServiceImpl postService;
@@ -75,6 +78,7 @@ class PostServiceImplTest {
           .thumbnail("test-thumbnail" + id + ".jpg")
           .introduction("test-introduction" + id)
           .tags(tagList)
+          .totalImageList(new ArrayList<>())
           .build();
     }
 
@@ -300,6 +304,7 @@ class PostServiceImplTest {
           .thumbnail("test-thumbnail.jpg")
           .introduction("edit-test-introduction")
           .tags(tags)
+          .totalImageList(new ArrayList<>())
           .build();
     }
 
