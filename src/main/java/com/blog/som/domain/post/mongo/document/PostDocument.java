@@ -57,7 +57,7 @@ public class PostDocument {
   @Indexed(direction = IndexDirection.DESCENDING)
   private LocalDateTime registeredAt;
 
-  private List<String> tags = new ArrayList<>();
+  private List<String> tags;
 
   public void addView() {
     this.views += 1;

@@ -39,16 +39,16 @@ public class PostEntity {
   @JoinColumn(name = "member_id", nullable = false)
   private MemberEntity member;
 
-  @Column(name = "title")
+  @Column(name = "title", length = 100)
   private String title;
 
-  @Column(name = "content")
+  @Column(name = "content", columnDefinition = "LONGTEXT")
   private String content;
 
   @Column(name = "thumbnail")
   private String thumbnail;
 
-  @Column(name = "introduction")
+  @Column(name = "introduction", length = 255)
   private String introduction;
 
   @Column(name = "likes")

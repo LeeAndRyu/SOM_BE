@@ -5,8 +5,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
 import com.blog.som.EntityCreator;
-import com.blog.som.domain.member.dto.MemberDto;
-import com.blog.som.domain.member.dto.MemberLogin;
 import com.blog.som.domain.member.dto.MemberLogin.Request;
 import com.blog.som.domain.member.dto.MemberLogin.Response;
 import com.blog.som.domain.member.dto.MemberLogoutResponse;
@@ -16,23 +14,19 @@ import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.domain.member.security.token.JwtTokenService;
 import com.blog.som.domain.member.type.Role;
 import com.blog.som.global.components.mail.MailSender;
-import com.blog.som.global.components.password.PasswordUtils;
+import com.blog.som.global.util.PasswordUtils;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.MemberException;
 import com.blog.som.global.redis.token.TokenRepository;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
