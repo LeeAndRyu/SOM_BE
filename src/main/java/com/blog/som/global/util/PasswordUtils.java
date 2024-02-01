@@ -1,9 +1,8 @@
-package com.blog.som.global.components.password;
+package com.blog.som.global.util;
 
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Component;
 
-@Component
 public class PasswordUtils {
 
   private PasswordUtils(){}

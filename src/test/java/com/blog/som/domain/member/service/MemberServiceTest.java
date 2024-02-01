@@ -19,7 +19,7 @@ import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.global.components.mail.MailSender;
 import com.blog.som.global.components.mail.SendMailDto;
-import com.blog.som.global.components.password.PasswordUtils;
+import com.blog.som.global.util.PasswordUtils;
 import com.blog.som.global.constant.ResponseConstant;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.MemberException;

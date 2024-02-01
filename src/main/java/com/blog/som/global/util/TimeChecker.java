@@ -1,4 +1,4 @@
-package com.blog.som.global.components;
+package com.blog.som.global.util;
 
 public class TimeChecker {
 

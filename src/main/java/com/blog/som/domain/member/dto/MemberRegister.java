@@ -3,7 +3,7 @@ package com.blog.som.domain.member.dto;
 
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.type.Role;
-import com.blog.som.global.components.password.PasswordUtils;
+import com.blog.som.global.util.PasswordUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
