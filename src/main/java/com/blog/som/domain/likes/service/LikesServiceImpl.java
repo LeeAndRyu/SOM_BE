@@ -24,7 +24,6 @@ public class LikesServiceImpl implements LikesService {
   private final PostRepository postRepository;
   private final MemberRepository memberRepository;
   private final LikesRepository likesRepository;
-  private final MongoPostService mongoPostService;
 
   @Override
   public LikesResponse.ToggleResult toggleLikes(Long postId, Long loginMemberId) {
@@ -41,16 +40,12 @@ public class LikesServiceImpl implements LikesService {
       post.addLikes();
       postRepository.save(post);
 
-      mongoPostService.updatePostDocumentLikes(true, postId);
-
       return new LikesResponse.ToggleResult(true, loginMemberId, postId);
     }
     likesRepository.delete(optionalLikes.get());
 
     post.minusLikes();
     postRepository.save(post);
-
-    mongoPostService.updatePostDocumentLikes(false, postId);
 
     return new LikesResponse.ToggleResult(false, loginMemberId, postId);
   }

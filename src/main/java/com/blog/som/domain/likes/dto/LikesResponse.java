@@ -13,11 +13,13 @@ public class LikesResponse {
   @Getter
   @Setter
   public static class ToggleResult{
+    private boolean result;
     private Long memberId;
     private Long postId;
     private String message;
 
     public ToggleResult(boolean result, Long memberId, Long postId) {
+      this.result = result;
       if(result){
         this.memberId = memberId;
         this.postId = postId;
