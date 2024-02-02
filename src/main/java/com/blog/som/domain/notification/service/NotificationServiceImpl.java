@@ -36,7 +36,21 @@ public class NotificationServiceImpl implements NotificationService {
     List<NotificationEntity> list =
         notificationRepository.findTop100ByMemberOrderByCreatedAtDesc(member);
 
+    list.stream()
+        .filter(n -> n.getReadAt() == null)
+        .forEach(NotificationEntity::readNow);
+
+    notificationRepository.saveAll(list);
+
     return list.stream().map(NotificationDto::fromEntity).toList();
+  }
+
+  @Override
+  public boolean checkUnreadNotification(Long memberId) {
+    MemberEntity member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
+
+    return notificationRepository.existsByMemberAndReadAtIsNull(member);
   }
 
   @Override
@@ -65,19 +79,18 @@ public class NotificationServiceImpl implements NotificationService {
     return emitter;
   }
 
-  private void sendToClient(Long id, Object data){
+  private void sendToClient(Long id, Object data) {
     SseEmitter emitter = emitterRepository.getEmitter(id);
 
-    if(emitter != null){
-      try{
+    if (emitter != null) {
+      try {
         SseEventBuilder sse = SseEmitter.event()
             .id(String.valueOf(id))
             .name("data")
             .data(data);
         emitter.send(sse);
 
-      }
-      catch (IOException e){
+      } catch (IOException e) {
         emitterRepository.deleteById(id);
         emitter.completeWithError(e);
       }

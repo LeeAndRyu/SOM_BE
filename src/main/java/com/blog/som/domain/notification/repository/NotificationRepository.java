@@ -10,4 +10,6 @@ import org.springframework.stereotype.Repository;
 public interface NotificationRepository extends JpaRepository<NotificationEntity, Long> {
 
   List<NotificationEntity> findTop100ByMemberOrderByCreatedAtDesc(MemberEntity member);
+
+  boolean existsByMemberAndReadAtIsNull(MemberEntity member);
 }

@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,6 +43,16 @@ public class NotificationController {
         notificationService.getNotifications(loginMember.getMemberId());
 
     return ResponseEntity.ok(notifications);
+  }
+
+  @ApiOperation("안읽은 알림 존재 여부")
+  @PreAuthorize("hasAnyRole('ROLE_USER')")
+  @GetMapping("/notification/unread")
+  public ResponseEntity<Boolean> unreadNotificationExists(
+      @AuthenticationPrincipal LoginMember loginMember) {
+
+    boolean result = notificationService.checkUnreadNotification(loginMember.getMemberId());
+    return ResponseEntity.ok(result);
   }
 
 }

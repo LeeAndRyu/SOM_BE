@@ -14,6 +14,11 @@ public interface NotificationService {
   List<NotificationDto> getNotifications(Long memberId);
 
   /**
+   * 안읽은 알림 여부 확인
+   */
+  boolean checkUnreadNotification(Long memberId);
+
+  /**
    * 서버의 이벤트를 클라이언트에게 보내는 메서드 (실제 알림 발생 시 사용)
    */
   NotificationDto notify(MemberEntity member, MemberEntity writer, NotificationCreateDto notificationCreateDto);
@@ -22,6 +27,5 @@ public interface NotificationService {
    * 클라이언트가 구독을 위해 호출하는 메서드
    */
   SseEmitter subscribe(Long memberId);
-
 
 }
