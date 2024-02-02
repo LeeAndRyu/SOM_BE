@@ -43,7 +43,7 @@ public class NotificationEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "writer_id", nullable = false)
-  private MemberEntity writer; //알림 주인
+  private MemberEntity writer; //알림 생성자
 
   @Enumerated(EnumType.STRING)
   @Column(name = "notification_situation", nullable = false)

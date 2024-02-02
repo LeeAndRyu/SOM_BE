@@ -1,11 +1,14 @@
 package com.blog.som.domain.notification.service;
 
 import com.blog.som.domain.member.entity.MemberEntity;
+import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.domain.notification.dto.NotificationCreateDto;
 import com.blog.som.domain.notification.dto.NotificationDto;
 import com.blog.som.domain.notification.entity.NotificationEntity;
 import com.blog.som.domain.notification.repository.EmitterRepository;
 import com.blog.som.domain.notification.repository.NotificationRepository;
+import com.blog.som.global.exception.ErrorCode;
+import com.blog.som.global.exception.custom.MemberException;
 import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +24,20 @@ public class NotificationServiceImpl implements NotificationService {
 
   private static final Long EMITTER_DEFAULT_TIMEOUT = 1000 * 60 * 60L;
 
+  private final MemberRepository memberRepository;
   private final EmitterRepository emitterRepository;
   private final NotificationRepository notificationRepository;
+
+  @Override
+  public List<NotificationDto> getNotifications(Long memberId) {
+    MemberEntity member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
+
+    List<NotificationEntity> list =
+        notificationRepository.findTop100ByMemberOrderByCreatedAtDesc(member);
+
+    return list.stream().map(NotificationDto::fromEntity).toList();
+  }
 
   @Override
   public NotificationDto notify(MemberEntity member, MemberEntity writer, NotificationCreateDto notificationCreateDto) {
