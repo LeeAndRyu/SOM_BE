@@ -57,7 +57,7 @@ public class NotificationCreateDto {
   }
 
   public static NotificationCreateDto follow(MemberEntity fromMember, Long followId){
-    String title = fromMember.getNickname() + " 님이 팔로우 하였습니다.";
+    String title = "<strong>" + fromMember.getNickname() + "</strong>" + " 님이 팔로우 하였습니다.";
     String message1 = "[" + fromMember.getBlogName() + "] <- 블로그 방문하기";
     String message2 = "";
     String url = "/blog/" + fromMember.getAccountName();
@@ -73,7 +73,7 @@ public class NotificationCreateDto {
   }
 
   public static NotificationCreateDto likes(MemberEntity fromMember, PostEntity post){
-    String title = fromMember.getNickname() + " 님이 게시글을 좋아합니다.";
+    String title = "<strong>" + fromMember.getNickname() + "</strong>" + " 님이 게시글을 좋아합니다.";
     String message1 = post.getTitle();
     String message2 = "";
     String url = "/blog/" + post.getMember().getAccountName() + "/" + post.getPostId();
