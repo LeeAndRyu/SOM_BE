@@ -36,11 +36,12 @@ public class NotificationServiceImpl implements NotificationService {
     List<NotificationEntity> list =
         notificationRepository.findTop100ByMemberOrderByCreatedAtDesc(member);
 
-    list.stream()
+    List<NotificationEntity> unreadList = notificationRepository.findByMemberAndReadAtIsNull(member);
+    unreadList.stream()
         .filter(n -> n.getReadAt() == null)
         .forEach(NotificationEntity::readNow);
 
-    notificationRepository.saveAll(list);
+    notificationRepository.saveAll(unreadList);
 
     return list.stream().map(NotificationDto::fromEntity).toList();
   }

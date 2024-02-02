@@ -11,5 +11,7 @@ public interface NotificationRepository extends JpaRepository<NotificationEntity
 
   List<NotificationEntity> findTop100ByMemberOrderByCreatedAtDesc(MemberEntity member);
 
+  List<NotificationEntity> findByMemberAndReadAtIsNull(MemberEntity member);
+
   boolean existsByMemberAndReadAtIsNull(MemberEntity member);
 }
