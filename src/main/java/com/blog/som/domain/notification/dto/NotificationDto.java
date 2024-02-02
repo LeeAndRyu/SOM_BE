@@ -20,7 +20,9 @@ public class NotificationDto {
 
   private Long memberId;
 
-  private String profileImage;
+  private Long writerId;
+
+  private String writerProfileImage;
 
   private NotificationSituation notificationSituation;
 
@@ -42,9 +44,10 @@ public class NotificationDto {
     return NotificationDto.builder()
         .notificationId(notification.getNotificationId())
         .memberId(notification.getMember().getMemberId())
+        .writerId(notification.getWriter().getMemberId())
+        .writerProfileImage(notification.getWriter().getProfileImage())
         .notificationSituation(notification.getNotificationSituation())
         .targetEntityId(notification.getTargetEntityId())
-        .profileImage(notification.getProfileImage())
         .title(notification.getTitle())
         .message1(notification.getMessage1())
         .message2(notification.getMessage2())

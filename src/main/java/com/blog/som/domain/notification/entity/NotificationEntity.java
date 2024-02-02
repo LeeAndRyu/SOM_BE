@@ -39,10 +39,11 @@ public class NotificationEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "member_id", nullable = false)
-  private MemberEntity member;
+  private MemberEntity member; //알림 주인
 
-  @Column(name = "profile_image")
-  private String profileImage;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "writer_id", nullable = false)
+  private MemberEntity writer; //알림 주인
 
   @Enumerated(EnumType.STRING)
   @Column(name = "notification_situation", nullable = false)
