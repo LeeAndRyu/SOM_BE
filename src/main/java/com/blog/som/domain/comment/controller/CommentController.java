@@ -4,6 +4,7 @@ import com.blog.som.domain.comment.dto.CommentDto;
 import com.blog.som.domain.comment.dto.CommentInput;
 import com.blog.som.domain.comment.service.CommentService;
 import com.blog.som.domain.member.security.userdetails.LoginMember;
+import com.blog.som.domain.post.mongo.service.MongoPostService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class CommentController {
 
   private final CommentService commentService;
+  private final MongoPostService mongoPostService;
 
   @ApiOperation("댓글 작성")
   @PreAuthorize("hasAnyRole('ROLE_USER')")
@@ -36,6 +38,8 @@ public class CommentController {
       @AuthenticationPrincipal LoginMember loginMember) {
 
     CommentDto result = commentService.writeComment(postId, loginMember.getMemberId(), input.getContent());
+
+    mongoPostService.updatePostDocumentComments(true, postId);
 
     return ResponseEntity.ok(result);
   }
@@ -69,6 +73,8 @@ public class CommentController {
       @AuthenticationPrincipal LoginMember loginMember) {
 
     CommentDto result = commentService.deleteComment(commentId, loginMember.getMemberId());
+
+    mongoPostService.updatePostDocumentComments(false, result.getPostId());
 
     return ResponseEntity.ok(result);
   }

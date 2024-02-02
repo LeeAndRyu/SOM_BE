@@ -73,6 +73,16 @@ public class PostDocument {
     }
   }
 
+  public void addComments() {
+    this.comments += 1;
+  }
+
+  public void minusComments(){
+    if(this.comments > 0){
+      this.comments -= 1;
+    }
+  }
+
   public static PostDocument fromEntity(PostEntity postEntity, List<String> tags) {
     return PostDocument.builder()
         .postId(postEntity.getPostId())

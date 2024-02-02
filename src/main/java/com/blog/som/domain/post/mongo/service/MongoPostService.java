@@ -55,4 +55,16 @@ public class MongoPostService {
     mongoPostRepository.save(postDocument);
   }
 
+  public void updatePostDocumentComments(boolean result, Long postId){
+    PostDocument postDocument = mongoPostRepository.findByPostId(postId)
+        .orElseThrow(() -> new PostException(ErrorCode.POST_NOT_FOUND));
+
+    if(result){
+      postDocument.addComments();
+    }else{
+      postDocument.minusComments();
+    }
+    mongoPostRepository.save(postDocument);
+  }
+
 }
