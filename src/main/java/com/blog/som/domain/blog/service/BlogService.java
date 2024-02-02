@@ -4,6 +4,7 @@ package com.blog.som.domain.blog.service;
 import com.blog.som.domain.blog.dto.BlogMemberDto;
 import com.blog.som.domain.blog.dto.BlogPostList;
 import com.blog.som.domain.blog.dto.BlogTagListDto;
+import com.blog.som.domain.follow.type.FollowStatus;
 
 public interface BlogService {
 
@@ -26,7 +27,7 @@ public interface BlogService {
   /**
    * 로그인 유저의 팔로우 여부
    */
-  String getFollowStatus(Long memberId, String accountName);
+  FollowStatus getFollowStatus(Long memberId, String accountName);
 
   /**
    * 정렬 방식에 따른 postList 조회
