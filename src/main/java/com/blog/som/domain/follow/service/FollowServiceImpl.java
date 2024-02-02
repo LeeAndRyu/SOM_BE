@@ -6,6 +6,8 @@ import com.blog.som.domain.follow.entity.FollowEntity;
 import com.blog.som.domain.follow.repository.FollowRepository;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
+import com.blog.som.domain.notification.dto.NotificationCreateDto;
+import com.blog.som.domain.notification.service.NotificationService;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.BlogException;
 import com.blog.som.global.exception.custom.FollowException;
@@ -23,6 +25,7 @@ public class FollowServiceImpl implements FollowService{
 
   private final FollowRepository followRepository;
   private final MemberRepository memberRepository;
+  private final NotificationService notificationService;
 
   @Override
   public FollowDto doFollow(Long fromMemberId, String blogAccountName) {
@@ -41,6 +44,9 @@ public class FollowServiceImpl implements FollowService{
 
     memberRepository.save(fromMember);
     memberRepository.save(toMember);
+
+    notificationService.notify(toMember, fromMember,
+        NotificationCreateDto.follow(fromMember, saved.getFollowId()));
 
     return FollowDto.fromEntity(saved);
   }

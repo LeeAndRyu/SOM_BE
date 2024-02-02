@@ -1,5 +1,6 @@
 package com.blog.som.domain.post.mongo.service;
 
+import com.blog.som.domain.likes.type.LikesStatus;
 import com.blog.som.domain.post.mongo.document.PostDocument;
 import com.blog.som.domain.post.mongo.respository.MongoPostRepository;
 import com.blog.som.global.exception.ErrorCode;
@@ -43,11 +44,11 @@ public class MongoPostService {
     log.info("[Elasticsearch PostDocument update profile_image] total amount={}", amount);
   }
 
-  public void updatePostDocumentLikes(boolean result, Long postId){
+  public void updatePostDocumentLikes(LikesStatus likesStatus, Long postId){
     PostDocument postDocument = mongoPostRepository.findByPostId(postId)
         .orElseThrow(() -> new PostException(ErrorCode.POST_NOT_FOUND));
 
-    if(result){
+    if(LikesStatus.LIKES.equals(likesStatus)){
       postDocument.addLikes();
     }else{
       postDocument.minusLikes();

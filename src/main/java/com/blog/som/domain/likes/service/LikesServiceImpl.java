@@ -5,6 +5,8 @@ import com.blog.som.domain.likes.entity.LikesEntity;
 import com.blog.som.domain.likes.repository.LikesRepository;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
+import com.blog.som.domain.notification.dto.NotificationCreateDto;
+import com.blog.som.domain.notification.service.NotificationService;
 import com.blog.som.domain.post.entity.PostEntity;
 import com.blog.som.domain.post.mongo.service.MongoPostService;
 import com.blog.som.domain.post.repository.PostRepository;
@@ -24,6 +26,7 @@ public class LikesServiceImpl implements LikesService {
   private final PostRepository postRepository;
   private final MemberRepository memberRepository;
   private final LikesRepository likesRepository;
+  private final NotificationService notificationService;
 
   @Override
   public LikesResponse.ToggleResult toggleLikes(Long postId, Long loginMemberId) {
@@ -40,8 +43,12 @@ public class LikesServiceImpl implements LikesService {
       post.addLikes();
       postRepository.save(post);
 
+      notificationService.notify(post.getMember(), member,
+          NotificationCreateDto.likes(member, post));
+
       return new LikesResponse.ToggleResult(true, loginMemberId, postId);
     }
+
     likesRepository.delete(optionalLikes.get());
 
     post.minusLikes();
