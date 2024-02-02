@@ -3,7 +3,6 @@ package com.blog.som.domain.likes.controller;
 import com.blog.som.domain.likes.dto.LikesResponse.MemberLikesPost;
 import com.blog.som.domain.likes.dto.LikesResponse.ToggleResult;
 import com.blog.som.domain.likes.service.LikesService;
-import com.blog.som.domain.likes.type.LikesStatus;
 import com.blog.som.domain.member.security.userdetails.LoginMember;
 import com.blog.som.domain.member.type.Role;
 import com.blog.som.domain.post.mongo.service.MongoPostService;
@@ -12,7 +11,6 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,14 +27,17 @@ public class LikesController {
   private final MongoPostService mongoPostService;
 
   @ApiOperation(value = "좋아요 누르기 / 누르기 취소", notes = "토글 형식으로 좋아요 누르기 / 취소가 반복된다.")
-  @PreAuthorize("hasAnyRole('ROLE_USER')")
   @PostMapping("/post/{postId}/likes")
   public ResponseEntity<ToggleResult> toggleLikes(@PathVariable Long postId,
       @AuthenticationPrincipal LoginMember loginMember) {
 
+    if (Role.UNAUTH.equals(loginMember.getRole())) {
+      return ResponseEntity.ok(ToggleResult.unAuth());
+    }
+
     ToggleResult toggleResult = likesService.toggleLikes(postId, loginMember.getMemberId());
 
-    mongoPostService.updatePostDocumentLikes(toggleResult.isResult(), postId);
+    mongoPostService.updatePostDocumentLikes(toggleResult.getLikesStatus(), postId);
 
     return ResponseEntity.ok(toggleResult);
   }
@@ -46,11 +47,11 @@ public class LikesController {
   public ResponseEntity<MemberLikesPost> memberLikesPost(@PathVariable Long postId,
       @AuthenticationPrincipal LoginMember loginMember) {
 
-    MemberLikesPost memberLikesPost = likesService.memberLikesPost(postId, loginMember.getMemberId());
-
-    if(Role.UNAUTH.equals(loginMember.getRole())){
-      memberLikesPost.setLikesStatus(LikesStatus.NOT_LOGGED_IN);
+    if (Role.UNAUTH.equals(loginMember.getRole())) {
+      return ResponseEntity.ok(MemberLikesPost.unAuth());
     }
+
+    MemberLikesPost memberLikesPost = likesService.memberLikesPost(postId, loginMember.getMemberId());
 
     return ResponseEntity.ok(memberLikesPost);
   }
