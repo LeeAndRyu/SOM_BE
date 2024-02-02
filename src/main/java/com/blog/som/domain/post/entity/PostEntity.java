@@ -71,6 +71,26 @@ public class PostEntity {
     this.views += 1;
   }
 
+  public void addLikes(){
+    this.likes += 1;
+  }
+
+  public void minusLikes(){
+    if(likes > 0){
+      this.likes -= 1;
+    }
+  }
+
+  public void addComments() {
+    this.comments += 1;
+  }
+
+  public void minusComments(){
+    if(this.comments > 0){
+      this.comments -= 1;
+    }
+  }
+
   public void editPost(PostEditRequest request){
     this.title = request.getTitle();
     this.content = request.getContent();

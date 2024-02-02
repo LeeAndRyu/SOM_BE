@@ -14,7 +14,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CommentDto {
+public class
+CommentDto {
   private Long commentId;
 
   private String content;

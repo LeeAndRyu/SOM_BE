@@ -4,6 +4,7 @@ import com.blog.som.domain.likes.dto.LikesResponse.MemberLikesPost;
 import com.blog.som.domain.likes.dto.LikesResponse.ToggleResult;
 import com.blog.som.domain.likes.service.LikesService;
 import com.blog.som.domain.member.security.userdetails.LoginMember;
+import com.blog.som.domain.post.mongo.service.MongoPostService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class LikesController {
 
   private final LikesService likesService;
+  private final MongoPostService mongoPostService;
 
   @ApiOperation(value = "좋아요 누르기 / 누르기 취소", notes = "토글 형식으로 좋아요 누르기 / 취소가 반복된다.")
   @PreAuthorize("hasAnyRole('ROLE_USER')")
@@ -31,6 +33,8 @@ public class LikesController {
       @AuthenticationPrincipal LoginMember loginMember) {
 
     ToggleResult toggleResult = likesService.toggleLikes(postId, loginMember.getMemberId());
+
+    mongoPostService.updatePostDocumentLikes(toggleResult.isResult(), postId);
 
     return ResponseEntity.ok(toggleResult);
   }

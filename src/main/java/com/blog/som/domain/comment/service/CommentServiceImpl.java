@@ -36,6 +36,9 @@ public class CommentServiceImpl implements CommentService {
 
     CommentEntity saved = commentRepository.save(new CommentEntity(member, post, commentString));
 
+    post.addComments();
+    postRepository.save(post);
+
     return CommentDto.fromEntity(saved);
   }
 
@@ -75,6 +78,11 @@ public class CommentServiceImpl implements CommentService {
     if (comment.getMember().getMemberId().equals(loginMemberId) ||
         comment.getPost().getMember().getMemberId().equals(loginMemberId)) {
       commentRepository.delete(comment);
+
+      PostEntity post = comment.getPost();
+      post.minusComments();
+      postRepository.save(post);
+
       return CommentDto.fromEntity(comment);
     }
 

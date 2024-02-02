@@ -8,6 +8,7 @@ import com.blog.som.domain.member.dto.MemberRegister.Request;
 import com.blog.som.domain.member.dto.RegisterEmailInput;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
+import com.blog.som.domain.post.mongo.service.MongoPostService;
 import com.blog.som.global.components.mail.MailSender;
 import com.blog.som.global.components.mail.SendMailDto;
 import com.blog.som.global.util.PasswordUtils;
@@ -20,10 +21,12 @@ import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 @Service
 public class MemberServiceImpl implements MemberService {
 
@@ -31,6 +34,7 @@ public class MemberServiceImpl implements MemberService {
   private final MailSender mailSender;
   private final CacheRepository cacheRepository;
   private final S3ImageService s3ImageService;
+  private final MongoPostService mongoPostService;
 
   @Override
   public EmailDuplicateResponse emailDuplicateCheckAndStartRegister(RegisterEmailInput input) {
@@ -109,6 +113,7 @@ public class MemberServiceImpl implements MemberService {
     member.setProfileImage(newImageAddress);
     memberRepository.save(member);
 
+    mongoPostService.updatePostDocumentProfileImage(member.getAccountName(), newImageAddress);
 
     return MemberDto.fromEntity(member);
   }
@@ -125,6 +130,8 @@ public class MemberServiceImpl implements MemberService {
     s3ImageService.deleteImageFromS3(member.getProfileImage());
     member.setProfileImage(null);
     memberRepository.save(member);
+
+    mongoPostService.updatePostDocumentProfileImage(member.getAccountName(), null);
 
     return MemberDto.fromEntity(member);
   }
