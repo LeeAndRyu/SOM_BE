@@ -5,6 +5,8 @@ import com.blog.som.domain.comment.entity.CommentEntity;
 import com.blog.som.domain.comment.repository.CommentRepository;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
+import com.blog.som.domain.notification.dto.NotificationCreateDto;
+import com.blog.som.domain.notification.service.NotificationService;
 import com.blog.som.domain.post.entity.PostEntity;
 import com.blog.som.domain.post.repository.PostRepository;
 import com.blog.som.global.exception.ErrorCode;
@@ -21,11 +23,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class CommentServiceImpl implements CommentService {
 
-
   private final PostRepository postRepository;
   private final MemberRepository memberRepository;
   private final CommentRepository commentRepository;
-
+  private final NotificationService notificationService;
 
   @Override
   public CommentDto writeComment(Long postId, Long loginMemberId, String commentString) {
@@ -34,12 +35,16 @@ public class CommentServiceImpl implements CommentService {
     MemberEntity member = memberRepository.findById(loginMemberId)
         .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
 
-    CommentEntity saved = commentRepository.save(new CommentEntity(member, post, commentString));
+    CommentEntity comment = commentRepository.save(new CommentEntity(member, post, commentString));
 
     post.addComments();
     postRepository.save(post);
 
-    return CommentDto.fromEntity(saved);
+    notificationService.notify(
+        post.getMember(), member,
+        NotificationCreateDto.comment(member.getNickname(), post, comment));
+
+    return CommentDto.fromEntity(comment);
   }
 
   @Override

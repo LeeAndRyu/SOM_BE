@@ -1,9 +1,11 @@
 package com.blog.som.domain.notification.dto;
 
+import com.blog.som.domain.comment.entity.CommentEntity;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.notification.entity.NotificationEntity;
 import com.blog.som.domain.notification.type.NotificationSituation;
 
+import com.blog.som.domain.post.entity.PostEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -38,8 +40,19 @@ public class NotificationCreateDto {
         .build();
   }
 
-  public static NotificationCreateDto comment(){
+  public static NotificationCreateDto comment(String writerNickname, PostEntity post, CommentEntity comment){
+    String title = writerNickname + " 님이 댓글을 남겼습니다.";
+    String message1 = comment.getContent();
+    String message2 = post.getTitle();
+    String url = "/post/" + post.getPostId();
+
     return NotificationCreateDto.builder()
+        .notificationSituation(NotificationSituation.COMMENT)
+        .targetEntityId(comment.getCommentId())
+        .title(title)
+        .message1(message1)
+        .message2(message2)
+        .url(url)
         .build();
   }
 
