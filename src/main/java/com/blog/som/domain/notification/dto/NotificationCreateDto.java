@@ -41,7 +41,7 @@ public class NotificationCreateDto {
   }
 
   public static NotificationCreateDto comment(String writerNickname, PostEntity post, CommentEntity comment){
-    String title = writerNickname + " 님이 댓글을 남겼습니다.";
+    String title = "<strong>" + writerNickname + "</strong>" + "님이 댓글을 남겼습니다.";
     String message1 = comment.getContent();
     String message2 = post.getTitle();
     String url = "/post/" + post.getPostId();
@@ -56,8 +56,19 @@ public class NotificationCreateDto {
         .build();
   }
 
-  public static NotificationCreateDto follow(){
+  public static NotificationCreateDto follow(MemberEntity fromMember, Long followId){
+    String title = fromMember.getNickname() + " 님이 댓글을 남겼습니다.";
+    String message1 = "[" + fromMember.getBlogName() + "] <- 블로그 방문하기";
+    String message2 = "";
+    String url = "/blog/" + fromMember.getAccountName();
+
     return NotificationCreateDto.builder()
+        .notificationSituation(NotificationSituation.FOLLOWED)
+        .targetEntityId(followId)
+        .title(title)
+        .message1(message1)
+        .message2(message2)
+        .url(url)
         .build();
   }
 

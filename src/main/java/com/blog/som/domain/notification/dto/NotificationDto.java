@@ -22,6 +22,8 @@ public class NotificationDto {
 
   private Long writerId;
 
+  private String writerAccountName;
+
   private String writerProfileImage;
 
   private NotificationSituation notificationSituation;
@@ -45,6 +47,7 @@ public class NotificationDto {
         .notificationId(notification.getNotificationId())
         .memberId(notification.getMember().getMemberId())
         .writerId(notification.getWriter().getMemberId())
+        .writerAccountName(notification.getWriter().getAccountName())
         .writerProfileImage(notification.getWriter().getProfileImage())
         .notificationSituation(notification.getNotificationSituation())
         .targetEntityId(notification.getTargetEntityId())
