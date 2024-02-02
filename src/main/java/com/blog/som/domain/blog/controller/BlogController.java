@@ -11,6 +11,7 @@ import com.blog.som.domain.member.type.Role;
 import com.blog.som.global.constant.SearchConstant;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.BlogException;
+import com.blog.som.domain.follow.type.FollowStatus;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -39,8 +40,10 @@ public class BlogController {
     BlogMemberDto blogMember = blogService.getBlogMember(accountName);
 
     if(loginMember.getRole().equals(Role.USER)){
-      blogMember.setLoginMemberFollowStatus(
+      blogMember.setFollowStatus(
           blogService.getFollowStatus(loginMember.getMemberId(), accountName));
+    }else{
+      blogMember.setFollowStatus(FollowStatus.NOT_LOGGED_IN);
     }
 
     return ResponseEntity.ok(blogMember);

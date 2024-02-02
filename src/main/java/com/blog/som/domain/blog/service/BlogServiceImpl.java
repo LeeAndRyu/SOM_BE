@@ -1,6 +1,5 @@
 package com.blog.som.domain.blog.service;
 
-import com.blog.som.domain.blog.constant.FollowConstant;
 import com.blog.som.domain.blog.dto.BlogMemberDto;
 import com.blog.som.domain.blog.dto.BlogPostDto;
 import com.blog.som.domain.blog.dto.BlogPostList;
@@ -20,13 +19,13 @@ import com.blog.som.global.constant.SearchConstant;
 import com.blog.som.global.dto.PageDto;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.BlogException;
+import com.blog.som.domain.follow.type.FollowStatus;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -70,12 +69,12 @@ public class BlogServiceImpl implements BlogService {
   }
 
   @Override
-  public String getFollowStatus(Long memberId, String accountName) {
+  public FollowStatus getFollowStatus(Long memberId, String accountName) {
     boolean result = followService.isFollowing(memberId, accountName);
-    if(result){
-      return FollowConstant.FOLLOWED;
+    if (result) {
+      return FollowStatus.FOLLOWED;
     }
-    return FollowConstant.NOT_FOLLOWED;
+    return FollowStatus.NOT_FOLLOWED;
   }
 
   @Override

@@ -5,12 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.when;
 
 import com.blog.som.EntityCreator;
-import com.blog.som.domain.blog.constant.FollowConstant;
 import com.blog.som.domain.blog.dto.BlogMemberDto;
 import com.blog.som.domain.blog.dto.BlogPostDto;
 import com.blog.som.domain.blog.dto.BlogPostList;
 import com.blog.som.domain.blog.dto.BlogTagListDto;
 import com.blog.som.domain.follow.service.FollowService;
+import com.blog.som.domain.follow.type.FollowStatus;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.domain.post.mongo.document.PostDocument;
@@ -79,7 +79,7 @@ class MongoBlogServiceTest {
       assertThat(result.getIntroduction()).isEqualTo(member.getIntroduction());
       assertThat(result.getFollowerCount()).isEqualTo(member.getFollowerCount());
       assertThat(result.getFollowingCount()).isEqualTo(member.getFollowingCount());
-      assertThat(result.getLoginMemberFollowStatus()).isNull();
+      assertThat(result.getFollowStatus()).isNull();
     }
 
     @Test
@@ -102,14 +102,15 @@ class MongoBlogServiceTest {
 
   @Nested
   @DisplayName("Blog 태그 목록 조회")
-  class GetBlogTags{
+  class GetBlogTags {
+
     @Test
     @DisplayName("성공")
-    void getBlogTags(){
+    void getBlogTags() {
       MemberEntity member = EntityCreator.createMember(1L);
-      String accountName=  member.getAccountName();
+      String accountName = member.getAccountName();
       List<TagEntity> list = new ArrayList<>();
-      for(int i = 1 ; i <= 5; i++){
+      for (int i = 1; i <= 5; i++) {
         list.add(EntityCreator.createTag(10L + i, "tag" + i, member));
       }
       //given
@@ -129,9 +130,9 @@ class MongoBlogServiceTest {
 
     @Test
     @DisplayName("실패")
-    void getBlogTags_BLOG_NOT_FOUND(){
+    void getBlogTags_BLOG_NOT_FOUND() {
       MemberEntity member = EntityCreator.createMember(1L);
-      String accountName=  member.getAccountName();
+      String accountName = member.getAccountName();
 
       //given
       when(memberRepository.findByAccountName(accountName))
@@ -160,10 +161,10 @@ class MongoBlogServiceTest {
       when(followService.isFollowing(1L, toMemberAccountName))
           .thenReturn(true);
       //when
-      String followStatus = blogService.getFollowStatus(1L, toMemberAccountName);
+      FollowStatus followStatus = blogService.getFollowStatus(1L, toMemberAccountName);
 
       //then
-      assertThat(followStatus).isEqualTo(FollowConstant.FOLLOWED);
+      assertThat(followStatus).isEqualTo(FollowStatus.FOLLOWED);
     }
 
     @Test
@@ -177,10 +178,10 @@ class MongoBlogServiceTest {
       when(followService.isFollowing(1L, toMemberAccountName))
           .thenReturn(false);
       //when
-      String followStatus = blogService.getFollowStatus(1L, toMemberAccountName);
+      FollowStatus followStatus = blogService.getFollowStatus(1L, toMemberAccountName);
 
       //then
-      assertThat(followStatus).isEqualTo(FollowConstant.NOT_FOLLOWED);
+      assertThat(followStatus).isEqualTo(FollowStatus.NOT_FOLLOWED);
     }
   }
 

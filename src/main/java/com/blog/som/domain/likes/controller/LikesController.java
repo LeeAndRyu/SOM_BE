@@ -3,7 +3,9 @@ package com.blog.som.domain.likes.controller;
 import com.blog.som.domain.likes.dto.LikesResponse.MemberLikesPost;
 import com.blog.som.domain.likes.dto.LikesResponse.ToggleResult;
 import com.blog.som.domain.likes.service.LikesService;
+import com.blog.som.domain.likes.type.LikesStatus;
 import com.blog.som.domain.member.security.userdetails.LoginMember;
+import com.blog.som.domain.member.type.Role;
 import com.blog.som.domain.post.mongo.service.MongoPostService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -40,12 +42,15 @@ public class LikesController {
   }
 
   @ApiOperation("좋아요 여부 확인")
-  @PreAuthorize("hasAnyRole('ROLE_USER')")
   @GetMapping("/post/{postId}/likes")
   public ResponseEntity<MemberLikesPost> memberLikesPost(@PathVariable Long postId,
       @AuthenticationPrincipal LoginMember loginMember) {
 
     MemberLikesPost memberLikesPost = likesService.memberLikesPost(postId, loginMember.getMemberId());
+
+    if(Role.UNAUTH.equals(loginMember.getRole())){
+      memberLikesPost.setLikesStatus(LikesStatus.NOT_LOGGED_IN);
+    }
 
     return ResponseEntity.ok(memberLikesPost);
   }
