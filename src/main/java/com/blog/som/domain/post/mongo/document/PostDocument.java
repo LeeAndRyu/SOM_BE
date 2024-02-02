@@ -67,6 +67,12 @@ public class PostDocument {
     this.likes += 1;
   }
 
+  public void minusLikes(){
+    if(this.likes > 0){
+      this.likes -= 1;
+    }
+  }
+
   public static PostDocument fromEntity(PostEntity postEntity, List<String> tags) {
     return PostDocument.builder()
         .postId(postEntity.getPostId())

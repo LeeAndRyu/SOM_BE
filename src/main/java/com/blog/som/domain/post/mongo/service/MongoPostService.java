@@ -2,6 +2,8 @@ package com.blog.som.domain.post.mongo.service;
 
 import com.blog.som.domain.post.mongo.document.PostDocument;
 import com.blog.som.domain.post.mongo.respository.MongoPostRepository;
+import com.blog.som.global.exception.ErrorCode;
+import com.blog.som.global.exception.custom.PostException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +41,18 @@ public class MongoPostService {
       documentPage = mongoPostRepository.findByAccountName(accountName, PageRequest.of(page, pageSize));
     }
     log.info("[Elasticsearch PostDocument update profile_image] total amount={}", amount);
+  }
+
+  public void updatePostDocumentLikes(boolean result, Long postId){
+    PostDocument postDocument = mongoPostRepository.findByPostId(postId)
+        .orElseThrow(() -> new PostException(ErrorCode.POST_NOT_FOUND));
+
+    if(result){
+      postDocument.addLikes();
+    }else{
+      postDocument.minusLikes();
+    }
+    mongoPostRepository.save(postDocument);
   }
 
 }

@@ -6,6 +6,7 @@ import com.blog.som.domain.likes.repository.LikesRepository;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
 import com.blog.som.domain.post.entity.PostEntity;
+import com.blog.som.domain.post.mongo.service.MongoPostService;
 import com.blog.som.domain.post.repository.PostRepository;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.MemberException;
@@ -23,6 +24,7 @@ public class LikesServiceImpl implements LikesService {
   private final PostRepository postRepository;
   private final MemberRepository memberRepository;
   private final LikesRepository likesRepository;
+  private final MongoPostService mongoPostService;
 
   @Override
   public LikesResponse.ToggleResult toggleLikes(Long postId, Long loginMemberId) {
@@ -34,12 +36,21 @@ public class LikesServiceImpl implements LikesService {
     Optional<LikesEntity> optionalLikes = likesRepository.findByMemberAndPost(member, post);
 
     if (optionalLikes.isEmpty()) {
-
       likesRepository.save(new LikesEntity(member, post));
+
+      post.addLikes();
+      postRepository.save(post);
+
+      mongoPostService.updatePostDocumentLikes(true, postId);
 
       return new LikesResponse.ToggleResult(true, loginMemberId, postId);
     }
     likesRepository.delete(optionalLikes.get());
+
+    post.minusLikes();
+    postRepository.save(post);
+
+    mongoPostService.updatePostDocumentLikes(false, postId);
 
     return new LikesResponse.ToggleResult(false, loginMemberId, postId);
   }
