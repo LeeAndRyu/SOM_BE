@@ -40,9 +40,13 @@ public class CommentServiceImpl implements CommentService {
     post.addComments();
     postRepository.save(post);
 
-    notificationService.notify(
-        post.getMember(), member,
-        NotificationCreateDto.comment(member.getNickname(), post, comment));
+    //알림 발생
+    if(!post.getMember().equals(member)){
+      notificationService.notify(
+          post.getMember(), member,
+          NotificationCreateDto.comment(member.getNickname(), post, comment));
+    }
+
 
     return CommentDto.fromEntity(comment);
   }

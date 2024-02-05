@@ -43,9 +43,11 @@ public class LikesServiceImpl implements LikesService {
       post.addLikes();
       postRepository.save(post);
 
-      notificationService.notify(post.getMember(), member,
-          NotificationCreateDto.likes(member, post));
-
+      if(!post.getMember().equals(member)){
+        notificationService.notify(post.getMember(), member,
+            NotificationCreateDto.likes(member, post));
+      }
+      
       return new LikesResponse.ToggleResult(true, loginMemberId, postId);
     }
 
