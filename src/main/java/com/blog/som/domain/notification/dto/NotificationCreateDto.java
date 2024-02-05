@@ -74,8 +74,8 @@ public class NotificationCreateDto {
 
   public static NotificationCreateDto likes(MemberEntity fromMember, PostEntity post){
     String title = "<strong>" + fromMember.getNickname() + "</strong>" + " 님이 게시글을 좋아합니다.";
-    String message1 = post.getTitle();
-    String message2 = "";
+    String message1 = "";
+    String message2 = post.getTitle();
     String url = "/blog/" + post.getMember().getAccountName() + "/" + post.getPostId();
 
     return NotificationCreateDto.builder()
