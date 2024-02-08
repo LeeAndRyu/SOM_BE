@@ -15,6 +15,7 @@ import com.blog.som.domain.follow.entity.FollowEntity;
 import com.blog.som.domain.follow.repository.FollowRepository;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
+import com.blog.som.domain.notification.service.NotificationService;
 import com.blog.som.global.constant.ResponseConstant;
 import com.blog.som.global.exception.ErrorCode;
 import com.blog.som.global.exception.custom.BlogException;
@@ -38,6 +39,8 @@ class FollowServiceTest {
   private FollowRepository followRepository;
   @Mock
   private MemberRepository memberRepository;
+  @Mock
+  private NotificationService notificationService;
 
   @InjectMocks
   private FollowServiceImpl followService;
