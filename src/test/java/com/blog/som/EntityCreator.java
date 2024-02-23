@@ -1,5 +1,6 @@
 package com.blog.som;
 
+import com.blog.som.domain.comment.entity.CommentEntity;
 import com.blog.som.domain.follow.entity.FollowEntity;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.type.Role;
@@ -98,6 +99,17 @@ public class EntityCreator {
         .views(postEntity.getViews())
         .registeredAt(postEntity.getRegisteredAt())
         .tags(new ArrayList<>(Arrays.asList("tag1, tag2")))
+        .build();
+  }
+
+  public static CommentEntity createComment(Long commentId, MemberEntity member, PostEntity post){
+    return CommentEntity.builder()
+        .commentId(commentId)
+        .member(member)
+        .post(post)
+        .content("comment-content" + commentId)
+        .registeredAt(LocalDateTime.now())
+        .lastModifiedAt(LocalDateTime.now())
         .build();
   }
 
