@@ -2,6 +2,7 @@ package com.blog.som;
 
 import com.blog.som.domain.comment.entity.CommentEntity;
 import com.blog.som.domain.follow.entity.FollowEntity;
+import com.blog.som.domain.likes.entity.LikesEntity;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.type.Role;
 import com.blog.som.domain.post.entity.PostEntity;
@@ -110,6 +111,15 @@ public class EntityCreator {
         .content("comment-content" + commentId)
         .registeredAt(LocalDateTime.now())
         .lastModifiedAt(LocalDateTime.now())
+        .build();
+  }
+
+  public static LikesEntity createLikes(Long likesId, MemberEntity member, PostEntity post){
+    return LikesEntity.builder()
+        .likesId(likesId)
+        .member(member)
+        .post(post)
+        .registeredAt(LocalDateTime.now())
         .build();
   }
 
