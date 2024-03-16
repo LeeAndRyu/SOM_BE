@@ -42,8 +42,6 @@ public class BlogController {
     if(loginMember.getRole().equals(Role.USER)){
       blogMember.setFollowStatus(
           blogService.getFollowStatus(loginMember.getMemberId(), accountName));
-    }else{
-      blogMember.setFollowStatus(FollowStatus.NOT_LOGGED_IN);
     }
 
     return ResponseEntity.ok(blogMember);

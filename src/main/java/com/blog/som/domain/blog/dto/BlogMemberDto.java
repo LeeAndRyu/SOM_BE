@@ -32,6 +32,7 @@ public class BlogMemberDto {
         .introduction(member.getIntroduction())
         .followerCount(member.getFollowerCount())
         .followingCount(member.getFollowingCount())
+        .followStatus(FollowStatus.NOT_LOGGED_IN)
         .build();
   }
 }
