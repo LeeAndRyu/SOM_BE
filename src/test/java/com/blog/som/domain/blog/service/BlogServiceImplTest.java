@@ -84,7 +84,7 @@ class BlogServiceImplTest {
       assertThat(result.getIntroduction()).isEqualTo(member.getIntroduction());
       assertThat(result.getFollowerCount()).isEqualTo(member.getFollowerCount());
       assertThat(result.getFollowingCount()).isEqualTo(member.getFollowingCount());
-      assertThat(result.getFollowStatus()).isNull();
+      assertThat(result.getFollowStatus()).isEqualTo(FollowStatus.NOT_LOGGED_IN);
     }
 
     @Test
