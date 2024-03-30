@@ -10,6 +10,6 @@ public interface TokenRepository {
 
   boolean deleteRefreshToken(String email);
 
-  boolean checkRefreshToken(String email, String refreshToken);
+  void checkRefreshToken(String email, String refreshToken);
 
 }
