@@ -5,7 +5,7 @@ Story Of Me - Blog Platform Service
 - 주요 기능 : 내 블로그를 만들고 운영할 수 있는 블로그 플랫폼
 - 작업 기간 : 2024.01.20 ~ 2024.02
 - 인원 구성 : 2명 (FE 1명, BE 1명) / BE 담당
-- 배포 url : https://storyofme.vercel.app (2024.03.18 open 상태)
+- 배포 url : https://storyofme.vercel.app (2024.06 close)
 
 ## UserFlow
 ![som_userflow.png](som_userflow.png)
