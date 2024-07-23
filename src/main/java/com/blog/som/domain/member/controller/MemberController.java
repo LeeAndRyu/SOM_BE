@@ -64,8 +64,10 @@ public class MemberController {
   public ResponseEntity<MemberPasswordEdit.Response> editMemberPassword(
       @RequestBody MemberPasswordEdit.Request request,
       @AuthenticationPrincipal LoginMember loginMember) {
+
     MemberPasswordEdit.Response response =
         memberService.editMemberPassword(loginMember.getMemberId(), request);
+
     return ResponseEntity.ok(response);
   }
 

@@ -49,17 +49,20 @@ public class RedisTokenRepository implements TokenRepository {
   }
 
   @Override
-  public boolean checkRefreshToken(String email, String refreshToken) {
+  public void checkRefreshToken(String email, String refreshToken) {
+    //해당 email에 대한 데이터가 존재하지 않을 때
+    if(Boolean.FALSE.equals(redisTemplate.hasKey(TokenConstant.REFRESH_TOKEN_EMAIL_KEY_PREFIX + email))){
+      throw new CustomSecurityException(ErrorCode.JWT_REFRESH_TOKEN_NOT_FOUND);
+    }
     ValueOperations<String, String> values = redisTemplate.opsForValue();
-    redisTemplate.hasKey(TokenConstant.REFRESH_TOKEN_EMAIL_KEY_PREFIX + email);
     String rt = values.get(TokenConstant.REFRESH_TOKEN_EMAIL_KEY_PREFIX + email);
     //RT가 존재하지 않을 때
     if(!StringUtils.hasText(rt)){
-      return false;
+      throw new CustomSecurityException(ErrorCode.JWT_REFRESH_TOKEN_NOT_FOUND);
     }
     //해당 유저의 RT가 정확할 때
     if(refreshToken.equals(rt)){
-      return true;
+      return;
     }
     throw new CustomSecurityException(ErrorCode.REFRESH_TOKEN_NOT_COINCIDENCE);
   }

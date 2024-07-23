@@ -33,9 +33,10 @@ public class AuthService {
     if (!PasswordUtils.equalsPlainTextAndHashed(loginInput.getPassword(), member.getPassword())) {
       throw new MemberException(ErrorCode.LOGIN_FAILED_PASSWORD_INCORRECT);
     }
-
+    //토큰 발행
     TokenResponse tokenResponse = jwtTokenService.generateTokenResponse(member.getEmail(), member.getRole());
 
+    //Redis에 RefreshToken 저장
     tokenRepository.saveRefreshToken(member.getEmail(), tokenResponse.getRefreshToken());
 
     return new MemberLogin.Response(tokenResponse, MemberDto.fromEntity(member));
