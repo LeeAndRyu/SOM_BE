@@ -58,39 +58,19 @@ public class BlogController {
 
 
 
-  @ApiOperation("블로그 게시글 list 조회")
+  @ApiOperation(value = "블로그 게시글 list 조회", notes = "sort: latest/hot/tag/query")
   @GetMapping("/blog/{accountName}/posts")
   public ResponseEntity<BlogPostList> blogPosts(@PathVariable String accountName,
       @RequestParam(value = "sort", required = false, defaultValue = "latest") String sort,
-      @RequestParam(value = "tag", required = false, defaultValue = "") String tagName,
       @RequestParam(value = "q", required = false, defaultValue = "")String query,
       @RequestParam(value = "p",required = false, defaultValue = "1") int page){
     
     //accountName이 존재하는지 검증
     blogService.validateAccountName(accountName);
-    
-    //두가지 모두 query로 들어올 순 없음
-    if (StringUtils.hasText(tagName) && StringUtils.hasText(query)) {
-      throw new BlogException(ErrorCode.BLOG_POSTS_INVALID_QUERY);
-    }
 
-    //hot
-    if(sort.equals(SearchConstant.HOT)){
-      return ResponseEntity.ok(blogService.getAllBlogPostListBySortType(accountName, sort, page));
-    }
+    BlogPostList blogPostList = blogService.getBlogPosts(accountName, sort, query, page);
+    return ResponseEntity.ok(blogPostList);
 
-    //tag 검색
-    if(StringUtils.hasText(tagName)){
-      return ResponseEntity.ok(blogService.getBlogPostListByTag(accountName, tagName, page));
-    }
-
-    //query 검색
-    if(StringUtils.hasText(query)){
-      return ResponseEntity.ok(blogService.getBlogPostListByQuery(accountName, query, page));
-    }
-
-    //전체 검색
-    return ResponseEntity.ok(blogService.getAllBlogPostListBySortType(accountName, sort, page));
   }
 
 }

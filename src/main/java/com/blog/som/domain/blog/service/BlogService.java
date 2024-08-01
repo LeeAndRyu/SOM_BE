@@ -30,6 +30,16 @@ public interface BlogService {
   FollowStatus getFollowStatus(Long memberId, String accountName);
 
   /**
+   * MyBatis -> 아래 3개를 이거 하나로 대체했음 (동적 쿼리)
+   * @param accountName
+   * @param sort
+   * @param value
+   * @param page
+   * @return
+   */
+  BlogPostList getBlogPosts(String accountName, String sort, String value, int page);
+
+  /**
    * 정렬 방식에 따른 postList 조회
    * - sort=latest(default) : 최신 순
    * - sort=hot : 조회수 순

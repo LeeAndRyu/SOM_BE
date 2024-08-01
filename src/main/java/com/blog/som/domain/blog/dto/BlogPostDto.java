@@ -1,23 +1,22 @@
 package com.blog.som.domain.blog.dto;
 
+import com.blog.som.domain.mybatis.BlogPostWithTagString;
 import com.blog.som.domain.post.entity.PostEntity;
 import com.blog.som.domain.post.mongo.document.PostDocument;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
-import javax.persistence.EntityListeners;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@EntityListeners(AuditingEntityListener.class)
 public class BlogPostDto {
 
   private Long postId;
@@ -59,6 +58,23 @@ public class BlogPostDto {
         .registeredAt(post.getRegisteredAt())
         .tags(tagList)
         .build();
+  }
+  public static BlogPostDto fromBlogPostWithTagString(BlogPostWithTagString blogPost) {
+    List<String> tagList = Arrays.stream(blogPost.getTags().split(", ")).toList();
+    return BlogPostDto.builder()
+            .postId(blogPost.getPostId())
+            .memberId(blogPost.getMemberId())
+            .profileImage(blogPost.getProfileImage())
+            .accountName(blogPost.getAccountName())
+            .title(blogPost.getTitle())
+            .thumbnail(blogPost.getThumbnail())
+            .introduction(blogPost.getIntroduction())
+            .likes(blogPost.getLikes())
+            .views(blogPost.getViews())
+            .comments(blogPost.getComments())
+            .registeredAt(blogPost.getRegisteredAt())
+            .tags(tagList)
+            .build();
   }
 
   public static BlogPostDto fromDocument(PostDocument postDocument) {

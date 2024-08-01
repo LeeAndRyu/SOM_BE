@@ -27,7 +27,7 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @RequiredArgsConstructor
-@Service
+//@Service
 public class MongoBlogService implements BlogService {
 
   private final MemberRepository memberRepository;
@@ -75,11 +75,16 @@ public class MongoBlogService implements BlogService {
   }
 
   @Override
+  public BlogPostList getBlogPosts(String accountName, String sort, String value, int page) {
+    return null;
+  }
+
+  @Override
   public BlogPostList getAllBlogPostListBySortType(String accountName, String sort, int page) {
     String sortBy = SearchConstant.REGISTERED_AT;
 
     if (sort.equals(SearchConstant.HOT)) {
-      sortBy = SearchConstant.VIEWS;
+      sortBy = "views";
     }
     PageRequest pageRequest = PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by(sortBy).descending());
 

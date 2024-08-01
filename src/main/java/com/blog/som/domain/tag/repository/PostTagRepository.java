@@ -24,4 +24,5 @@ public interface PostTagRepository extends JpaRepository<PostTagEntity, Long> {
   List<String> findPostTagNamesByPost(@Param("post") PostEntity post);
 
   Page<PostTagEntity> findByMemberAndTag(MemberEntity member, TagEntity tag, Pageable pageable);
+
 }
