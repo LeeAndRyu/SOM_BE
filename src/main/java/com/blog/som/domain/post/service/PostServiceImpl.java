@@ -41,14 +41,12 @@ public class PostServiceImpl implements PostService {
   private final TagRepository tagRepository;
   private final PostTagRepository postTagRepository;
   private final CacheRepository cacheRepository;
-  private final MongoPostRepository mongoPostRepository;
   private final S3ImageService s3ImageService;
 
   @Override
   public PostDto writePost(PostWriteRequest request, Long memberId) {
     MemberEntity member = memberRepository.findById(memberId)
         .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
-
     PostEntity post = postRepository.save(PostWriteRequest.toEntity(request, member));
 
     //tagList를 lower case로 변환
@@ -58,9 +56,6 @@ public class PostServiceImpl implements PostService {
 
     this.deleteUnUsedImageFromS3(request.getTotalImageList(), post.getThumbnail(), post.getContent());
 
-    //mongodb에 저장
-    mongoPostRepository.save(PostDocument.fromEntity(post, tagList));
-
     return PostDto.fromEntity(post, tagList);
   }
 
@@ -68,32 +63,13 @@ public class PostServiceImpl implements PostService {
   public PostDto getPost(Long postId, String accessUserAgent) {
     PostEntity post = postRepository.findById(postId)
         .orElseThrow(() -> new PostException(ErrorCode.POST_NOT_FOUND));
-
-    Optional<PostDocument> optionalPostDocument = mongoPostRepository.findByPostId(postId);
-
-    PostDocument postDocument;
-    List<String> tagList;
-
-    if (optionalPostDocument.isPresent()) {
-      postDocument = optionalPostDocument.get();
-      tagList = postDocument.getTags();
-    } else {
-      log.info("mongo postDocument [id={}] not found", post.getPostId());
-      tagList = postTagRepository.findAllByPost(post)
-          .stream()
-          .map(pt -> pt.getTag().getTagName())
-          .toList();
-      postDocument = mongoPostRepository.save(PostDocument.fromEntity(post, tagList));
-    }
+    List<String> tags = postTagRepository.findPostTagNamesByPost(post);
 
     if (StringUtils.hasText(accessUserAgent) && cacheRepository.canAddView(accessUserAgent, postId)) {
       post.addView();
-      postRepository.save(post);
-      postDocument.addView();
-      mongoPostRepository.save(postDocument);
     }
 
-    return PostDto.fromEntity(post, tagList);
+    return PostDto.fromEntity(post, tags);
   }
 
   @Override
@@ -105,9 +81,7 @@ public class PostServiceImpl implements PostService {
     if (!Objects.equals(member.getMemberId(), loginMemberId)) {
       throw new PostException(ErrorCode.POST_EDIT_NO_AUTHORITY);
     }
-    //게시글 수정
     post.editPost(request);
-    postRepository.save(post);
 
     //태그 수정 시작
     List<String> requestList = request.getTags().stream().map(String::toLowerCase).toList();
@@ -139,9 +113,6 @@ public class PostServiceImpl implements PostService {
     //안쓰는 이미지 삭제
     this.deleteUnUsedImageFromS3(request.getTotalImageList(), post.getThumbnail(), post.getContent());
 
-    //mongoDB에 refresh
-    mongoPostRepository.deleteByPostId(postId);
-    mongoPostRepository.save(PostDocument.fromEntity(post, requestList));
     return PostDto.fromEntity(post, requestList);
   }
 
@@ -181,7 +152,7 @@ public class PostServiceImpl implements PostService {
   }
 
   /**
-   * 사용하지 않는 이미지를 S3에서 삭제
+   * 게시글 편집 과정에서 사용했으나, 최종 사용되지 않는 이미지를 S3에서 삭제
    */
   private void deleteUnUsedImageFromS3(List<String> requestTotalList, String thumbnail, String content) {
     requestTotalList.remove(thumbnail);//전체 리스트에서 썸네일 제외
@@ -219,7 +190,6 @@ public class PostServiceImpl implements PostService {
     }
     postRepository.delete(post);
 
-    mongoPostRepository.deleteByPostId(postId);
 
     //S3에서 이미지 삭제
     List<String> imageList = HtmlParser.getImageList(post.getContent());

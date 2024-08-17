@@ -7,6 +7,8 @@ import com.blog.som.domain.blog.dto.BlogTagListDto;
 import com.blog.som.domain.follow.service.FollowService;
 import com.blog.som.domain.member.entity.MemberEntity;
 import com.blog.som.domain.member.repository.MemberRepository;
+import com.blog.som.domain.mybatis.BlogPostWithTagString;
+import com.blog.som.domain.mybatis.MyBatisBlogPostRepository;
 import com.blog.som.domain.post.entity.PostEntity;
 import com.blog.som.domain.post.repository.PostRepository;
 import com.blog.som.domain.tag.dto.TagDto;
@@ -26,12 +28,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @RequiredArgsConstructor
 @Transactional
-//@Service
+@Service
 public class BlogServiceImpl implements BlogService {
 
   private final MemberRepository memberRepository;
@@ -39,6 +43,7 @@ public class BlogServiceImpl implements BlogService {
   private final TagRepository tagRepository;
   private final PostTagRepository postTagRepository;
   private final FollowService followService;
+  private final MyBatisBlogPostRepository myBatisBlogPostRepository;
 
   @Override
   public BlogMemberDto getBlogMember(String accountName) {
@@ -51,12 +56,12 @@ public class BlogServiceImpl implements BlogService {
   @Override
   public BlogTagListDto getBlogTags(String accountName) {
     MemberEntity member = memberRepository.findByAccountName(accountName)
-        .orElseThrow(() -> new BlogException(ErrorCode.BLOG_NOT_FOUND));
+            .orElseThrow(() -> new BlogException(ErrorCode.BLOG_NOT_FOUND));
 
     List<TagDto> tagDtoList = tagRepository.findAllByMember(member)
-        .stream()
-        .map(TagDto::fromEntity)
-        .toList();
+            .stream()
+            .map(TagDto::fromEntity)
+            .toList();
 
     int count = postRepository.countByMember(member);
 
@@ -80,26 +85,37 @@ public class BlogServiceImpl implements BlogService {
   }
 
   @Override
+  public BlogPostList getBlogPosts(String accountName, String sort, String value, int page){
+    MemberEntity member = memberRepository.findByAccountName(accountName)
+            .orElseThrow(() -> new BlogException(ErrorCode.BLOG_NOT_FOUND));
+    log.info("value = {}", value);
+
+    if(!StringUtils.hasText(value)){
+      value = "";
+    }
+    //sort는 latest / hot / views / tag / query
+    int pageStart = (page - 1) * NumberConstant.DEFAULT_PAGE_SIZE;
+
+    List<BlogPostWithTagString> findPostList = myBatisBlogPostRepository.findByMemberId(member.getMemberId(), sort, value, pageStart, NumberConstant.DEFAULT_PAGE_SIZE);
+    List<BlogPostDto> list = findPostList.stream().map(BlogPostDto::fromBlogPostWithTagString).toList();
+
+    return new BlogPostList(PageDto.fromPageConstants(findPostList.size(), page, NumberConstant.DEFAULT_PAGE_SIZE), list);
+  }
+
+  @Override
   public BlogPostList getAllBlogPostListBySortType(String accountName, String sort, int page) {
     MemberEntity member = memberRepository.findByAccountName(accountName)
         .orElseThrow(() -> new BlogException(ErrorCode.BLOG_NOT_FOUND));
 
     String sortBy = SearchConstant.REGISTERED_AT;
     if (sort.equals(SearchConstant.HOT)) {
-      sortBy = SearchConstant.VIEWS;
+      sortBy = "views";
     }
+    List<BlogPostWithTagString> findPostList = myBatisBlogPostRepository.findByMemberId(member.getMemberId(), sortBy, "",(page - 1) * NumberConstant.DEFAULT_PAGE_SIZE, NumberConstant.DEFAULT_PAGE_SIZE);
+    List<BlogPostDto> list = findPostList.stream().map(BlogPostDto::fromBlogPostWithTagString).toList();
 
 
-    Page<PostEntity> posts =
-        postRepository.findByMember(member,
-            PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE, Sort.by(sortBy).descending()));
-
-    List<BlogPostDto> blogPostList =
-        posts.getContent().stream()
-            .map(this::getBlogPostDtoFromPostEntity)
-            .toList();
-
-    return new BlogPostList(PageDto.fromPostEntityPage(posts), blogPostList);
+    return new BlogPostList(PageDto.fromPageConstants(findPostList.size(), page, NumberConstant.DEFAULT_PAGE_SIZE), list);
   }
 
   @Override
@@ -111,8 +127,8 @@ public class BlogServiceImpl implements BlogService {
         .orElseThrow(() -> new BlogException(ErrorCode.TAG_NOT_FOUND));
 
     PageRequest pageRequest =
-        PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE,
-            Sort.by(SearchConstant.POST_CREATE_TIME).descending());
+            PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE,
+                    Sort.by(SearchConstant.POST_CREATE_TIME).descending());
 
     Page<PostTagEntity> postTags = postTagRepository.findByMemberAndTag(member, tag, pageRequest);
 

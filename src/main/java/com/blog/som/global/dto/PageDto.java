@@ -23,6 +23,16 @@ public class PageDto {
   private int totalElement; //전체 데이터 개수
   private int totalPages; //전체 페이지 개수
 
+  public static PageDto fromPageConstants(int dataSize, int page, int pageSize){
+    return PageDto.builder()
+            .currentPage(page)
+            .currentElements(dataSize)
+            .pageSize(pageSize)
+            .totalElement(100)
+            .totalPages(100)
+            .build();
+  }
+
   public static PageDto fromPostEntityPage(Page<PostEntity> page) {
     return PageDto.builder()
         .currentPage(page.getNumber() + 1)

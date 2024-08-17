@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blog.som.domain.mybatis.BlogPostMapper">
+
+    <!-- sql 관련 코드  -->
+
+    <select id="findById" resultType="PostEntity">
+        SELECT *
+        FROM post
+        where post_id = #{postId}
+    </select>
+
+    <select id="findPostsByMemberId" resultType="BlogPostWithTagString">
+        SELECT
+            *
+        FROM
+        (SELECT
+            p.post_id AS postId,
+            p.member_id AS memberId,
+            m.profile_image AS profileImage,
+            m.account_name AS accountName,
+            p.title AS title,
+            p.thumbnail AS thumbnail,
+            p.introduction AS introduction,
+            p.likes AS likes,
+            p.views AS views,
+            p.comments AS comments,
+            p.registered_at AS registeredAt,
+            GROUP_CONCAT(t.tag_name ORDER BY t.tag_name ASC SEPARATOR ', ') AS tags
+        FROM
+            post p
+                JOIN
+            member m
+            ON p.member_id = m.member_id
+                LEFT JOIN
+            post_tag pt
+            ON p.post_id = pt.post_id
+                LEFT JOIN
+            tag t
+            ON pt.tag_id = t.tag_id
+        WHERE
+            p.member_id = #{memberId}
+        GROUP BY p.post_id) bp
+        <where>
+            <if test="value != null and value != '' and sort == 'tag'">
+                bp.tags LIKE CONCAT('%', #{value}, '%')
+            </if>
+            <if test="value != null and value != '' and sort == 'query'">
+                bp.title LIKE CONCAT('%', #{value}, '%') OR bp.introduction LIKE CONCAT('%', #{value}, '%')
+            </if>
+        </where>
+        <if test="sort == 'hot'">
+            ORDER BY bp.views DESC
+        </if>
+        <if test="sort == 'tag' or sort == 'latest' or sort == 'query'">
+            ORDER BY bp.registeredAt DESC
+        </if>
+        LIMIT ${pageStart}, ${pageSize}
+    </select>
+
+</mapper>
