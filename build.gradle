@@ -47,6 +47,9 @@ dependencies {
     //jsoup
     implementation 'org.jsoup:jsoup:1.7.2'
 
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0'
+
+
     //swagger
     implementation 'io.springfox:springfox-boot-starter:3.0.0'
     implementation 'io.springfox:springfox-swagger-ui:3.0.0'

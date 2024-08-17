@@ -89,6 +89,7 @@ public class BlogServiceImpl implements BlogService {
     MemberEntity member = memberRepository.findByAccountName(accountName)
             .orElseThrow(() -> new BlogException(ErrorCode.BLOG_NOT_FOUND));
     log.info("value = {}", value);
+
     if(!StringUtils.hasText(value)){
       value = "";
     }
@@ -126,8 +127,8 @@ public class BlogServiceImpl implements BlogService {
         .orElseThrow(() -> new BlogException(ErrorCode.TAG_NOT_FOUND));
 
     PageRequest pageRequest =
-        PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE,
-            Sort.by(SearchConstant.POST_CREATE_TIME).descending());
+            PageRequest.of(page - 1, NumberConstant.DEFAULT_PAGE_SIZE,
+                    Sort.by(SearchConstant.POST_CREATE_TIME).descending());
 
     Page<PostTagEntity> postTags = postTagRepository.findByMemberAndTag(member, tag, pageRequest);
 

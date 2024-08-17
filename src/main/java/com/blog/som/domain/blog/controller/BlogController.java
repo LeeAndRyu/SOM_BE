@@ -53,7 +53,7 @@ public class BlogController {
 
     BlogTagListDto blogTags = blogService.getBlogTags(accountName);
 
-    return ResponseEntity.ok(blogTags);
+    return ResponseEntity.ok(blogService.getBlogTags(accountName));
   }
 
 
@@ -69,6 +69,7 @@ public class BlogController {
     blogService.validateAccountName(accountName);
 
     BlogPostList blogPostList = blogService.getBlogPosts(accountName, sort, query, page);
+
     return ResponseEntity.ok(blogPostList);
 
   }
